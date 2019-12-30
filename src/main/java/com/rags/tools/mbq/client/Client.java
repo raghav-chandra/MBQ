@@ -1,0 +1,40 @@
+package com.rags.tools.mbq.client;
+
+public class Client {
+    private String id;
+    private String name;
+    private String queueName;
+    private String host;
+    private int batch;
+
+    public Client() {
+    }
+
+    public Client(String id, String name, String queueName, String host, int batch) {
+        this.id = id;
+        this.name = name;
+        this.queueName = queueName;
+        this.host = host;
+        this.batch = batch;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getQueueName() {
+        return queueName;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getBatch() {
+        return batch;
+    }
+}
