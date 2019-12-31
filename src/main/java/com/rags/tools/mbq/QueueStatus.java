@@ -1,4 +1,4 @@
-package com.rags.tools.mbq.queue;
+package com.rags.tools.mbq;
 
 public enum QueueStatus {
     PENDING, PROCESSING, COMPLETED, ERROR, HELD, BLOCKED

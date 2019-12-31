@@ -1,6 +1,6 @@
 package com.rags.tools.mbq.message;
 
-import com.rags.tools.mbq.queue.QueueStatus;
+import com.rags.tools.mbq.QueueStatus;
 
 import java.util.Objects;
 

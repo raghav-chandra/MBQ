@@ -1,6 +1,6 @@
 package com.rags.tools.mbq.queue;
 
-import com.rags.tools.mbq.client.Client;
+import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 

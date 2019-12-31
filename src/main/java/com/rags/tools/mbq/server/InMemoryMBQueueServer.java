@@ -7,7 +7,7 @@ import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 import com.rags.tools.mbq.queue.InMemoryMBQueue;
 import com.rags.tools.mbq.queue.MBQueue;
-import com.rags.tools.mbq.queue.QueueStatus;
+import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.util.HashingUtil;
 
 import java.util.*;
@@ -76,11 +76,11 @@ public class InMemoryMBQueueServer implements MBQueueServer {
     public List<MBQMessage> pull(Client client) {
         validateClient(client);
 
-        String qName = client.getQueueName();
+        String queueName = client.getQueueName();
         int batch = client.getBatch();
 
-        if (ALL_PENDING_MESSAGES.containsKey(qName)) {
-            LinkedList<String> seqQ = ALL_PENDING_MESSAGES.get(qName);
+        if (ALL_PENDING_MESSAGES.containsKey(queueName)) {
+            LinkedList<String> seqQ = ALL_PENDING_MESSAGES.get(queueName);
             if (seqQ.isEmpty()) {
                 return Collections.emptyList();
             }
@@ -91,8 +91,8 @@ public class InMemoryMBQueueServer implements MBQueueServer {
             int counter = 0;
             for (int i = 0; i < noOfItem && counter < seqQ.size(); ) {
                 String id = seqQ.get(counter++);
-                MBQMessage item = QUEUE.get(qName, id);
-                List<MBQMessage> allMessages = QUEUE.get(qName, item.getSeqKey(), Arrays.asList(QueueStatus.PROCESSING, QueueStatus.ERROR, QueueStatus.HELD));
+                MBQMessage item = QUEUE.get(queueName, id);
+                List<MBQMessage> allMessages = QUEUE.get(queueName, item.getSeqKey(), Arrays.asList(QueueStatus.PROCESSING, QueueStatus.ERROR, QueueStatus.HELD));
                 if (allMessages.isEmpty()) {
                     item.updateStatus(QueueStatus.PROCESSING);
                     items.add(item);
