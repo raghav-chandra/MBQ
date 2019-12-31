@@ -29,6 +29,10 @@ public class MBQueueServerProxy implements MBQueueServer {
             .version(HttpClient.Version.HTTP_2)
             .build();
 
+    public MBQueueServerProxy(QConfig config) {
+
+    }
+
     private String post(String api) {
         HttpRequest request = HttpRequest.newBuilder()
 //                .POST(HttpRequest.BodyPublishers.ofString(Json.encode()))
