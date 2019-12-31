@@ -23,7 +23,7 @@ public class InMemoryMBQueueServer implements MBQueueServer {
     private static final int PING_INTERVAL = 5000;
 
     public InMemoryMBQueueServer() {
-        new Timer().schedule(new TimerTask() {
+        /*new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 long curTime = System.currentTimeMillis();
@@ -38,7 +38,7 @@ public class InMemoryMBQueueServer implements MBQueueServer {
 
                 allInvalids.forEach(CLIENTS_HB::remove);
             }
-        }, 0, 1000);
+        }, 0, 1000);*/
     }
 
     @Override
@@ -66,10 +66,10 @@ public class InMemoryMBQueueServer implements MBQueueServer {
 
         long curTime = System.currentTimeMillis();
 
-        if ((curTime - CLIENTS_HB.get(id)) > PING_INTERVAL) {
+        /*if ((curTime - CLIENTS_HB.get(id)) > PING_INTERVAL) {
             CLIENTS_HB.remove(id);
             throw new MBQException("Client was existing and was not active");
-        }
+        }*/
     }
 
     @Override
@@ -94,6 +94,7 @@ public class InMemoryMBQueueServer implements MBQueueServer {
                 MBQMessage item = QUEUE.get(queueName, id);
                 List<MBQMessage> allMessages = QUEUE.get(queueName, item.getSeqKey(), Arrays.asList(QueueStatus.PROCESSING, QueueStatus.ERROR, QueueStatus.HELD));
                 if (allMessages.isEmpty()) {
+                    seqQ.remove(counter);
                     item.updateStatus(QueueStatus.PROCESSING);
                     items.add(item);
                     i++;

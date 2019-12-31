@@ -6,12 +6,16 @@ import com.rags.tools.mbq.message.QMessage;
 import com.rags.tools.mbq.server.InMemoryMBQueueServer;
 import com.rags.tools.mbq.server.MBQueueServer;
 import com.rags.tools.mbq.server.MBQueueServerProxy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MBQueuePublisher implements QueueClient {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MBQueuePublisher.class);
 
     private final Client client;
     private final MBQueueServer server;
@@ -28,16 +32,19 @@ public class MBQueuePublisher implements QueueClient {
 
     @Override
     public void push(QMessage message) {
+        LOGGER.info("Publishing message with Seq Key {} to Queue", message.getSeqKey());
         server.push(this.client, message);
     }
 
     @Override
     public void push(List<QMessage> messages) {
+        LOGGER.info("Publishing {} messages to Queue", messages.size());
         server.push(this.client, messages);
     }
 
     @Override
     public void start() {
+        LOGGER.info("Starting Queue Message Consumer Client");
         if (timer != null) {
             throw new MBQException("Client is still running, cant start another instance");
         }
@@ -53,6 +60,8 @@ public class MBQueuePublisher implements QueueClient {
 
     @Override
     public void stop() {
+        LOGGER.info("Shutting down Q Consumer Client ");
+
         if (timer == null) {
             throw new MBQException("Client is already stopped");
         }
