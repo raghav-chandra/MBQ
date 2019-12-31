@@ -2,6 +2,7 @@ package com.rags.tools.mbq.queue;
 
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.message.MBQMessage;
+import com.rags.tools.mbq.message.QMessage;
 
 import java.util.List;
 
@@ -12,29 +13,50 @@ import java.util.List;
 public interface MBQueue {
 
     /**
+     * Retrieves items from the queue based on the item id
+     *
+     * @param queueName Queue Name
+     * @param id        q item id
+     * @return MBQ Message
+     */
+    MBQMessage get(String queueName, String id);
+
+    /**
+     * Retrieves items from the queue based on the SeqKey and Status
+     *
+     * @param queueName Queue Name
+     * @param seqKey    sequence key
+     * @param status    Item Status
+     * @return MBQ Message
+     */
+    List<MBQMessage> get(String queueName, String seqKey, List<QueueStatus> status);
+
+
+    /**
      * Pulls messages for processing
      *
-     * @param client client information
+     * @param queueName Queue name
+     * @param ids       message Ids
      * @return LIst of messages to be processed
      */
-    List<MBQMessage> pull(Client client);
+    List<MBQMessage> pull(String queueName, List<String> ids);
 
     /**
      * Pushes messages to the queue
      *
-     * @param client   client information
-     * @param messages messages to be pushed
+     * @param queueName queue name
+     * @param messages  messages to be pushed
      * @return list of messages that has been pushed
      */
-    List<MongoMBQueue> push(Client client, List<MBQueue> messages);
+    List<MBQMessage> push(String queueName, List<QMessage> messages);
 
     /**
      * Updates status of queue messages
      *
-     * @param client client information
-     * @param ids    queue item ids
-     * @param status status to be updated
+     * @param queueName Queue Name
+     * @param ids       queue item ids
+     * @param status    status to be updated
      * @return true if update is success
      */
-    boolean updateStatus(Client client, List<String> ids, QueueStatus status);
+    boolean updateStatus(String queueName, List<String> ids, QueueStatus status);
 }

@@ -1,6 +1,9 @@
 package com.rags.tools.mbq.client;
 
 public class Client {
+
+    private static final int DEFAULT_BATCH = 5;
+
     private String id;
     private String name;
     private String queueName;
@@ -35,6 +38,6 @@ public class Client {
     }
 
     public int getBatch() {
-        return batch;
+        return batch <= 0 ? DEFAULT_BATCH : batch;
     }
 }
