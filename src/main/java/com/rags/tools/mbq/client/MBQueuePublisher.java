@@ -32,7 +32,7 @@ public class MBQueuePublisher implements QueueClient {
 
     @Override
     public void push(QMessage message) {
-        LOGGER.info("Publishing message with Seq Key {} to Queue", message.getSeqKey());
+//        LOGGER.info("Publishing message with Seq Key {} to Queue", message.getSeqKey());
         server.push(this.client, message);
     }
 

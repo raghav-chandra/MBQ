@@ -31,9 +31,9 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
     public void start() {
         super.start();
         while (this.poll) {
-            LOGGER.info("Polling queue to process new messages");
+//            LOGGER.info("Polling queue to process new messages");
             List<MBQMessage> items = getServer().pull(getClient());
-            LOGGER.info("Found {} no of messोges to processed", items.size());
+//            LOGGER.info("Found {} no of messोges to processed", items.size());
             processingMessages.addAll(items);
             try {
                 if (!processingMessages.isEmpty()) {

@@ -26,15 +26,26 @@ public class QueueTester extends MBQueueClient {
             }
         }, 100, 100);
 
-        client1.start();
-        client2.start();
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                client1.start();
+            }
+        }, 0);
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                client2.start();
+            }
+        }, 0);
     }
 
     @Override
     public void onMessage(List<Object> qItems) {
         qItems.forEach(it -> System.out.println(getClient().getName() + " -> " + it));
         try {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

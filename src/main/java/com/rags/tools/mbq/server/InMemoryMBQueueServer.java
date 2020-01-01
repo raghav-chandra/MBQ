@@ -106,8 +106,13 @@ public class InMemoryMBQueueServer implements MBQueueServer {
             }
             messagesPulled.forEach(item -> item.updateStatus(QueueStatus.PROCESSING));
             Collections.sort(indices);
+            System.out.println(indices);
             for (int i = indices.size() - 1; i >= 0; i--) {
-                seqQ.remove((int) indices.get(i));
+                //TODO why is this NUll Check Required.
+                //TODO: Linked List to be changed to Blocking Queue
+                if (indices.get(i) != null) {
+                    seqQ.remove((int) indices.get(i));
+                }
             }
             return items;
         }
