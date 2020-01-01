@@ -12,6 +12,7 @@ import com.rags.tools.mbq.util.HashingUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class InMemoryMBQueueServer implements MBQueueServer {
 
@@ -23,7 +24,7 @@ public class InMemoryMBQueueServer implements MBQueueServer {
     private static final int PING_INTERVAL = 5000;
 
     public InMemoryMBQueueServer() {
-        /*new Timer().schedule(new TimerTask() {
+        new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 long curTime = System.currentTimeMillis();
@@ -38,7 +39,7 @@ public class InMemoryMBQueueServer implements MBQueueServer {
 
                 allInvalids.forEach(CLIENTS_HB::remove);
             }
-        }, 0, 1000);*/
+        }, 0, 1000);
     }
 
     @Override
@@ -66,10 +67,10 @@ public class InMemoryMBQueueServer implements MBQueueServer {
 
         long curTime = System.currentTimeMillis();
 
-        /*if ((curTime - CLIENTS_HB.get(id)) > PING_INTERVAL) {
+        if ((curTime - CLIENTS_HB.get(id)) > PING_INTERVAL) {
             CLIENTS_HB.remove(id);
             throw new MBQException("Client was existing and was not active");
-        }*/
+        }
     }
 
     @Override
@@ -89,16 +90,24 @@ public class InMemoryMBQueueServer implements MBQueueServer {
             List<MBQMessage> items = new ArrayList<>(noOfItem);
 
             int counter = 0;
+            List<Integer> indices = new ArrayList<>(noOfItem);
+            List<MBQMessage> messagesPulled = new ArrayList<>(noOfItem);
             for (int i = 0; i < noOfItem && counter < seqQ.size(); ) {
-                String id = seqQ.get(counter++);
+                String id = seqQ.get(counter);
                 MBQMessage item = QUEUE.get(queueName, id);
                 List<MBQMessage> allMessages = QUEUE.get(queueName, item.getSeqKey(), Arrays.asList(QueueStatus.PROCESSING, QueueStatus.ERROR, QueueStatus.HELD));
                 if (allMessages.isEmpty()) {
-                    seqQ.remove(counter);
-                    item.updateStatus(QueueStatus.PROCESSING);
+                    indices.add(counter);
+                    messagesPulled.add(item);
                     items.add(item);
                     i++;
                 }
+                counter++;
+            }
+            messagesPulled.forEach(item -> item.updateStatus(QueueStatus.PROCESSING));
+            Collections.sort(indices);
+            for (int i = indices.size() - 1; i >= 0; i--) {
+                seqQ.remove((int) indices.get(i));
             }
             return items;
         }

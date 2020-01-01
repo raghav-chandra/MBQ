@@ -47,8 +47,8 @@ public class InMemoryMBQueue implements MBQueue {
         if (messages == null || messages.isEmpty()) {
             return Collections.emptyList();
         }
-        return messages.parallelStream().map(msg -> {
-            long currTime = System.currentTimeMillis();
+        return messages.stream().map(msg -> {
+            long currTime = System.nanoTime();
             String id = currTime + HashingUtil.hashSHA256(msg.getSeqKey() + currTime);
             MBQMessage m = new MBQMessage(id, msg.getSeqKey(), msg.getMessage());
             if (!QUEUE_DS.containsKey(queueName)) {
