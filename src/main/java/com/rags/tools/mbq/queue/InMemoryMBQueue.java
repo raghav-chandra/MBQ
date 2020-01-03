@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class InMemoryMBQueue implements MBQueue {
+public class InMemoryMBQueue extends AbstractMBQueue {
 
     private final Map<String, Map<String, MBQMessage>> QUEUE_DS = new ConcurrentHashMap<>();
 
@@ -47,16 +47,12 @@ public class InMemoryMBQueue implements MBQueue {
         if (messages == null || messages.isEmpty()) {
             return Collections.emptyList();
         }
-        return messages.stream().map(msg -> {
-            long currTime = System.nanoTime();
-            String id = currTime + HashingUtil.hashSHA256(msg.getSeqKey() + currTime);
-            MBQMessage m = new MBQMessage(id, msg.getSeqKey(), msg.getMessage());
-            if (!QUEUE_DS.containsKey(queueName)) {
-                QUEUE_DS.put(queueName, new ConcurrentHashMap<>());
-            }
-            QUEUE_DS.get(queueName).put(id, m);
-            return m;
-        }).collect(Collectors.toList());
+        List<MBQMessage> mbqMessages = createMessages(messages);
+        if (!QUEUE_DS.containsKey(queueName)) {
+            QUEUE_DS.put(queueName, new ConcurrentHashMap<>());
+        }
+        mbqMessages.forEach(message -> QUEUE_DS.get(queueName).put(message.getId(), message));
+        return mbqMessages;
     }
 
     @Override
