@@ -44,7 +44,7 @@ public class MBQueuePublisher implements QueueClient {
 
     @Override
     public void start() {
-        LOGGER.info("Starting Queue Message Consumer Client");
+        LOGGER.info("Starting Queue Message Consumer for Client [{}]", getClient());
         if (timer != null) {
             throw new MBQException("Client is still running, cant start another instance");
         }

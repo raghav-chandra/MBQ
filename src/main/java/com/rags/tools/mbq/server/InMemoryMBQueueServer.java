@@ -1,25 +1,32 @@
 package com.rags.tools.mbq.server;
 
 import com.rags.tools.mbq.QConfig;
+import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
-import com.rags.tools.mbq.queue.InMemoryMBQueue;
-import com.rags.tools.mbq.queue.MBQueue;
-import com.rags.tools.mbq.QueueStatus;
+import com.rags.tools.mbq.queue.*;
+import com.rags.tools.mbq.queue.pending.InMemoryPendingQueueMap;
+import com.rags.tools.mbq.queue.pending.PendingQueue;
+import com.rags.tools.mbq.queue.pending.PendingQueueMap;
 import com.rags.tools.mbq.util.HashingUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class InMemoryMBQueueServer implements MBQueueServer {
 
-    private static final MBQueue QUEUE = new InMemoryMBQueue();
-    private static final Map<String, LinkedList<String>> ALL_PENDING_MESSAGES = new ConcurrentHashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryMBQueueServer.class);
 
+    private static final MBQueue QUEUE = new InMemoryMBQueue();
+    private static final PendingQueueMap ALL_PENDING_MESSAGES = new InMemoryPendingQueueMap();
     private static final Map<String, Long> CLIENTS_HB = new ConcurrentHashMap<>();
+
+    private static final ReentrantLock LOCK = new ReentrantLock();
 
     private static final int PING_INTERVAL = 5000;
 
@@ -33,6 +40,7 @@ public class InMemoryMBQueueServer implements MBQueueServer {
                 CLIENTS_HB.forEach((id, val) -> {
                     boolean isInValid = (curTime - val) > PING_INTERVAL;
                     if (isInValid) {
+                        LOGGER.error("Client with ID {} was not active {}, last heart beat received at {}", id, curTime, val);
                         allInvalids.add(id);
                     }
                 });
@@ -47,6 +55,7 @@ public class InMemoryMBQueueServer implements MBQueueServer {
         String id = getClientID(config.getWorkerName(), config.getPollingQueue(), config.getBatch());
 
         if (CLIENTS_HB.containsKey(id)) {
+            LOGGER.error("Client already registered with name {}, queue {} and batch {}", config.getWorkerName(), config.getPollingQueue(), config.getBatch());
             throw new MBQException("Client is already registered");
         }
 
@@ -62,13 +71,15 @@ public class InMemoryMBQueueServer implements MBQueueServer {
     private void validateClient(Client client) {
         String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
         if (!CLIENTS_HB.containsKey(id)) {
+            LOGGER.error("Client [{}] wasn't active or dint exists", client);
             throw new MBQException("Client is not registered or wasn't active");
         }
 
         long curTime = System.currentTimeMillis();
 
         if ((curTime - CLIENTS_HB.get(id)) > PING_INTERVAL) {
-            CLIENTS_HB.remove(id);
+            long ts = CLIENTS_HB.remove(id);
+            LOGGER.error("Client [{}] was not active {}", client, ts);
             throw new MBQException("Client was existing and was not active");
         }
     }
@@ -80,8 +91,10 @@ public class InMemoryMBQueueServer implements MBQueueServer {
         String queueName = client.getQueueName();
         int batch = client.getBatch();
 
-        if (ALL_PENDING_MESSAGES.containsKey(queueName)) {
-            LinkedList<String> seqQ = ALL_PENDING_MESSAGES.get(queueName);
+        try {
+            LOCK.lock();
+
+            PendingQueue<String> seqQ = ALL_PENDING_MESSAGES.get(queueName);
             if (seqQ.isEmpty()) {
                 return Collections.emptyList();
             }
@@ -90,14 +103,14 @@ public class InMemoryMBQueueServer implements MBQueueServer {
             List<MBQMessage> items = new ArrayList<>(noOfItem);
 
             int counter = 0;
-            List<Integer> indices = new ArrayList<>(noOfItem);
+            List<String> ids = new ArrayList<>(noOfItem);
             List<MBQMessage> messagesPulled = new ArrayList<>(noOfItem);
             for (int i = 0; i < noOfItem && counter < seqQ.size(); ) {
                 String id = seqQ.get(counter);
                 MBQMessage item = QUEUE.get(queueName, id);
                 List<MBQMessage> allMessages = QUEUE.get(queueName, item.getSeqKey(), Arrays.asList(QueueStatus.PROCESSING, QueueStatus.ERROR, QueueStatus.HELD));
                 if (allMessages.isEmpty()) {
-                    indices.add(counter);
+                    ids.add(id);
                     messagesPulled.add(item);
                     items.add(item);
                     i++;
@@ -105,19 +118,12 @@ public class InMemoryMBQueueServer implements MBQueueServer {
                 counter++;
             }
             messagesPulled.forEach(item -> item.updateStatus(QueueStatus.PROCESSING));
-            Collections.sort(indices);
-            System.out.println(indices);
-            for (int i = indices.size() - 1; i >= 0; i--) {
-                //TODO why is this NUll Check Required.
-                //TODO: Linked List to be changed to Blocking Queue
-                if (indices.get(i) != null) {
-                    seqQ.remove((int) indices.get(i));
-                }
-            }
-            return items;
-        }
+            seqQ.removeAll(ids);
 
-        return Collections.emptyList();
+            return items;
+        } finally {
+            LOCK.unlock();
+        }
     }
 
     @Override
@@ -173,24 +179,18 @@ public class InMemoryMBQueueServer implements MBQueueServer {
 
         if (!restAllToComplete.isEmpty()) {
             QUEUE.updateStatus(client.getQueueName(), restAllToComplete, status);
-            LinkedList<String> seqQ = ALL_PENDING_MESSAGES.get(client.getQueueName());
-            if (seqQ != null) {
-                seqQ.removeAll(restAllToComplete);
-            }
+            ALL_PENDING_MESSAGES.get(client.getQueueName()).removeAll(restAllToComplete);
         }
 
         if (!allToNotCompleted.isEmpty()) {
             QUEUE.updateStatus(client.getQueueName(), restAllToComplete, status);
-            if (!ALL_PENDING_MESSAGES.containsKey(client.getQueueName())) {
-                ALL_PENDING_MESSAGES.put(client.getQueueName(), new LinkedList<>());
-            }
             pushIdToRightPlace(ALL_PENDING_MESSAGES.get(client.getQueueName()), allToNotCompleted);
         }
 
         return true;
     }
 
-    private void pushIdToRightPlace(LinkedList<String> seqQ, List<String> idsToPushed) {
+    private void pushIdToRightPlace(PendingQueue<String> seqQ, List<String> idsToPushed) {
         Collections.sort(idsToPushed);
 
         if (seqQ.isEmpty()) {
@@ -222,10 +222,6 @@ public class InMemoryMBQueueServer implements MBQueueServer {
 
         List<MBQMessage> pushedMsgs = QUEUE.push(client.getQueueName(), messages);
 
-        if (!ALL_PENDING_MESSAGES.containsKey(client.getQueueName())) {
-            ALL_PENDING_MESSAGES.put(client.getQueueName(), new LinkedList<>());
-        }
-
         pushedMsgs.forEach(msg -> ALL_PENDING_MESSAGES.get(client.getQueueName()).add(msg.getId()));
 
         return pushedMsgs;
@@ -241,7 +237,8 @@ public class InMemoryMBQueueServer implements MBQueueServer {
         validateClient(client);
 
         String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
-
-        CLIENTS_HB.put(id, System.currentTimeMillis());
+        long currTime = System.currentTimeMillis();
+        LOGGER.error("Received heart beat from client [{}] with Id : {} at {}", client, id, currTime);
+        CLIENTS_HB.put(id, currTime);
     }
 }

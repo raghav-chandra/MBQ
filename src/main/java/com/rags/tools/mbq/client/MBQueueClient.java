@@ -49,7 +49,7 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
     }
 
     private void commitQueueTrans() {
-        LOGGER.info("Commiting Transaction for the processed items");
+//        LOGGER.info("Commiting Transaction for the processed items");
         if (processingMessages.isEmpty()) {
             throw new MBQException("There's no item processed that has to be commited");
         }

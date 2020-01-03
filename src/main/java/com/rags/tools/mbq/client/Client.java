@@ -40,4 +40,9 @@ public class Client {
     public int getBatch() {
         return batch <= 0 ? DEFAULT_BATCH : batch;
     }
+
+    @Override
+    public String toString() {
+        return "name : " + name + ", queueName : " + queueName + ", batch=" + batch;
+    }
 }
