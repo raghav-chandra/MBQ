@@ -31,9 +31,9 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
     public void start() {
         super.start();
         while (this.poll) {
-//            LOGGER.info("Polling queue to process new messages");
+            LOGGER.info("Polling queue to process new messages for client {}", getClient());
             List<MBQMessage> items = getServer().pull(getClient());
-//            LOGGER.info("Found {} no of messोges to processed", items.size());
+            LOGGER.info("Found {} no of messोges to processed for client {}", items.size(), getClient());
             processingMessages.addAll(items);
             try {
                 if (!processingMessages.isEmpty()) {
@@ -49,7 +49,7 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
     }
 
     private void commitQueueTrans() {
-//        LOGGER.info("Commiting Transaction for the processed items");
+        LOGGER.info("Commiting Transaction for the processed items of client [{}]", getClient());
         if (processingMessages.isEmpty()) {
             throw new MBQException("There's no item processed that has to be commited");
         }
@@ -69,7 +69,7 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
     }
 
     private void rollBackQueueTrans() {
-        LOGGER.info("Rolling Back Transaction");
+        LOGGER.info("Rolling back for the processed items of client [{}]", getClient());
         if (processingMessages.isEmpty()) {
             throw new MBQException("There's no item processed that has to be rolled back");
         }
@@ -78,9 +78,9 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
             throw new MBQException("Q Transaction is not started that has to be rolled back");
         }
 
-        boolean sucess = getServer().rollback(getClient(), processingMessages.parallelStream().map(MBQMessage::getId)
+        boolean success = getServer().rollback(getClient(), processingMessages.parallelStream().map(MBQMessage::getId)
                 .collect(Collectors.toList()));
-        if (sucess) {
+        if (success) {
             processingMessages.clear();
             this.status = QTransStatus.ROLLED_BACK;
         } else {

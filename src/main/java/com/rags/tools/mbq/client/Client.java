@@ -43,6 +43,6 @@ public class Client {
 
     @Override
     public String toString() {
-        return "name : " + name + ", queueName : " + queueName + ", batch=" + batch;
+        return "id : " + id + ", name : " + name + ", queueName : " + queueName + ", batch=" + batch;
     }
 }
