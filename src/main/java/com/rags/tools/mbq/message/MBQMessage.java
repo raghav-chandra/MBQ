@@ -7,15 +7,21 @@ import java.util.Objects;
 public class MBQMessage extends QMessage {
     private String id;
     private QueueStatus status;
+    private String queue;
     private long createdTimeStamp;
     private long updatedTimeStamp;
 
-    public MBQMessage(String id, String seqKey, Object message) {
-        super(seqKey, message);
+    public MBQMessage(String id, String queue, String seqKey, Object message) {
+        this(id, queue, seqKey, QueueStatus.PENDING, message, System.currentTimeMillis(), 0);
+    }
+
+    public MBQMessage(String id, String queue, String seq, QueueStatus status, Object data, long createdTS, long updatedTS) {
+        super(seq, data);
         this.id = id;
-        this.status = QueueStatus.PENDING;
-        this.createdTimeStamp = System.currentTimeMillis();
-        this.updatedTimeStamp = this.createdTimeStamp;
+        this.queue = queue;
+        this.status = status;
+        this.createdTimeStamp = createdTS;
+        this.updatedTimeStamp = updatedTS;
     }
 
     public String getId() {
@@ -39,6 +45,10 @@ public class MBQMessage extends QMessage {
             this.status = status;
             this.updatedTimeStamp = System.currentTimeMillis();
         }
+    }
+
+    public String getQueue() {
+        return queue;
     }
 
     @Override

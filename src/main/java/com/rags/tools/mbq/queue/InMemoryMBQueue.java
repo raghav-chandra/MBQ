@@ -47,7 +47,7 @@ public class InMemoryMBQueue extends AbstractMBQueue {
         if (messages == null || messages.isEmpty()) {
             return Collections.emptyList();
         }
-        List<MBQMessage> mbqMessages = createMessages(messages);
+        List<MBQMessage> mbqMessages = createMessages(messages, queueName);
         if (!QUEUE_DS.containsKey(queueName)) {
             QUEUE_DS.put(queueName, new ConcurrentHashMap<>());
         }
