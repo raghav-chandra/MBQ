@@ -1,5 +1,5 @@
 create table MBQueueMessage (
-    Id              varchar(60) primary key not null,
+    Id              varchar(100) primary key not null,
     QueueName       varchar(20) not null,
     Sequence        varchar(20) not null,
     Status          varchar(10) not null,
