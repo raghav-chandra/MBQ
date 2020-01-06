@@ -5,6 +5,7 @@ import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author ragha
@@ -18,6 +19,11 @@ public class HazelcastMBQueue extends AbstractMBQueue {
 
     @Override
     public List<MBQMessage> get(String queueName, String seqKey, List<QueueStatus> status) {
+        return null;
+    }
+
+    @Override
+    public Map<String, List<String>> getAllPendingIds() {
         return null;
     }
 

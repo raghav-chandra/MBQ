@@ -5,6 +5,7 @@ import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author ragha
@@ -31,6 +32,12 @@ public interface MBQueue {
      */
     List<MBQMessage> get(String queueName, String seqKey, List<QueueStatus> status);
 
+    /**
+     * Retrieves all Pending Item IDS on Startup
+     *
+     * @return MBQ pending messages ID and QueueName
+     */
+    Map<String, List<String>> getAllPendingIds();
 
     /**
      * Pulls messages for processing

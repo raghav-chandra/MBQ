@@ -10,13 +10,17 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import java.sql.*;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class DBMBQueue extends AbstractMBQueue {
 
     private static final String GET_BY_QUEUE_AND_ID = "select * from MBQueueMessage where Id=:id";
     private static final String GET_BY_QUEUE_SEQ_AND_STATUS = "select * from MBQueueMessage where QueueName=:queue and Sequence=:seq and Status in (:status)";
     private static final String GET_BY_QUEUE_AND_IDS = "select * from MBQueueMessage where QueueName=:queue Id in (:ids)";
+    private static final String GET_PENDING_IDS = "select Id, QueueName from MBQueueMessage where Status='PENDING' order by CreatedTime asc";
 
     private static final String INSERT_MBQ_MESSAGE = "insert into MBQueueMessage values (:id,:queue,:seq,:status,:data,:createTS,:updatedTS)";
     private static final String UPDATE_MBQ_MESSAGE = "update MBQueueMessage set Status=:status, UpdatedTime=:updatedTS where Id in (:ids) and QueueName=:queue";
@@ -50,6 +54,22 @@ public class DBMBQueue extends AbstractMBQueue {
                 .addValue("seq", seqKey)
                 .addValue("status", status);
         return jdbcTemplate.query(GET_BY_QUEUE_SEQ_AND_STATUS, param, new MessageRowMapper());
+    }
+
+    @Override
+    public Map<String, List<String>> getAllPendingIds() {
+        return jdbcTemplate.query(GET_PENDING_IDS, rs -> {
+            Map<String, List<String>> queueMap = new HashMap<>();
+            while (rs.next()) {
+                String id = rs.getString("Id");
+                String queueName = rs.getString("QueueName");
+                if (!queueMap.containsKey(queueName)) {
+                    queueMap.put(queueName, new LinkedList<>());
+                }
+                queueMap.get(queueName).add(id);
+            }
+            return null;
+        });
     }
 
     @Override

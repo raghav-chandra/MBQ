@@ -27,6 +27,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     private static final int PING_INTERVAL = 5000;
 
     public AbstractMBQueueServer() {
+        init();
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
@@ -45,6 +46,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             }
         }, 0, 1000);
     }
+
+    abstract void init();
 
     @Override
     public Client registerClient(QConfig config) {

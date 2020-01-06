@@ -88,5 +88,3 @@ public class MBQueueServerProxy implements MBQueueServer {
         post("heartbeat");
     }
 }
-
-

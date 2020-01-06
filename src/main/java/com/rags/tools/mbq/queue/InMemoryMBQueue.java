@@ -4,7 +4,6 @@ import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
-import com.rags.tools.mbq.util.HashingUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,6 +28,11 @@ public class InMemoryMBQueue extends AbstractMBQueue {
             return queue.values().parallelStream().filter(item -> status.contains(item.getStatus()) && item.getSeqKey().equals(seqKey)).collect(Collectors.toList());
         }
         return null;
+    }
+
+    @Override
+    public Map<String, List<String>> getAllPendingIds() {
+        return new HashMap<>();
     }
 
     @Override
