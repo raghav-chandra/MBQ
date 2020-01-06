@@ -68,7 +68,7 @@ public class DBMBQueue extends AbstractMBQueue {
                 }
                 queueMap.get(queueName).add(id);
             }
-            return null;
+            return queueMap;
         });
     }
 
