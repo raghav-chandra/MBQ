@@ -86,7 +86,7 @@ public class InMemoryPendingQueue<T> implements PendingQueue<T> {
     public void addAll(List<T> items) {
         try {
             lock.writeLock().lock();
-            queue.removeAll(items);
+            queue.addAll(items);
         } finally {
             lock.writeLock().unlock();
         }
