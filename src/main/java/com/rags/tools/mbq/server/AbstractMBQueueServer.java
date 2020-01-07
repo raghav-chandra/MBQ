@@ -68,7 +68,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     }
 
     private void validateClient(Client client) {
-        String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
+        /*String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
         if (!CLIENTS_HB.containsKey(id)) {
             LOGGER.error("Client [{}] wasn't active or dint exists", client);
             throw new MBQException("Client is not registered or wasn't active");
@@ -80,7 +80,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             long ts = CLIENTS_HB.remove(id);
             LOGGER.error("Client [{}] was not active {}", client, ts);
             throw new MBQException("Client was existing and was not active");
-        }
+        }*/
     }
 
     @Override

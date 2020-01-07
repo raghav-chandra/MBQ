@@ -66,4 +66,12 @@ public interface MBQueue {
      * @return true if update is success
      */
     boolean updateStatus(String queueName, List<String> ids, QueueStatus status);
+
+    /**
+     * Marks all prev statuc to new Status in the queue
+     *
+     * @param prevStatus prev status in the queue
+     * @param newStatus  new status in the queue
+     */
+    void updateStatus(QueueStatus prevStatus, QueueStatus newStatus);
 }

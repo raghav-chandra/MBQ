@@ -1,20 +1,22 @@
 package com.rags.tools.mbq;
 
+import com.rags.tools.mbq.queue.QueueType;
+
 public class QConfig {
     private String pollingQueue;
     private String workerName;
     private int batch;
     private String qServerHost;
     private int qServerPort;
-    private boolean isTest;
+    private QueueType queueType;
 
-    public QConfig(String qServerHost, int qServerPort, String pollingQueue, String workerName, int batch, boolean isTest) {
+    public QConfig(String qServerHost, int qServerPort, String pollingQueue, String workerName, int batch, QueueType queueType) {
         this.pollingQueue = pollingQueue;
         this.workerName = workerName;
         this.batch = batch;
         this.qServerHost = qServerHost;
         this.qServerPort = qServerPort;
-        this.isTest = isTest;
+        this.queueType = queueType;
     }
 
     public String getPollingQueue() {
@@ -37,7 +39,7 @@ public class QConfig {
         return qServerPort;
     }
 
-    public boolean isTest() {
-        return isTest;
+    public QueueType getQueueType() {
+        return queueType;
     }
 }

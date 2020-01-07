@@ -3,9 +3,8 @@ package com.rags.tools.mbq.client;
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.QMessage;
-import com.rags.tools.mbq.server.InMemoryMBQueueServer;
+import com.rags.tools.mbq.server.MBQServerInstance;
 import com.rags.tools.mbq.server.MBQueueServer;
-import com.rags.tools.mbq.server.MBQueueServerProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,13 +21,10 @@ public class MBQueuePublisher implements QueueClient {
     private Timer timer;
 
     public MBQueuePublisher(QConfig config) {
-        this.server = createServer(config);
+        this.server = MBQServerInstance.createOrGet(config);
         this.client = server.registerClient(config);
     }
 
-    private MBQueueServer createServer(QConfig config) {
-        return config.isTest() ? new InMemoryMBQueueServer() : new MBQueueServerProxy(config);
-    }
 
     @Override
     public void push(QMessage message) {

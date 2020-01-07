@@ -25,6 +25,8 @@ public class DBMBQueue extends AbstractMBQueue {
     private static final String INSERT_MBQ_MESSAGE = "insert into MBQueueMessage values (:id,:queue,:seq,:status,:data,:createTS,:updatedTS)";
     private static final String UPDATE_MBQ_MESSAGE = "update MBQueueMessage set Status=:status, UpdatedTime=:updatedTS where Id in (:ids) and QueueName=:queue";
 
+    private static final String UPDATE_QUEUE_STATUS_TO_NEW = "update MBQueueMessage set Status=:newStatus where Status=:prevStatus";
+
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public DBMBQueue() {
@@ -110,6 +112,14 @@ public class DBMBQueue extends AbstractMBQueue {
                 .addValue("updatedTS", new Timestamp(System.currentTimeMillis()));
         jdbcTemplate.update(UPDATE_MBQ_MESSAGE, params);
         return true;
+    }
+
+    @Override
+    public void updateStatus(QueueStatus prevStatus, QueueStatus newStatus) {
+        SqlParameterSource param = new MapSqlParameterSource()
+                .addValue("prevStatus", prevStatus.name())
+                .addValue("newStatus", newStatus.name());
+        jdbcTemplate.update(UPDATE_QUEUE_STATUS_TO_NEW, param);
     }
 
     private static class MessageRowMapper implements RowMapper<MBQMessage> {

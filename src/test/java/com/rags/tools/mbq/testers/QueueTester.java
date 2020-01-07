@@ -1,17 +1,15 @@
-package com.rags.tools.mbq;
+package com.rags.tools.mbq.testers;
 
+import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.client.MBQueueClient;
 import com.rags.tools.mbq.message.QMessage;
+import com.rags.tools.mbq.queue.QueueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class QueueTester extends MBQueueClient {
 
@@ -20,14 +18,16 @@ public class QueueTester extends MBQueueClient {
     }
 
     public static final Logger LOGGER = LoggerFactory.getLogger(QueueTester.class);
-    public static int counter = 1;
 
+    public static int counter = 1;
     private static long startTime = 0;
 
-    public static void main(String[] args) {
-        List<QueueTester> clients = Arrays.asList(1, 2, 3, 4, 5).parallelStream()
-                .map(id -> new QueueTester(new QConfig("localhost", 123, "RAGHAV", "" + id, 20, true)))
-                .collect(Collectors.toList());
+    static void execute(int noOfClients, QueueType queueType) {
+        List<QueueTester> clients = new ArrayList<>();
+        for (int i = 0; i < noOfClients; i++) {
+            clients.add(new QueueTester(new QConfig("localhost", 123, "RAGHAV", "" + i, 20, queueType)));
+        }
+
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
@@ -59,7 +59,7 @@ public class QueueTester extends MBQueueClient {
         });
 
         long timeTaken = System.currentTimeMillis() - startTime;
-        float divider = timeTaken / 1000;
+        float divider = timeTaken / 1000f;
         int ct = CTR;
         LOGGER.info("Completed {} no of messages in {} millis. Throughput per Sec : {}", ct, timeTaken, ct / divider);
     }

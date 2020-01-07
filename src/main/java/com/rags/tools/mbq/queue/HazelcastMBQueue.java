@@ -41,4 +41,9 @@ public class HazelcastMBQueue extends AbstractMBQueue {
     public boolean updateStatus(String queueName, List<String> ids, QueueStatus status) {
         return false;
     }
+
+    @Override
+    public void updateStatus(QueueStatus prevStatus, QueueStatus newStatus) {
+
+    }
 }

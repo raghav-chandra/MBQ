@@ -79,4 +79,9 @@ public class InMemoryMBQueue extends AbstractMBQueue {
         ids.parallelStream().forEach(id -> q.get(id).updateStatus(status));
         return true;
     }
+
+    @Override
+    public void updateStatus(QueueStatus prevStatus, QueueStatus newStatus) {
+
+    }
 }
