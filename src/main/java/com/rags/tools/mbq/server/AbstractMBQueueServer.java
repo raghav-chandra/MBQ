@@ -22,6 +22,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMBQueueServer.class);
 
     private static final Map<String, Long> CLIENTS_HB = new ConcurrentHashMap<>();
+    private static final Map<Client, List<String>> CLIENTS_MESSAGES = new ConcurrentHashMap<>();
 
     private static final ReentrantLock LOCK = new ReentrantLock();
     private static final int PING_INTERVAL = 5000;
@@ -42,7 +43,15 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                     }
                 });
 
-                allInvalids.forEach(CLIENTS_HB::remove);
+                allInvalids.forEach(id -> {
+                    CLIENTS_HB.remove(id);
+                    //Move Items to the right place if client is not active
+                    Optional<Client> existing = CLIENTS_MESSAGES.keySet().parallelStream().filter(c -> c.getId().equals(id)).findFirst();
+                    if (existing.isPresent()) {
+                        Client client = existing.get();
+                        pushIdToRightPlace(getPendingQueueMap().get(client.getQueueName()), CLIENTS_MESSAGES.get(client));
+                    }
+                });
             }
         }, 0, 1000);
     }
@@ -68,7 +77,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     }
 
     private void validateClient(Client client) {
-        /*String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
+        String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
         if (!CLIENTS_HB.containsKey(id)) {
             LOGGER.error("Client [{}] wasn't active or dint exists", client);
             throw new MBQException("Client is not registered or wasn't active");
@@ -80,7 +89,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             long ts = CLIENTS_HB.remove(id);
             LOGGER.error("Client [{}] was not active {}", client, ts);
             throw new MBQException("Client was existing and was not active");
-        }*/
+        }
     }
 
     @Override
@@ -118,6 +127,9 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             }
             messagesPulled.forEach(item -> item.updateStatus(QueueStatus.PROCESSING));
             seqQ.removeAll(ids);
+
+            //Add Client messages ID that is in Process
+            CLIENTS_MESSAGES.put(client, ids);
 
             return items;
         } finally {
@@ -186,6 +198,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             pushIdToRightPlace(getPendingQueueMap().get(client.getQueueName()), allToNotCompleted);
         }
 
+        //Remove Client Messages once processing is done.
+        CLIENTS_MESSAGES.remove(client);
         return true;
     }
 

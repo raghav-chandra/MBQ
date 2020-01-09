@@ -1,5 +1,7 @@
 package com.rags.tools.mbq.client;
 
+import java.util.Objects;
+
 public class Client {
 
     private static final int DEFAULT_BATCH = 5;
@@ -10,7 +12,8 @@ public class Client {
     private String host;
     private int batch;
 
-    public Client() {
+    public Client(String id) {
+        this(id, null, null, null, 10);
     }
 
     public Client(String id, String name, String queueName, String host, int batch) {
@@ -44,5 +47,18 @@ public class Client {
     @Override
     public String toString() {
         return "id : " + id + ", name : " + name + ", queueName : " + queueName + ", batch=" + batch;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Client)) return false;
+        Client client = (Client) o;
+        return Objects.equals(id, client.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
