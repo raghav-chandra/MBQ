@@ -119,13 +119,15 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-core</artifactId>
-            <version>4.0.0-milestone4</version>
+            <version>3.8.0</version>
+<!--            <version>4.0.0-milestone4</version>-->
         </dependency>
 
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
-            <version>4.0.0-milestone4</version>
+            <version>3.8.0</version>
+<!--            <version>4.0.0-milestone4</version>-->
         </dependency>
 
         <dependency>

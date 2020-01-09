@@ -1,6 +1,7 @@
 package com.rags.tools.mbq.endpoint.server;
 
 import com.rags.tools.mbq.endpoint.server.verticle.QueueVerticle;
+import com.rags.tools.mbq.endpoint.server.verticle.handler.ClientHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
@@ -25,8 +26,8 @@ public class MBQServerStartup extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
 
 
-        /*router.post("/mbq/registerClient").handler(UseCaseService.createUCSHandler());
-        router.post("/mbq/pull").handler(UseCaseService.createUCSHandler());
+        router.post("/mbq/registerClient").handler(ClientHandler.registerHandler());
+        /*router.post("/mbq/pull").handler(UseCaseService.createUCSHandler());
         router.post("/mbq/commit").handler(UseCaseService.createUCSHandler());
         router.post("/mbq/rollback").handler(UseCaseService.createUCSHandler());
         router.post("/mbq/push").handler(UseCaseService.createUCSHandler());
