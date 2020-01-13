@@ -1,9 +1,12 @@
 package com.rags.tools.mbq.endpoint.server;
 
 public enum ErrorMessage {
-    CODE_8000(8000, "Client should have proper name, queueName and batch information"),
-    CODE_8001(8001, "Failed during client registration. "),
-    CODE_8002(8002, "Failed to register heart beat.")
+    CLIENT_INVALID(9000, "Client should have proper name, queueName and batch information"),
+
+    CLIENT_REGISTER_FAILED(9001, "Failed during client registration. "),
+    PING_REGISTER_FAILED(9002, "Failed to register heart beat."),
+
+    MESSAGES_INVALID(9003, "Message is not present"),
     ;
 
     private final int code;
@@ -21,4 +24,5 @@ public enum ErrorMessage {
     public String getMessage() {
         return message;
     }
+
 }

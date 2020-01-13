@@ -62,4 +62,8 @@ public class Client {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    public boolean isValid() {
+        return id != null && name != null && queueName != null && batch > 0;
+    }
 }
