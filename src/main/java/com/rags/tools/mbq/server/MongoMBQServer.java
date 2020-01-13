@@ -11,13 +11,17 @@ public class MongoMBQServer extends AbstractMBQueueServer {
     private static final MBQueue QUEUE = new MongoMBQueue();
     private static final PendingQueueMap ALL_PENDING_MESSAGES = new InMemoryPendingQueueMap();
 
-    public MongoMBQServer(QConfig config) {
+    private MongoMBQServer(QConfig config) {
 
+    }
+
+    public static MBQueueServer getInstance(QConfig config) {
+        return new MongoMBQServer(config);
     }
 
     @Override
     void init() {
-        QUEUE.getAllPendingIds().forEach((key, val)-> ALL_PENDING_MESSAGES.get(key).addAll(val));
+        QUEUE.getAllPendingIds().forEach((key, val) -> ALL_PENDING_MESSAGES.get(key).addAll(val));
     }
 
     @Override

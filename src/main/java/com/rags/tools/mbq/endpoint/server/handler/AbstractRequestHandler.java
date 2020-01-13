@@ -1,4 +1,4 @@
-package com.rags.tools.mbq.endpoint.server.verticle.handler;
+package com.rags.tools.mbq.endpoint.server.handler;
 
 import com.rags.tools.mbq.endpoint.server.JsonUtil;
 import com.rags.tools.mbq.endpoint.server.RequestType;
@@ -9,6 +9,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -18,11 +19,9 @@ public abstract class AbstractRequestHandler<S, T> implements Handler<RoutingCon
 
     protected final static String COOKIE_STRING = "Cookie";
 
-    private final String key;
     private final RequestType requestType;
 
-    public AbstractRequestHandler(String key, RequestType requestType) {
-        this.key = key;
+    public AbstractRequestHandler(RequestType requestType) {
         this.requestType = requestType;
     }
 
@@ -33,7 +32,7 @@ public abstract class AbstractRequestHandler<S, T> implements Handler<RoutingCon
 
         String cookie = request.headers().get(COOKIE_STRING);
         S requestData = getRequestData(request, context.getBody());
-        JsonObject reqObject = createRequestObject(key, requestData, cookie);
+        JsonObject reqObject = createRequestObject(requestType.name(), requestData, cookie, context.request().remoteAddress());
 
         handleFuture(request, requestData, createFuture(requestType, eventBus, reqObject), eventBus, cookie);
     }
@@ -68,8 +67,8 @@ public abstract class AbstractRequestHandler<S, T> implements Handler<RoutingCon
         return future;
     }
 
-    private JsonObject createRequestObject(String key, S requestData, String cookie) {
-        return new JsonObject().put(key, requestData).put(COOKIE_STRING, cookie);
+    private JsonObject createRequestObject(String key, S requestData, String cookie, SocketAddress remoteAddress) {
+        return new JsonObject().put(key, requestData).put(COOKIE_STRING, cookie).put("remoteHost", remoteAddress.host());
     }
 
     protected abstract S getRequestData(HttpServerRequest request, Buffer body);

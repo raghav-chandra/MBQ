@@ -59,17 +59,17 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     abstract void init();
 
     @Override
-    public Client registerClient(QConfig config) {
-        String id = getClientID(config.getWorkerName(), config.getPollingQueue(), config.getBatch());
+    public Client registerClient(Client client) {
+        String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
 
         if (CLIENTS_HB.containsKey(id)) {
-            LOGGER.error("Client already registered with name {}, queue {} and batch {}", config.getWorkerName(), config.getPollingQueue(), config.getBatch());
+            LOGGER.error("Client already registered with name {}, queue {} and batch {}", client.getName(), client.getQueueName(), client.getBatch());
             throw new MBQException("Client is already registered");
         }
 
-        Client client = new Client(id, config.getWorkerName(), config.getPollingQueue(), "localhost", config.getBatch());
+        Client clientWithId = new Client(id, client.getName(), client.getQueueName(), client.getBatch());
         CLIENTS_HB.put(id, System.currentTimeMillis());
-        return client;
+        return clientWithId;
     }
 
     private String getClientID(String workerName, String pollingQueue, int batch) {
@@ -247,13 +247,15 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     }
 
     @Override
-    public void ping(Client client) {
+    public String ping(Client client) {
         validateClient(client);
 
         String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
         long currTime = System.currentTimeMillis();
         LOGGER.info("Received heart beat from client [{}] with Id : {} at {}", client, id, currTime);
         CLIENTS_HB.put(id, currTime);
+
+        return HashingUtil.hashSHA256(id + currTime);
     }
 
     /**

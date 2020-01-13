@@ -16,10 +16,10 @@ public interface MBQueueServer {
     /**
      * Registers client with the queue for any communication
      *
-     * @param config queue configuration
+     * @param client client configuration
      * @return Client information
      */
-    Client registerClient(QConfig config);
+    Client registerClient(Client client);
 
     /**
      * Pulls messages from queue for processing
@@ -69,7 +69,8 @@ public interface MBQueueServer {
      * Send heartbeat to the Q Server
      *
      * @param client client information
+     * @return unique identifier
      */
-    void ping(Client client);
+    String ping(Client client);
 
 }

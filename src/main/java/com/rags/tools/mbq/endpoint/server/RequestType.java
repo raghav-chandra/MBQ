@@ -2,6 +2,7 @@ package com.rags.tools.mbq.endpoint.server;
 
 public enum RequestType {
     REGISTER_CLIENT,
+    VALIDATE_CLIENT,
 
     PUSH_MESSAGES,
 

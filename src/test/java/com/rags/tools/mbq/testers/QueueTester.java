@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 public class QueueTester extends MBQueueClient {
 
@@ -61,6 +60,7 @@ public class QueueTester extends MBQueueClient {
         long timeTaken = System.currentTimeMillis() - startTime;
         float divider = timeTaken / 1000f;
         int ct = CTR;
+        System.out.println("Completed " + ct + " no of messages in " + timeTaken + " millis. Throughput per Sec : " + ct / divider);
         LOGGER.info("Completed {} no of messages in {} millis. Throughput per Sec : {}", ct, timeTaken, ct / divider);
     }
 

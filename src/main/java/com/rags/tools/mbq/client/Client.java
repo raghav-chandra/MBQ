@@ -9,18 +9,23 @@ public class Client {
     private String id;
     private String name;
     private String queueName;
-    private String host;
     private int batch;
 
     public Client(String id) {
-        this(id, null, null, null, 10);
+        this(id, null, null, 10);
     }
 
-    public Client(String id, String name, String queueName, String host, int batch) {
+    public Client(String name, String queueName, int batch) {
+        this.name = name;
+        this.queueName = queueName;
+        this.batch = batch;
+    }
+
+
+    public Client(String id, String name, String queueName, int batch) {
         this.id = id;
         this.name = name;
         this.queueName = queueName;
-        this.host = host;
         this.batch = batch;
     }
 
@@ -34,10 +39,6 @@ public class Client {
 
     public String getQueueName() {
         return queueName;
-    }
-
-    public String getHost() {
-        return host;
     }
 
     public int getBatch() {

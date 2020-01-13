@@ -11,10 +11,8 @@ import io.vertx.core.json.Json;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -52,7 +50,7 @@ public class MBQueueServerProxy implements MBQueueServer {
     }
 
     @Override
-    public Client registerClient(QConfig config) {
+    public Client registerClient(Client config) {
         String resp = post("register");
         return Json.decodeValue(Buffer.buffer(resp), Client.class);
     }
@@ -84,7 +82,8 @@ public class MBQueueServerProxy implements MBQueueServer {
         return Json.decodeValue(Buffer.buffer(resp), MBQMessage.class);
     }
 
-    public void ping(Client client) {
+    public String ping(Client client) {
         post("heartbeat");
+        return null;
     }
 }

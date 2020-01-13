@@ -22,7 +22,7 @@ public class MBQueuePublisher implements QueueClient {
 
     public MBQueuePublisher(QConfig config) {
         this.server = MBQServerInstance.createOrGet(config);
-        this.client = server.registerClient(config);
+        this.client = server.registerClient(new Client(config.getWorkerName(), config.getPollingQueue(), config.getBatch()));
     }
 
 

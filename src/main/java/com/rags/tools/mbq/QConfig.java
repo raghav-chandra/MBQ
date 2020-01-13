@@ -31,11 +31,11 @@ public class QConfig {
         return batch;
     }
 
-    public String getqServerHost() {
+    public String getQServerHost() {
         return qServerHost;
     }
 
-    public int getqServerPort() {
+    public int getQServerPort() {
         return qServerPort;
     }
 
