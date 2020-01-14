@@ -12,6 +12,11 @@ import java.util.Map;
  * @since 29-12-2019
  */
 public class HazelcastMBQueue extends AbstractMBQueue {
+
+    public HazelcastMBQueue() {
+
+    }
+
     @Override
     public MBQMessage get(String queueName, String id) {
         return null;

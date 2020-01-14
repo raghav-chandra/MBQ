@@ -5,6 +5,13 @@ import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.json.Json;
 
 public class DefMessageCodec<S> implements MessageCodec<S, S> {
+
+    private final Class<?> type;
+
+    public DefMessageCodec(Class<? extends Object> type) {
+        this.type = type;
+    }
+
     @Override
     public void encodeToWire(Buffer buffer, S item) {
         String json = Json.encode(item);
@@ -19,7 +26,7 @@ public class DefMessageCodec<S> implements MessageCodec<S, S> {
         int length = buffer.getInt(position);
 
         String json = buffer.getString(pos += 4, pos += length);
-        return (S) Json.decodeValue(json);
+        return (S) Json.decodeValue(json, type);
     }
 
     @Override
@@ -29,7 +36,7 @@ public class DefMessageCodec<S> implements MessageCodec<S, S> {
 
     @Override
     public String name() {
-        return null;
+        return this.getClass().getName();
     }
 
     @Override

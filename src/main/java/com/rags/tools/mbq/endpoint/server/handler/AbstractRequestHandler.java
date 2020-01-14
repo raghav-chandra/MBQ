@@ -2,14 +2,12 @@ package com.rags.tools.mbq.endpoint.server.handler;
 
 import com.rags.tools.mbq.endpoint.server.JsonUtil;
 import com.rags.tools.mbq.endpoint.server.RequestType;
+import com.rags.tools.mbq.endpoint.server.messagecodec.EventBusRequest;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.SocketAddress;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -32,12 +30,11 @@ public abstract class AbstractRequestHandler<S, T> implements Handler<RoutingCon
 
         String cookie = request.headers().get(COOKIE_STRING);
         S requestData = getRequestData(request, context.getBody());
-        JsonObject reqObject = createRequestObject(requestType.name(), requestData, cookie, context.request().remoteAddress());
-
-        handleFuture(request, requestData, createFuture(requestType, eventBus, reqObject), eventBus, cookie);
+        EventBusRequest reqObject = new EventBusRequest(context.request().remoteAddress().host(), cookie, requestData);
+        handleFuture(request, createFuture(requestType, eventBus, reqObject), eventBus, cookie);
     }
 
-    protected void handleFuture(HttpServerRequest request, S requestData, Future<T> future, EventBus eventBus, String cookie) {
+    protected void handleFuture(HttpServerRequest request, Future<T> future, EventBus eventBus, String cookie) {
         future.setHandler(handler -> {
             if (handler.succeeded()) {
                 onSuccess(request, handler.result());
@@ -55,7 +52,7 @@ public abstract class AbstractRequestHandler<S, T> implements Handler<RoutingCon
         request.response().end(JsonUtil.createFailedResponse(cause.getMessage()).encodePrettily());
     }
 
-    private Future<T> createFuture(RequestType requestType, EventBus eventBus, JsonObject reqObject) {
+    private Future<T> createFuture(RequestType requestType, EventBus eventBus, EventBusRequest reqObject) {
         Future<T> future = Future.future();
         eventBus.<T>send(requestType.name(), reqObject, reply -> {
             if (reply.succeeded()) {
@@ -65,10 +62,6 @@ public abstract class AbstractRequestHandler<S, T> implements Handler<RoutingCon
             }
         });
         return future;
-    }
-
-    private JsonObject createRequestObject(String key, S requestData, String cookie, SocketAddress remoteAddress) {
-        return new JsonObject().put(key, requestData).put(COOKIE_STRING, cookie).put("remoteHost", remoteAddress.host());
     }
 
     protected abstract S getRequestData(HttpServerRequest request, Buffer body);

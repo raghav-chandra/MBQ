@@ -1,11 +1,16 @@
 package com.rags.tools.mbq.endpoint.server;
 
+import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.endpoint.server.handler.QueueHandler;
+import com.rags.tools.mbq.endpoint.server.messagecodec.DefMessageCodec;
+import com.rags.tools.mbq.endpoint.server.messagecodec.EventBusRequest;
+import com.rags.tools.mbq.endpoint.server.messagecodec.PushRequest;
 import com.rags.tools.mbq.endpoint.server.verticle.ClientVerticle;
 import com.rags.tools.mbq.endpoint.server.verticle.QueueVerticle;
 import com.rags.tools.mbq.endpoint.server.handler.ClientHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -25,6 +30,12 @@ public class MBQServerStartup extends AbstractVerticle {
     public void start() {
         JsonObject config = config();
         Router router = Router.router(vertx);
+
+        //Registering Codecs
+        getVertx()
+                .eventBus()
+                .registerCodec(new DefMessageCodec<Client>(Client.class))
+                .registerCodec(new DefMessageCodec<EventBusRequest>(EventBusRequest.class));
 
         VERTICLES.forEach(verticle ->
                 vertx.deployVerticle(verticle, new DeploymentOptions().setConfig(config), handler -> {
@@ -47,16 +58,8 @@ public class MBQServerStartup extends AbstractVerticle {
         router.post("/mbq/updateStatus").handler(QueueHandler.updateStatusHandler());
         router.post("/mbq/ping").handler(ClientHandler.heartbeatHandler());
 
-
-        /*router.post("/mbq/pull").handler(UseCaseService.createUCSHandler());
-        router.post("/mbq/commit").handler(UseCaseService.createUCSHandler());
-        router.post("/mbq/rollback").handler(UseCaseService.createUCSHandler());
-        router.post("/mbq/push").handler(UseCaseService.createUCSHandler());
-        router.post("/mbq/ping").handler(UseCaseService.createUCSHandler());
-        router.post("/mbq/updateStatus").handler(UseCaseService.createUCSHandler());*/
-
-        //TODO: Cache GUI Interface
-//        router.route().handler(StaticHandler.create(config().getString(WEB_ROOT)));
+        //TODO: Queue GUI Interface
+        //router.route().handler(StaticHandler.create(config().getString(WEB_ROOT)));
         vertx.createHttpServer().requestHandler(router).listen(8642);
     }
 }

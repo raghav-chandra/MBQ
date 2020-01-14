@@ -10,8 +10,8 @@ public enum RequestType {
 
     REGISTER_HEARTBEAT,
 
-    COMMIT,
-    ROLLBACK,
+    REQUEST_COMMIT,
+    REQUEST_ROLLBACK,
 
     UPDATE_STATUS
 

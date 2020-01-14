@@ -1,10 +1,11 @@
 package com.rags.tools.mbq.endpoint.server.handler;
 
+import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.endpoint.server.RequestType;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 
 public class ClientHandler {
@@ -14,19 +15,23 @@ public class ClientHandler {
      * @return Client information back with ID
      */
     public static Handler<RoutingContext> registerHandler() {
-        return new AbstractRequestHandler<JsonObject, JsonObject>(RequestType.REGISTER_CLIENT) {
-            @Override
-            protected JsonObject getRequestData(HttpServerRequest request, Buffer body) {
-                return body != null ? body.toJsonObject() : new JsonObject();
-            }
-        };
+        return createClientHandler(RequestType.REGISTER_CLIENT);
     }
 
+    /**
+     * Registers Heartbeat of client
+     *
+     * @return Client with Heartbeat information
+     */
     public static Handler<RoutingContext> heartbeatHandler() {
-        return new AbstractRequestHandler<JsonObject, JsonObject>(RequestType.REGISTER_HEARTBEAT) {
+        return createClientHandler(RequestType.REGISTER_HEARTBEAT);
+    }
+
+    private static Handler<RoutingContext> createClientHandler(RequestType registerClient) {
+        return new AbstractRequestHandler<Client, Client>(registerClient) {
             @Override
-            protected JsonObject getRequestData(HttpServerRequest request, Buffer body) {
-                return body != null ? body.toJsonObject() : new JsonObject();
+            protected Client getRequestData(HttpServerRequest request, Buffer body) {
+                return body != null ? Json.decodeValue(body, Client.class) : new Client(null);
             }
         };
     }
