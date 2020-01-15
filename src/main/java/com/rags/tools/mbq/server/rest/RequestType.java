@@ -1,4 +1,4 @@
-package com.rags.tools.mbq.endpoint.server;
+package com.rags.tools.mbq.server.rest;
 
 public enum RequestType {
     REGISTER_CLIENT,

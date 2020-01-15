@@ -1,4 +1,4 @@
-package com.rags.tools.mbq.server;
+package com.rags.tools.mbq.qserver;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.client.Client;

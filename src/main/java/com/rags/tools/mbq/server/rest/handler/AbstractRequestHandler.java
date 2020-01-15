@@ -1,8 +1,8 @@
-package com.rags.tools.mbq.endpoint.server.handler;
+package com.rags.tools.mbq.server.rest.handler;
 
-import com.rags.tools.mbq.endpoint.server.JsonUtil;
-import com.rags.tools.mbq.endpoint.server.RequestType;
-import com.rags.tools.mbq.endpoint.server.messagecodec.EventBusRequest;
+import com.rags.tools.mbq.server.rest.JsonUtil;
+import com.rags.tools.mbq.server.rest.RequestType;
+import com.rags.tools.mbq.server.rest.messagecodec.EventBusRequest;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;

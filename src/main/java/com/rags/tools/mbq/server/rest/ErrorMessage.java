@@ -1,4 +1,4 @@
-package com.rags.tools.mbq.endpoint.server;
+package com.rags.tools.mbq.server.rest;
 
 public enum ErrorMessage {
     CLIENT_INVALID(9000, "Client should have proper name, queueName and batch information"),

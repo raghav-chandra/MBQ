@@ -1,7 +1,7 @@
-package com.rags.tools.mbq.endpoint.server.handler;
+package com.rags.tools.mbq.server.rest.handler;
 
 import com.rags.tools.mbq.client.Client;
-import com.rags.tools.mbq.endpoint.server.RequestType;
+import com.rags.tools.mbq.server.rest.RequestType;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;

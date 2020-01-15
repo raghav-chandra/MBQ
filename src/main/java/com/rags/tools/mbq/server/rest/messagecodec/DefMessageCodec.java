@@ -1,4 +1,4 @@
-package com.rags.tools.mbq.endpoint.server.messagecodec;
+package com.rags.tools.mbq.server.rest.messagecodec;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;

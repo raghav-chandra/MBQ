@@ -1,0 +1,19 @@
+{
+  "web.port": 65000,
+  "dbConfig": {
+    "url": "",
+    "driver": "",
+    "username": "",
+    "password": "",
+    "minConn": 1,
+    "maxConn": 100
+  },
+  "hazelcastConfig": {
+    "clusterHosts": ""
+  },
+  "mongodbConfig": {
+    "url": "",
+    "userName": "",
+    "password": ""
+  }
+}

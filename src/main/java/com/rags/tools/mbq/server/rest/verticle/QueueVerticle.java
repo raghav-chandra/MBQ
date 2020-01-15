@@ -1,17 +1,16 @@
-package com.rags.tools.mbq.endpoint.server.verticle;
+package com.rags.tools.mbq.server.rest.verticle;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.client.Client;
-import com.rags.tools.mbq.endpoint.server.ErrorMessage;
-import com.rags.tools.mbq.endpoint.server.RequestType;
-import com.rags.tools.mbq.endpoint.server.messagecodec.CommitRollbackRequest;
-import com.rags.tools.mbq.endpoint.server.messagecodec.EventBusRequest;
-import com.rags.tools.mbq.endpoint.server.messagecodec.PushRequest;
+import com.rags.tools.mbq.server.rest.ErrorMessage;
+import com.rags.tools.mbq.server.rest.RequestType;
+import com.rags.tools.mbq.server.rest.messagecodec.CommitRollbackRequest;
+import com.rags.tools.mbq.server.rest.messagecodec.EventBusRequest;
+import com.rags.tools.mbq.server.rest.messagecodec.PushRequest;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.queue.QueueType;
-import com.rags.tools.mbq.server.MBQServerInstance;
-import com.rags.tools.mbq.server.MBQueueServer;
+import com.rags.tools.mbq.qserver.MBQServerInstance;
+import com.rags.tools.mbq.qserver.MBQueueServer;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.core.eventbus.EventBus;

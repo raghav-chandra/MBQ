@@ -1,4 +1,4 @@
-package com.rags.tools.mbq.server;
+package com.rags.tools.mbq.qserver;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.exception.MBQException;
@@ -18,7 +18,7 @@ public class MBQServerInstance {
             case REMOTE:
                 return new MBQueueServerProxy(config);
             default:
-                throw new MBQException("QueueTyoe is not configured");
+                throw new MBQException("QueueType is not configured");
         }
     }
 }

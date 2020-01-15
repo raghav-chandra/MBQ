@@ -1,16 +1,14 @@
-package com.rags.tools.mbq.endpoint.server;
+package com.rags.tools.mbq.server.rest;
 
 import com.rags.tools.mbq.client.Client;
-import com.rags.tools.mbq.endpoint.server.handler.QueueHandler;
-import com.rags.tools.mbq.endpoint.server.messagecodec.DefMessageCodec;
-import com.rags.tools.mbq.endpoint.server.messagecodec.EventBusRequest;
-import com.rags.tools.mbq.endpoint.server.messagecodec.PushRequest;
-import com.rags.tools.mbq.endpoint.server.verticle.ClientVerticle;
-import com.rags.tools.mbq.endpoint.server.verticle.QueueVerticle;
-import com.rags.tools.mbq.endpoint.server.handler.ClientHandler;
+import com.rags.tools.mbq.server.rest.handler.QueueHandler;
+import com.rags.tools.mbq.server.rest.messagecodec.DefMessageCodec;
+import com.rags.tools.mbq.server.rest.messagecodec.EventBusRequest;
+import com.rags.tools.mbq.server.rest.verticle.ClientVerticle;
+import com.rags.tools.mbq.server.rest.verticle.QueueVerticle;
+import com.rags.tools.mbq.server.rest.handler.ClientHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;

@@ -1,26 +1,30 @@
-package com.rags.tools.mbq.server;
+package com.rags.tools.mbq.qserver;
 
 import com.rags.tools.mbq.QConfig;
+import com.rags.tools.mbq.QueueStatus;
+import com.rags.tools.mbq.queue.HazelcastMBQueue;
 import com.rags.tools.mbq.queue.MBQueue;
-import com.rags.tools.mbq.queue.MongoMBQueue;
 import com.rags.tools.mbq.queue.pending.InMemoryPendingQueueMap;
 import com.rags.tools.mbq.queue.pending.PendingQueueMap;
 
-public class MongoMBQServer extends AbstractMBQueueServer {
+public class HazelcastMBQServer extends AbstractMBQueueServer {
 
-    private static final MBQueue QUEUE = new MongoMBQueue();
+    private static final MBQueue QUEUE = new HazelcastMBQueue();
     private static final PendingQueueMap ALL_PENDING_MESSAGES = new InMemoryPendingQueueMap();
 
-    private MongoMBQServer(QConfig config) {
+    private static final HazelcastMBQServer INSTANCE = new HazelcastMBQServer();
+
+    private HazelcastMBQServer() {
 
     }
 
     public static MBQueueServer getInstance(QConfig config) {
-        return new MongoMBQServer(config);
+        return INSTANCE;
     }
 
     @Override
     void init() {
+        QUEUE.updateStatus(QueueStatus.PROCESSING, QueueStatus.PENDING);
         QUEUE.getAllPendingIds().forEach((key, val) -> ALL_PENDING_MESSAGES.get(key).addAll(val));
     }
 

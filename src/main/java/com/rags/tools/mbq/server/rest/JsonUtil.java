@@ -1,4 +1,4 @@
-package com.rags.tools.mbq.endpoint.server;
+package com.rags.tools.mbq.server.rest;
 
 import io.vertx.core.json.JsonObject;
 

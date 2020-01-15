@@ -1,4 +1,4 @@
-package com.rags.tools.mbq.endpoint.server.messagecodec;
+package com.rags.tools.mbq.server.rest.messagecodec;
 
 import com.rags.tools.mbq.client.Client;
 

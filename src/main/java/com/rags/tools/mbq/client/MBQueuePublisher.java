@@ -3,8 +3,8 @@ package com.rags.tools.mbq.client;
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.QMessage;
-import com.rags.tools.mbq.server.MBQServerInstance;
-import com.rags.tools.mbq.server.MBQueueServer;
+import com.rags.tools.mbq.qserver.MBQServerInstance;
+import com.rags.tools.mbq.qserver.MBQueueServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,9 +1,9 @@
-package com.rags.tools.mbq.endpoint.server.handler;
+package com.rags.tools.mbq.server.rest.handler;
 
 import com.rags.tools.mbq.client.Client;
-import com.rags.tools.mbq.endpoint.server.RequestType;
-import com.rags.tools.mbq.endpoint.server.messagecodec.CommitRollbackRequest;
-import com.rags.tools.mbq.endpoint.server.messagecodec.PushRequest;
+import com.rags.tools.mbq.server.rest.RequestType;
+import com.rags.tools.mbq.server.rest.messagecodec.CommitRollbackRequest;
+import com.rags.tools.mbq.server.rest.messagecodec.PushRequest;
 import com.rags.tools.mbq.message.MBQMessage;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
