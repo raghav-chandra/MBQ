@@ -1,5 +1,6 @@
 package com.rags.tools.mbq.server;
 
+import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.queue.HazelcastMBQueue;
 import com.rags.tools.mbq.queue.InMemoryMBQueue;
@@ -18,7 +19,7 @@ public class HazelcastMBQServer extends AbstractMBQueueServer {
 
     }
 
-    public static MBQueueServer getInstance() {
+    public static MBQueueServer getInstance(QConfig config) {
         return INSTANCE;
     }
 

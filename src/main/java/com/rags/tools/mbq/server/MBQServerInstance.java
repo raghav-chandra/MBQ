@@ -13,8 +13,8 @@ public class MBQServerInstance {
                 return DBMBQueueServer.getInstance(config);
             case LOCAL_MONGO_DB:
                 return MongoMBQServer.getInstance(config);
-            /*case LOCAL_HAZELCAST:
-                return MongoMBQServer.getInstance(config);*/
+            case LOCAL_HAZELCAST:
+                return HazelcastMBQServer.getInstance(config);
             case REMOTE:
                 return new MBQueueServerProxy(config);
             default:
