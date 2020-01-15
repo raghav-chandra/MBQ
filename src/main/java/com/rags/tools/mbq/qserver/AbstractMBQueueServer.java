@@ -67,7 +67,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         }
 
         Client clientWithId = new Client(id, client.getName(), client.getQueueName(), client.getBatch());
-        CLIENTS_HB.put(id, System.currentTimeMillis());
+        clientWithId.setHeartBeatId(ping(clientWithId));
+
         return clientWithId;
     }
 
@@ -248,7 +249,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     @Override
     public String ping(Client client) {
         validateClient(client);
-
+        //TODO: validate Heartbeat of client
         String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
         long currTime = System.currentTimeMillis();
         LOGGER.info("Received heart beat from client [{}] with Id : {} at {}", client, id, currTime);
