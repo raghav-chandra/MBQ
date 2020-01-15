@@ -5,9 +5,9 @@ public class QMessage {
     private static final String DEFAULT_SEQ = "raga-seq";
 
     private final String seqKey;
-    private final Object message;
+    private final byte[] message;
 
-    public QMessage(String seqKey, Object message) {
+    public QMessage(String seqKey, byte[] message) {
         this.seqKey = seqKey;
         this.message = message;
     }
@@ -16,7 +16,7 @@ public class QMessage {
         return seqKey == null ? DEFAULT_SEQ : seqKey;
     }
 
-    public Object getMessage() {
+    public byte[] getMessage() {
         return message;
     }
 }

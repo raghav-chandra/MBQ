@@ -31,10 +31,10 @@ public class QueueTester extends MBQueueClient {
             @Override
             public void run() {
                 clients.forEach(client -> {
-                    client.push(new QMessage((counter % clients.size()) + "DODA", counter + "BLAH BLAH" + (counter++ % clients.size())));
-                    client.push(new QMessage((counter % clients.size()) + "DODA", counter + "BLAH BLAH" + (counter++ % clients.size())));
-                    client.push(new QMessage((counter % clients.size()) + "DODA", counter + "BLAH BLAH" + (counter++ % clients.size())));
-                    client.push(new QMessage((counter % clients.size()) + "DODA", counter + "BLAH BLAH" + (counter++ % clients.size())));
+                    client.push(new QMessage((counter % clients.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % clients.size())).getBytes()));
+                    client.push(new QMessage((counter % clients.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % clients.size())).getBytes()));
+                    client.push(new QMessage((counter % clients.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % clients.size())).getBytes()));
+                    client.push(new QMessage((counter % clients.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % clients.size())).getBytes()));
                 });
             }
         }, 0, 30);

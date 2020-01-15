@@ -67,7 +67,10 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         }
 
         Client clientWithId = new Client(id, client.getName(), client.getQueueName(), client.getBatch());
-        clientWithId.setHeartBeatId(ping(clientWithId));
+        long currTime = System.currentTimeMillis();
+
+        CLIENTS_HB.put(id, currTime);
+        clientWithId.setHeartBeatId(HashingUtil.hashSHA256(id + currTime));
 
         return clientWithId;
     }

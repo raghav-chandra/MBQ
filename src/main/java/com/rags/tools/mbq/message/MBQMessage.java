@@ -11,11 +11,11 @@ public class MBQMessage extends QMessage {
     private long createdTimeStamp;
     private long updatedTimeStamp;
 
-    public MBQMessage(String id, String queue, String seqKey, Object message) {
+    public MBQMessage(String id, String queue, String seqKey, byte[] message) {
         this(id, queue, seqKey, QueueStatus.PENDING, message, System.currentTimeMillis(), 0);
     }
 
-    public MBQMessage(String id, String queue, String seq, QueueStatus status, Object data, long createdTS, long updatedTS) {
+    public MBQMessage(String id, String queue, String seq, QueueStatus status, byte[] data, long createdTS, long updatedTS) {
         super(seq, data);
         this.id = id;
         this.queue = queue;
