@@ -235,11 +235,16 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             throw new MBQException("Message to be pushed can't be blank");
         }
         validateClient(client);
-
         List<MBQMessage> pushedMsgs = getQueue().push(client.getQueueName(), messages);
 
-        pushedMsgs.forEach(msg -> getPendingQueueMap().get(client.getQueueName()).add(msg.getId()));
-        LOGGER.info("No of items in the queue {}", getPendingQueueMap().get(client.getQueueName()).size());
+        try {
+            LOCK.lock();
+            pushedMsgs.forEach(msg -> getPendingQueueMap().get(client.getQueueName()).add(msg.getId()));
+            System.out.println("No of items in the queue + " + getPendingQueueMap().get(client.getQueueName()).size());
+            LOGGER.info("No of items in the queue {}", getPendingQueueMap().get(client.getQueueName()).size());
+        } finally {
+            LOCK.unlock();
+        }
 
         return pushedMsgs;
     }

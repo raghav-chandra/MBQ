@@ -27,7 +27,7 @@ public class MBQueueServerProxy implements MBQueueServer {
             .version(HttpClient.Version.HTTP_2)
             .build();
 
-    public MBQueueServerProxy(QConfig config) {
+    public MBQueueServerProxy(QConfig.ServerConfig config) {
 
     }
 

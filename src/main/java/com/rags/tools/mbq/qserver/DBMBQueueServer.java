@@ -18,7 +18,7 @@ public class DBMBQueueServer extends AbstractMBQueueServer {
 
     }
 
-    public static MBQueueServer getInstance(QConfig config) {
+    public static MBQueueServer getInstance(QConfig.ServerConfig config) {
         return INSTANCE;
     }
 

@@ -5,7 +5,7 @@ import com.rags.tools.mbq.exception.MBQException;
 
 public class MBQServerInstance {
 
-    public static MBQueueServer createOrGet(QConfig config) {
+    public static MBQueueServer createOrGet(QConfig.ServerConfig config) {
         switch (config.getQueueType()) {
             case LOCAL_IN_MEMORY:
                 return InMemoryMBQueueServer.getInstance();

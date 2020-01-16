@@ -21,8 +21,8 @@ public class MBQueuePublisher implements QueueClient {
     private Timer timer;
 
     public MBQueuePublisher(QConfig config) {
-        this.server = MBQServerInstance.createOrGet(config);
-        this.client = server.registerClient(new Client(config.getWorkerName(), config.getPollingQueue(), config.getBatch()));
+        this.server = MBQServerInstance.createOrGet(config.getServerConfig());
+        this.client = server.registerClient(new Client(config.getClientConfig().getWorkerName(), config.getClientConfig().getPollingQueue(), config.getClientConfig().getBatch()));
     }
 
 

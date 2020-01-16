@@ -20,7 +20,7 @@ public class DBQueueTester extends QueueTester {
     }
 
     public static void main(String[] args) {
-        execute(5, QueueType.LOCAL_RDB);
+        execute(10,0,  QueueType.LOCAL_RDB);
     }
 }
 

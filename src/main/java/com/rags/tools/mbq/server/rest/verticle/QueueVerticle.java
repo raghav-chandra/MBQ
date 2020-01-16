@@ -23,7 +23,8 @@ public class QueueVerticle extends AbstractVerticle {
 
         EventBus eventBus = getVertx().eventBus();
 
-        MBQueueServer mbQueueServer = MBQServerInstance.createOrGet(new QConfig("localhost", 99999, null, null, -1, QueueType.LOCAL_IN_MEMORY));
+        MBQueueServer mbQueueServer = MBQServerInstance.createOrGet(new QConfig.Builder().setQueueType(QueueType.LOCAL_IN_MEMORY).create().getServerConfig());
+
         WorkerExecutor workers = getVertx().createSharedWorkerExecutor("QueueWorker", 100);
 
         eventBus.<EventBusRequest>consumer(RequestType.PULL_MESSAGES.name(), pullHandler -> {

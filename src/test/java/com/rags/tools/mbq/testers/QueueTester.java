@@ -2,6 +2,7 @@ package com.rags.tools.mbq.testers;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.client.MBQueueClient;
+import com.rags.tools.mbq.client.MBQueuePublisher;
 import com.rags.tools.mbq.message.QMessage;
 import com.rags.tools.mbq.queue.QueueType;
 import org.slf4j.Logger;
@@ -21,25 +22,53 @@ public class QueueTester extends MBQueueClient {
     public static int counter = 1;
     private static long startTime = 0;
 
-    static void execute(int noOfClients, QueueType queueType) {
-        List<QueueTester> clients = new ArrayList<>();
-        for (int i = 0; i < noOfClients; i++) {
-            clients.add(new QueueTester(new QConfig("localhost", 123, "RAGHAV", "" + i, 20, queueType)));
+    static void execute(int publishers, int consumers, QueueType queueType) {
+        List<MBQueuePublisher> allPublishers = new ArrayList<>();
+        for (int i = 0; i < publishers; i++) {
+            allPublishers.add(new MBQueuePublisher(new QConfig.Builder().setPollingQueue("RAGHAV").setWorkerName("" + i).setQueueType(queueType).create()));
+        }
+
+        List<QueueTester> allConsumers = new ArrayList<>();
+        for (int i = 0; i < consumers; i++) {
+            allConsumers.add(new QueueTester(new QConfig.Builder().setPollingQueue("RAGHAV").setWorkerName("" + i).setQueueType(queueType).setBatch(10).create()));
         }
 
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                clients.forEach(client -> {
-                    client.push(new QMessage((counter % clients.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % clients.size())).getBytes()));
-                    client.push(new QMessage((counter % clients.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % clients.size())).getBytes()));
-                    client.push(new QMessage((counter % clients.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % clients.size())).getBytes()));
-                    client.push(new QMessage((counter % clients.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % clients.size())).getBytes()));
+                allPublishers.forEach(client -> {
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                    client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
                 });
             }
-        }, 0, 30);
+        }, 0, 20);
 
-        clients.forEach(client -> new Timer().schedule(new TimerTask() {
+        allPublishers.forEach(client -> new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                client.start();
+            }
+        }, 1));
+
+        allConsumers.forEach(client -> new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 client.start();
