@@ -1,5 +1,6 @@
 package com.rags.tools.mbq.queue;
 
+import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
@@ -9,7 +10,7 @@ import java.util.Map;
 
 public class MongoMBQueue extends AbstractMBQueue {
 
-    public MongoMBQueue() {
+    public MongoMBQueue(QConfig.ServerConfig config) {
 
     }
 

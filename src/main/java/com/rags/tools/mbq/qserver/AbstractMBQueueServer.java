@@ -61,7 +61,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         }, 0, 1000);
     }
 
-
     abstract void init();
 
     @Override

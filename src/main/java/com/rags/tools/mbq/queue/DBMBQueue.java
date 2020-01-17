@@ -32,8 +32,10 @@ public class DBMBQueue extends AbstractMBQueue {
 
     public DBMBQueue(QConfig.ServerConfig config) {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/raga", "raga", "raga");
+            /*Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/raga", "raga", "raga");*/
+            Class.forName(config.getDbDriver());
+            Connection conn = DriverManager.getConnection(config.getUrl(), config.getUser(), config.getPassword());
             SingleConnectionDataSource ds = new SingleConnectionDataSource(conn, true);
             jdbcTemplate = new NamedParameterJdbcTemplate(ds);
         } catch (Exception e) {

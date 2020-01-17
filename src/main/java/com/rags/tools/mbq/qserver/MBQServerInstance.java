@@ -8,7 +8,7 @@ public class MBQServerInstance {
     public static MBQueueServer createOrGet(QConfig.ServerConfig config) {
         switch (config.getQueueType()) {
             case SINGLE_JVM_INMEMORY:
-                return InMemoryMBQueueServer.getInstance();
+                return InMemoryMBQueueServer.getInstance(config);
             case SINGLE_JVM_RDB:
                 return DBMBQueueServer.getInstance(config);
             case SINGLE_JVM_MONGO_DB:

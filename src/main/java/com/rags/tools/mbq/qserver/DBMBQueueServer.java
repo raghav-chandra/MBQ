@@ -18,10 +18,10 @@ public class DBMBQueueServer extends AbstractMBQueueServer {
     }
 
     public synchronized static MBQueueServer getInstance(QConfig.ServerConfig config) {
-        if (INSTANCE != null) {
-            return INSTANCE;
+        if (INSTANCE == null) {
+            INSTANCE = createAndInitialize(config);
         }
-        return createAndInitialize(config);
+        return INSTANCE;
     }
 
     private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
