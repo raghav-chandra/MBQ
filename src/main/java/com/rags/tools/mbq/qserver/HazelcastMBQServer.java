@@ -3,7 +3,7 @@ package com.rags.tools.mbq.qserver;
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.exception.MBQException;
-import com.rags.tools.mbq.queue.DBMBQueue;
+import com.rags.tools.mbq.queue.HazelcastMBQueue;
 import com.rags.tools.mbq.queue.MBQueue;
 import com.rags.tools.mbq.queue.QueueType;
 import com.rags.tools.mbq.queue.pending.InMemoryPendingQueueMap;
@@ -13,7 +13,7 @@ public class HazelcastMBQServer extends AbstractMBQueueServer {
 
     private static MBQueueServer INSTANCE;
 
-    public HazelcastMBQServer(MBQueue queue, PendingQueueMap pendingQueueMap) {
+    private HazelcastMBQServer(MBQueue queue, PendingQueueMap pendingQueueMap) {
         super(queue, pendingQueueMap);
     }
 
@@ -26,7 +26,7 @@ public class HazelcastMBQServer extends AbstractMBQueueServer {
 
     private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new HazelcastMBQServer(new DBMBQueue(config), new InMemoryPendingQueueMap());
+        return new HazelcastMBQServer(new HazelcastMBQueue(config), new InMemoryPendingQueueMap());
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {

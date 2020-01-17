@@ -7,6 +7,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.query.Predicates;
+import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
@@ -24,7 +25,7 @@ public class HazelcastMBQueue extends AbstractMBQueue {
     private final HazelcastInstance instance;
 
     //TODO: Use Entry Processor for Atomicity of operations
-    public HazelcastMBQueue() {
+    public HazelcastMBQueue(QConfig.ServerConfig serverConfig) {
         Config config = new Config();
         this.instance = Hazelcast.newHazelcastInstance(config);
     }
@@ -88,7 +89,7 @@ public class HazelcastMBQueue extends AbstractMBQueue {
     }
 
     private Map<String, MBQMessage> createMap(Collection<MBQMessage> mbqMessages) {
-        return mbqMessages.parallelStream().reduce(new HashMap<String, MBQMessage>(), (acc, msg) -> {
+        return mbqMessages.parallelStream().reduce(new HashMap<>(), (acc, msg) -> {
             acc.put(msg.getId(), msg);
             return acc;
         }, (map1, map2) -> map1);
