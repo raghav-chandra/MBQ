@@ -7,15 +7,15 @@ public class MBQServerInstance {
 
     public static MBQueueServer createOrGet(QConfig.ServerConfig config) {
         switch (config.getQueueType()) {
-            case LOCAL_IN_MEMORY:
+            case SINGLE_JVM_INMEMORY:
                 return InMemoryMBQueueServer.getInstance();
-            case LOCAL_RDB:
+            case SINGLE_JVM_RDB:
                 return DBMBQueueServer.getInstance(config);
-            case LOCAL_MONGO_DB:
+            case SINGLE_JVM_MONGO_DB:
                 return MongoMBQServer.getInstance(config);
-            case LOCAL_HAZELCAST:
+            case SINGLE_JVM_HAZELCAST:
                 return HazelcastMBQServer.getInstance(config);
-            case REMOTE:
+            case CENTRALIZED:
                 return new MBQueueServerProxy(config);
             default:
                 throw new MBQException("QueueType is not configured");

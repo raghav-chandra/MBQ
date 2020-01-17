@@ -1,5 +1,6 @@
 package com.rags.tools.mbq.queue;
 
+import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
@@ -29,7 +30,7 @@ public class DBMBQueue extends AbstractMBQueue {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public DBMBQueue() {
+    public DBMBQueue(QConfig.ServerConfig config) {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/raga", "raga", "raga");

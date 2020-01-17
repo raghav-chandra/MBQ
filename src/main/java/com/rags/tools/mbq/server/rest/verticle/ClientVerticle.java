@@ -18,7 +18,7 @@ public class ClientVerticle extends AbstractVerticle {
 
         EventBus eventBus = getVertx().eventBus();
 
-        MBQueueServer mbQueueServer = MBQServerInstance.createOrGet(new QConfig.Builder().setQueueType(QueueType.LOCAL_IN_MEMORY).create().getServerConfig());
+        MBQueueServer mbQueueServer = MBQServerInstance.createOrGet(new QConfig.Builder().setQueueType(QueueType.SINGLE_JVM_INMEMORY).create().getServerConfig());
 
         WorkerExecutor workers = getVertx().createSharedWorkerExecutor("ClientWorker", 25);
 

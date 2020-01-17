@@ -26,7 +26,13 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     private static final ReentrantLock LOCK = new ReentrantLock();
     private static final int PING_INTERVAL = 5000;
 
-    public AbstractMBQueueServer() {
+    private final PendingQueueMap pendingQueueMap;
+
+    private final MBQueue queue;
+
+    public AbstractMBQueueServer(MBQueue mbQueue, PendingQueueMap pendingQueueMap) {
+        this.queue = mbQueue;
+        this.pendingQueueMap = pendingQueueMap;
         init();
         new Timer().schedule(new TimerTask() {
             @Override
@@ -54,6 +60,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             }
         }, 0, 1000);
     }
+
 
     abstract void init();
 
@@ -271,12 +278,16 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
      *
      * @return MB Queue
      */
-    protected abstract MBQueue getQueue();
+    protected MBQueue getQueue() {
+        return queue;
+    }
 
     /**
      * Pending queue implementation
      *
      * @return Pending Queue Map
      */
-    protected abstract PendingQueueMap getPendingQueueMap();
+    protected PendingQueueMap getPendingQueueMap() {
+        return pendingQueueMap;
+    }
 }

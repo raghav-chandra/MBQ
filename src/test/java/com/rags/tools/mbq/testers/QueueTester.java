@@ -59,7 +59,7 @@ public class QueueTester extends MBQueueClient {
                     client.push(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
                 });
             }
-        }, 0, 20);
+        }, 0, 100);
 
         allPublishers.forEach(client -> new Timer().schedule(new TimerTask() {
             @Override

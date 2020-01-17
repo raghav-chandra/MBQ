@@ -28,6 +28,7 @@ public class QConfig {
         private String user;
         private String password;
         private QueueType queueType;
+        private String dbDriver;
 
         public Builder setPollingQueue(String pollingQueue) {
             this.pollingQueue = pollingQueue;
@@ -64,9 +65,14 @@ public class QConfig {
             return this;
         }
 
+        public Builder setDbDriver(String dbDriver) {
+            this.dbDriver = dbDriver;
+            return this;
+        }
+
         public QConfig create() {
             ClientConfig clientConfig = new ClientConfig(pollingQueue, workerName, batch);
-            ServerConfig serverConfig = new ServerConfig(url, user, password, queueType);
+            ServerConfig serverConfig = new ServerConfig(queueType, url, user, password, dbDriver);
             return new QConfig(clientConfig, serverConfig);
         }
     }
@@ -97,16 +103,18 @@ public class QConfig {
     }
 
     public static class ServerConfig {
+        private final String dbDriver;
         private final String url;
         private final String user;
         private final String password;
         private final QueueType queueType;
 
-        ServerConfig(String url, String user, String password, QueueType queueType) {
+        ServerConfig(QueueType queueType, String url, String user, String password, String dbDriver) {
             this.url = url;
             this.user = user;
             this.password = password;
             this.queueType = queueType;
+            this.dbDriver = dbDriver;
         }
 
         public String getUrl() {
@@ -123,6 +131,10 @@ public class QConfig {
 
         public QueueType getQueueType() {
             return queueType;
+        }
+
+        public String getDbDriver() {
+            return dbDriver;
         }
     }
 }

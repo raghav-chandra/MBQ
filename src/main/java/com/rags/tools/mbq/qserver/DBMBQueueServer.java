@@ -2,39 +2,54 @@ package com.rags.tools.mbq.qserver;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
+import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.queue.DBMBQueue;
 import com.rags.tools.mbq.queue.MBQueue;
+import com.rags.tools.mbq.queue.QueueType;
 import com.rags.tools.mbq.queue.pending.InMemoryPendingQueueMap;
 import com.rags.tools.mbq.queue.pending.PendingQueueMap;
 
 public class DBMBQueueServer extends AbstractMBQueueServer {
 
-    private static final MBQueue QUEUE = new DBMBQueue();
-    private static final PendingQueueMap ALL_PENDING_MESSAGES = new InMemoryPendingQueueMap();
+    private static MBQueueServer INSTANCE = null;
 
-    private static final DBMBQueueServer INSTANCE = new DBMBQueueServer(null);
-
-    private DBMBQueueServer(QConfig config) {
-
+    private DBMBQueueServer(DBMBQueue dbmbQueue, PendingQueueMap pendingQueueMap) {
+        super(dbmbQueue, pendingQueueMap);
     }
 
-    public static MBQueueServer getInstance(QConfig.ServerConfig config) {
-        return INSTANCE;
+    public synchronized static MBQueueServer getInstance(QConfig.ServerConfig config) {
+        if (INSTANCE != null) {
+            return INSTANCE;
+        }
+        return createAndInitialize(config);
+    }
+
+    private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
+        validateConfig(config);
+        return new DBMBQueueServer(new DBMBQueue(config), new InMemoryPendingQueueMap());
+    }
+
+    private static void validateConfig(QConfig.ServerConfig config) {
+        if (config.getQueueType() != QueueType.SINGLE_JVM_RDB) {
+            throw new MBQException("Wrong configuration passed. You are trying to setup DB queue with non DB QueueType");
+        }
+
+        if (config.getDbDriver() == null || config.getDbDriver().trim().isEmpty()) {
+            throw new MBQException("Wrong configuration passed. You are trying to setup DB as QueueType but Driver class is empty");
+        }
+
+        if (config.getUrl() == null || config.getUrl().trim().isEmpty()) {
+            throw new MBQException("Wrong configuration passed. You are trying to setup DB as QueueType but DB URL is not provided");
+        }
+
+        if (config.getUser() == null || config.getUser().trim().isEmpty()) {
+            throw new MBQException("Wrong configuration passed. You are trying to setup DB as QueueType but username is not provided");
+        }
     }
 
     @Override
     void init() {
-        QUEUE.updateStatus(QueueStatus.PROCESSING, QueueStatus.PENDING);
-        QUEUE.getAllPendingIds().forEach((key, val) -> ALL_PENDING_MESSAGES.get(key).addAll(val));
-    }
-
-    @Override
-    protected MBQueue getQueue() {
-        return QUEUE;
-    }
-
-    @Override
-    protected PendingQueueMap getPendingQueueMap() {
-        return ALL_PENDING_MESSAGES;
+        getQueue().updateStatus(QueueStatus.PROCESSING, QueueStatus.PENDING);
+        getQueue().getAllPendingIds().forEach((key, val) -> getPendingQueueMap().get(key).addAll(val));
     }
 }

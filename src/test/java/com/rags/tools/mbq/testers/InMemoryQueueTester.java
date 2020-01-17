@@ -10,7 +10,7 @@ public class InMemoryQueueTester extends QueueTester {
     }
 
     public static void main(String[] args) {
-        execute(6,1,  QueueType.LOCAL_IN_MEMORY);
+        execute(6,1,  QueueType.SINGLE_JVM_INMEMORY);
     }
 }
 
