@@ -14,9 +14,11 @@ import com.rags.tools.mbq.qserver.MBQueueServer;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class QueueVerticle extends AbstractVerticle {
     @Override
@@ -34,12 +36,12 @@ public class QueueVerticle extends AbstractVerticle {
 
         eventBus.<EventBusRequest>consumer(RequestType.PULL_MESSAGES.name(), pullHandler -> {
             Client client = (Client) pullHandler.body().getReqObj();
-            if (client.isInValid()) {
+            if (client == null || client.isInValid()) {
                 pullHandler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> {
                     List<MBQMessage> messages = server.pull(client);
-                    workerHandler.complete(messages);
+                    workerHandler.complete(new JsonArray(messages.parallelStream().map(JsonObject::mapFrom).collect(Collectors.toList())));
                 }, resHandler -> {
                     if (resHandler.succeeded()) {
                         pullHandler.reply(resHandler.result());
@@ -59,7 +61,7 @@ public class QueueVerticle extends AbstractVerticle {
             } else {
                 workers.executeBlocking(workerHandler -> {
                     List<MBQMessage> messages = server.push(req.getClient(), req.getMessages());
-                    workerHandler.complete(messages);
+                    workerHandler.complete(new JsonArray(messages.parallelStream().map(JsonObject::mapFrom).collect(Collectors.toList())));
                 }, resHandler -> {
                     if (resHandler.succeeded()) {
                         pushHandler.reply(resHandler.result());

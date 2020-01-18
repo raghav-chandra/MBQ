@@ -11,6 +11,9 @@ public class MBQMessage extends QMessage {
     private long createdTimeStamp;
     private long updatedTimeStamp;
 
+    public MBQMessage() {
+    }
+
     public MBQMessage(String id, String queue, String seqKey, byte[] message) {
         this(id, queue, seqKey, QueueStatus.PENDING, message, System.currentTimeMillis(), 0);
     }

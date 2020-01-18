@@ -7,6 +7,10 @@ public class QMessage {
     private final String seqKey;
     private final byte[] message;
 
+    public QMessage() {
+        this(null, null);
+    }
+
     public QMessage(String seqKey, byte[] message) {
         this.seqKey = seqKey;
         this.message = message;

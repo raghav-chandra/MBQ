@@ -1,6 +1,6 @@
 package com.rags.tools.mbq.qserver;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.client.Client;
@@ -9,19 +9,14 @@ import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 import com.rags.tools.mbq.server.rest.messagecodec.CommitRollbackRequest;
 import com.rags.tools.mbq.server.rest.messagecodec.PushRequest;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.Json;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Flow;
 
 /**
  * @author ragha
@@ -37,7 +32,7 @@ public class MBQueueServerProxy implements MBQueueServer {
         this.baseUrl = config.getUrl();
     }
 
-    private String post(String api, Object data) {
+    private byte[] post(String api, Object data) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString(new ObjectMapper().writeValueAsString(data)))
@@ -45,9 +40,9 @@ public class MBQueueServerProxy implements MBQueueServer {
                     .setHeader("User-Agent", "MBQueue Client v1.0.0") // add request header
                     .header("Content-Type", "application/json")
                     .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
             if (response.statusCode() != 200) {
-                throw new MBQException("Exception occurred while executing request at MBQ Server", new MBQException(response.body()));
+                throw new MBQException("Exception occurred while executing request at MBQ Server", new MBQException(new String(response.body())));
             }
             return response.body();
         } catch (IOException | InterruptedException e) {
@@ -57,30 +52,70 @@ public class MBQueueServerProxy implements MBQueueServer {
 
     @Override
     public Client registerClient(Client client) {
-        String resp = post("mbq/registerClient", client);
-        return Json.decodeValue(Buffer.buffer(resp), Client.class);
+        byte[] resp = this.post("mbq/registerClient", client);
+        try {
+            RestResponse<Client> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<Client>>() {
+            });
+            return clientResponse.getData();
+        } catch (IOException e) {
+            throw new MBQException("Failed in parsing response from Server", e);
+        }
     }
 
     @Override
     public List<MBQMessage> pull(Client client) {
-        String resp = post("mbq/pull", client);
-        return Json.decodeValue(Buffer.buffer(resp), List.class);
+        byte[] resp = this.post("mbq/pull", client);
+        try {
+            RestResponse<List<MBQMessage>> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<List<MBQMessage>>>() {
+            });
+            validateResponse(clientResponse);
+            return clientResponse.getData();
+        } catch (IOException e) {
+            throw new MBQException("Failed in parsing response from Server", e);
+        }
+    }
+
+    private void validateResponse(RestResponse clientResponse) {
+        if(!clientResponse.isSuccess()) {
+            throw new MBQException(clientResponse.getMessage());
+        }
     }
 
     public boolean commit(Client client, List<String> ids) {
-        String resp = post("mbq/commit", new CommitRollbackRequest(client, ids));
-        return Json.decodeValue(Buffer.buffer(resp), Boolean.class);
+        byte[] resp = this.post("mbq/commit", new CommitRollbackRequest(client, ids));
+        try {
+            RestResponse<Boolean> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<Boolean>>() {
+            });
+            validateResponse(clientResponse);
+            return clientResponse.getData();
+        } catch (IOException e) {
+            throw new MBQException("Failed in parsing response from Server", e);
+        }
     }
 
     @Override
     public boolean rollback(Client client, List<String> ids) {
-        String resp = post("mbq/rollback", new CommitRollbackRequest(client, ids));
-        return Json.decodeValue(Buffer.buffer(resp), Boolean.class);
+        byte[] resp = this.post("mbq/push", new CommitRollbackRequest(client, ids));
+        try {
+            RestResponse<Boolean> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<Boolean>>() {
+            });
+            validateResponse(clientResponse);
+            return clientResponse.getData();
+        } catch (IOException e) {
+            throw new MBQException("Failed in parsing response from Server", e);
+        }
     }
 
     public List<MBQMessage> push(Client client, List<QMessage> messages) {
-        String resp = post("mbq/push", new PushRequest(client, messages));
-        return Json.decodeValue(Buffer.buffer(resp), List.class);
+        byte[] resp = this.post("mbq/push", new PushRequest(client, messages));
+        try {
+            RestResponse<List<MBQMessage>> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<List<MBQMessage>>>() {
+            });
+            validateResponse(clientResponse);
+            return clientResponse.getData();
+        } catch (IOException e) {
+            throw new MBQException("Failed in parsing response from Server", e);
+        }
     }
 
     public MBQMessage push(Client client, QMessage message) {
@@ -89,6 +124,14 @@ public class MBQueueServerProxy implements MBQueueServer {
     }
 
     public String ping(Client client) {
-        return post("mbq/ping", client);
+        byte[] resp = this.post("mbq/ping", client);
+        try {
+            RestResponse<String> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<String>>() {
+            });
+            validateResponse(clientResponse);
+            return clientResponse.getData();
+        } catch (IOException e) {
+            throw new MBQException("Failed in parsing response from Server", e);
+        }
     }
 }

@@ -37,7 +37,7 @@ public class QueueTester extends MBQueueClient {
             public void run() {
                 allPublishers.forEach(client -> {
                     List<QMessage> messages = new LinkedList<>();
-                    for (int i = 0; i < 10; i++) {
+                    for (int i = 0; i < 20; i++) {
                         messages.add(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
                     }
                     client.push(messages);

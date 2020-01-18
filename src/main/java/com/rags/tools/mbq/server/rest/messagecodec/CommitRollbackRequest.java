@@ -9,6 +9,10 @@ public class CommitRollbackRequest {
     private final Client client;
     private final List<String> ids;
 
+    public CommitRollbackRequest() {
+        this(null, null);
+    }
+
     public CommitRollbackRequest(Client client, List<String> ids) {
         this.client = client;
         this.ids = ids;
