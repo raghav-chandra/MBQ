@@ -14,6 +14,7 @@ import com.rags.tools.mbq.qserver.MBQueueServer;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
@@ -22,8 +23,12 @@ public class QueueVerticle extends AbstractVerticle {
     public void start() {
 
         EventBus eventBus = getVertx().eventBus();
+        JsonObject config = config();
 
-        MBQueueServer mbQueueServer = MBQServerInstance.createOrGet(new QConfig.Builder().setQueueType(QueueType.SINGLE_JVM_INMEMORY).create().getServerConfig());
+        QueueType queueType = QueueType.valueOf(config.getString("queue.type"));
+        QConfig.ServerConfig serverConfig = new QConfig.Builder().setQueueType(queueType).create().getServerConfig();
+
+        MBQueueServer server = MBQServerInstance.createOrGet(serverConfig);
 
         WorkerExecutor workers = getVertx().createSharedWorkerExecutor("QueueWorker", 100);
 
@@ -33,7 +38,7 @@ public class QueueVerticle extends AbstractVerticle {
                 pullHandler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> {
-                    List<MBQMessage> messages = mbQueueServer.pull(client);
+                    List<MBQMessage> messages = server.pull(client);
                     workerHandler.complete(messages);
                 }, resHandler -> {
                     if (resHandler.succeeded()) {
@@ -53,7 +58,7 @@ public class QueueVerticle extends AbstractVerticle {
                 pushHandler.fail(ErrorMessage.MESSAGES_INVALID.getCode(), ErrorMessage.MESSAGES_INVALID.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> {
-                    List<MBQMessage> messages = mbQueueServer.push(req.getClient(), req.getMessages());
+                    List<MBQMessage> messages = server.push(req.getClient(), req.getMessages());
                     workerHandler.complete(messages);
                 }, resHandler -> {
                     if (resHandler.succeeded()) {
@@ -73,7 +78,7 @@ public class QueueVerticle extends AbstractVerticle {
                 pushHandler.fail(ErrorMessage.MESSAGES_NOT_FOUND_FOR_COMMIT.getCode(), ErrorMessage.MESSAGES_NOT_FOUND_FOR_COMMIT.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> {
-                    boolean isCommit = mbQueueServer.commit(req.getClient(), req.getIds());
+                    boolean isCommit = server.commit(req.getClient(), req.getIds());
                     workerHandler.complete(isCommit);
                 }, resHandler -> {
                     if (resHandler.succeeded()) {
@@ -93,7 +98,7 @@ public class QueueVerticle extends AbstractVerticle {
                 pushHandler.fail(ErrorMessage.MESSAGES_NOT_FOUND_FOR_ROLLBACK.getCode(), ErrorMessage.MESSAGES_NOT_FOUND_FOR_ROLLBACK.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> {
-                    boolean isCommit = mbQueueServer.rollback(req.getClient(), req.getIds());
+                    boolean isCommit = server.rollback(req.getClient(), req.getIds());
                     workerHandler.complete(isCommit);
                 }, resHandler -> {
                     if (resHandler.succeeded()) {

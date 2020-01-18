@@ -10,6 +10,7 @@ import com.rags.tools.mbq.qserver.MBQServerInstance;
 import com.rags.tools.mbq.qserver.MBQueueServer;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.WorkerExecutor;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 
 public class ClientVerticle extends AbstractVerticle {
@@ -32,7 +33,7 @@ public class ClientVerticle extends AbstractVerticle {
                     workerHandler.complete(clientWithId);
                 }, resHandler -> {
                     if (resHandler.succeeded()) {
-                        regClientHandler.reply(resHandler.result());
+                        regClientHandler.reply(resHandler.result(), new DeliveryOptions().setCodecName(Client.class.getCanonicalName()));
                     } else {
                         regClientHandler.fail(ErrorMessage.CLIENT_REGISTER_FAILED.getCode(), ErrorMessage.CLIENT_REGISTER_FAILED.getMessage() + resHandler.cause().getMessage());
                     }

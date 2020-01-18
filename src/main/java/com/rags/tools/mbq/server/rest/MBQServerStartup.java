@@ -1,12 +1,12 @@
 package com.rags.tools.mbq.server.rest;
 
 import com.rags.tools.mbq.client.Client;
+import com.rags.tools.mbq.server.rest.handler.ClientHandler;
 import com.rags.tools.mbq.server.rest.handler.QueueHandler;
 import com.rags.tools.mbq.server.rest.messagecodec.DefMessageCodec;
 import com.rags.tools.mbq.server.rest.messagecodec.EventBusRequest;
 import com.rags.tools.mbq.server.rest.verticle.ClientVerticle;
 import com.rags.tools.mbq.server.rest.verticle.QueueVerticle;
-import com.rags.tools.mbq.server.rest.handler.ClientHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
@@ -48,6 +48,8 @@ public class MBQServerStartup extends AbstractVerticle {
 
         router.route().handler(BodyHandler.create());
 
+        router.get("/test").handler(routingContext -> routingContext.response().end("Hello guys."));
+
         router.post("/mbq/registerClient").handler(ClientHandler.registerHandler());
         router.post("/mbq/pull").handler(QueueHandler.pullHandler());
         router.post("/mbq/push").handler(QueueHandler.pushHandler());
@@ -58,6 +60,6 @@ public class MBQServerStartup extends AbstractVerticle {
 
         //TODO: Queue GUI Interface
         //router.route().handler(StaticHandler.create(config().getString(WEB_ROOT)));
-        vertx.createHttpServer().requestHandler(router).listen(8642);
+        vertx.createHttpServer().requestHandler(router).listen(config.getInteger("web.port"));
     }
 }

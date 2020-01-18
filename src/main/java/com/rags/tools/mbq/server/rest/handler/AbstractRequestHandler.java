@@ -6,6 +6,7 @@ import com.rags.tools.mbq.server.rest.messagecodec.EventBusRequest;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
@@ -54,7 +55,7 @@ public abstract class AbstractRequestHandler<S, T> implements Handler<RoutingCon
 
     private Future<T> createFuture(RequestType requestType, EventBus eventBus, EventBusRequest reqObject) {
         Future<T> future = Future.future();
-        eventBus.<T>send(requestType.name(), reqObject, reply -> {
+        eventBus.<T>send(requestType.name(), reqObject, new DeliveryOptions().setCodecName(EventBusRequest.class.getCanonicalName()), reply -> {
             if (reply.succeeded()) {
                 future.complete(reply.result().body());
             } else {

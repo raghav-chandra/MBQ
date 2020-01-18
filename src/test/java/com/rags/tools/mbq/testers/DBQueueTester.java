@@ -3,10 +3,9 @@ package com.rags.tools.mbq.testers;
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.queue.QueueType;
 
-public class DBQueueTester extends QueueTester {
-    protected DBQueueTester(QConfig config) {
-        super(config);
-    }
+import static com.rags.tools.mbq.testers.QueueTester.execute;
+
+public class DBQueueTester {
 
     public static void main(String[] args) {
         QConfig.Builder configBuilder = new QConfig.Builder()

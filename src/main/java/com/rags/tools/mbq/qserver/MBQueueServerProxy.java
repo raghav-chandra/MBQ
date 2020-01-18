@@ -1,5 +1,7 @@
 package com.rags.tools.mbq.qserver;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.exception.MBQException;
@@ -15,9 +17,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Flow;
 
 /**
  * @author ragha
@@ -34,13 +38,13 @@ public class MBQueueServerProxy implements MBQueueServer {
     }
 
     private String post(String api, Object data) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(Json.encode(data)))
-                .uri(URI.create(baseUrl + api))
-                .setHeader("User-Agent", "MBQueue Client v1.0.0") // add request header
-                .header("Content-Type", "application/json")
-                .build();
         try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .POST(HttpRequest.BodyPublishers.ofString(new ObjectMapper().writeValueAsString(data)))
+                    .uri(URI.create(baseUrl + api))
+                    .setHeader("User-Agent", "MBQueue Client v1.0.0") // add request header
+                    .header("Content-Type", "application/json")
+                    .build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
                 throw new MBQException("Exception occurred while executing request at MBQ Server", new MBQException(response.body()));

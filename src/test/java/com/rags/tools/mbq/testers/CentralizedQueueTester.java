@@ -5,14 +5,17 @@ import com.rags.tools.mbq.queue.QueueType;
 
 import static com.rags.tools.mbq.testers.QueueTester.execute;
 
-public class InMemoryQueueTester {
+public class CentralizedQueueTester {
 
     public static void main(String[] args) {
         QConfig.Builder configBuilder = new QConfig.Builder()
                 .setBatch(10)
                 .setPollingQueue("RAGHAV")
-                .setQueueType(QueueType.SINGLE_JVM_INMEMORY);
-        execute(6, 1, configBuilder);
+                .setQueueType(QueueType.CENTRALIZED)
+                .setUrl("http://localhost:65000/")
+                .setUser("raga")
+                .setPassword("raga");
+        execute(1, 1, configBuilder);
     }
-}
 
+}

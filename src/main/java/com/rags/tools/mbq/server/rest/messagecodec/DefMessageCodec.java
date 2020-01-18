@@ -36,7 +36,7 @@ public class DefMessageCodec<S> implements MessageCodec<S, S> {
 
     @Override
     public String name() {
-        return this.getClass().getName();
+        return type.getName();
     }
 
     @Override

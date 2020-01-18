@@ -1,5 +1,7 @@
 package com.rags.tools.mbq.client;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Objects;
 
 public class Client {
@@ -12,6 +14,10 @@ public class Client {
     private final int batch;
 
     private String heartBeatId;
+
+    public Client() {
+        this(null, null, null, -1);
+    }
 
     public Client(String id) {
         this(id, null, null, 10);
@@ -70,10 +76,12 @@ public class Client {
         return Objects.hash(id);
     }
 
+    @JsonIgnore
     public boolean isInValid() {
         return id == null || name == null || queueName == null || batch <= 0;
     }
 
+    @JsonIgnore
     public boolean isInValidForRegistration() {
         return name == null || queueName == null || batch <= 0;
     }
