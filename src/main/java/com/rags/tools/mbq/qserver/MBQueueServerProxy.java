@@ -5,6 +5,8 @@ import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
+import com.rags.tools.mbq.server.rest.messagecodec.CommitRollbackRequest;
+import com.rags.tools.mbq.server.rest.messagecodec.PushRequest;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 
@@ -13,6 +15,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -21,22 +25,20 @@ import java.util.List;
  */
 public class MBQueueServerProxy implements MBQueueServer {
 
-    private static final String Q_END_POINT = "mbQueue";
+    private final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
 
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_2)
-            .build();
+    private final String baseUrl;
 
     public MBQueueServerProxy(QConfig.ServerConfig config) {
-
+        this.baseUrl = config.getUrl();
     }
 
-    private String post(String api) {
+    private String post(String api, Object data) {
         HttpRequest request = HttpRequest.newBuilder()
-//                .POST(HttpRequest.BodyPublishers.ofString(Json.encode()))
-                .uri(URI.create("https://httpbin.org/post" + api))
-                .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
-                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(Json.encode(data)))
+                .uri(URI.create(baseUrl + api))
+                .setHeader("User-Agent", "MBQueue Client v1.0.0") // add request header
+                .header("Content-Type", "application/json")
                 .build();
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -50,40 +52,39 @@ public class MBQueueServerProxy implements MBQueueServer {
     }
 
     @Override
-    public Client registerClient(Client config) {
-        String resp = post("register");
+    public Client registerClient(Client client) {
+        String resp = post("mbq/registerClient", client);
         return Json.decodeValue(Buffer.buffer(resp), Client.class);
     }
 
     @Override
     public List<MBQMessage> pull(Client client) {
-        String resp = post("pull");
+        String resp = post("mbq/pull", client);
         return Json.decodeValue(Buffer.buffer(resp), List.class);
     }
 
     public boolean commit(Client client, List<String> ids) {
-        String resp = post("commit");
+        String resp = post("mbq/commit", new CommitRollbackRequest(client, ids));
         return Json.decodeValue(Buffer.buffer(resp), Boolean.class);
     }
 
     @Override
     public boolean rollback(Client client, List<String> ids) {
-        String resp = post("rollback");
+        String resp = post("mbq/rollback", new CommitRollbackRequest(client, ids));
         return Json.decodeValue(Buffer.buffer(resp), Boolean.class);
     }
 
     public List<MBQMessage> push(Client client, List<QMessage> messages) {
-        String resp = post("pushAll");
+        String resp = post("mbq/push", new PushRequest(client, messages));
         return Json.decodeValue(Buffer.buffer(resp), List.class);
     }
 
     public MBQMessage push(Client client, QMessage message) {
-        String resp = post("push");
-        return Json.decodeValue(Buffer.buffer(resp), MBQMessage.class);
+        List<MBQMessage> messages = push(client, Collections.singletonList(message));
+        return messages != null && !messages.isEmpty() ? messages.get(0) : null;
     }
 
     public String ping(Client client) {
-        post("heartbeat");
-        return null;
+        return post("mbq/ping", client);
     }
 }

@@ -70,6 +70,11 @@ public class QConfig {
             return this;
         }
 
+        public Builder clone() {
+            return new Builder().setBatch(batch).setWorkerName(workerName).setPollingQueue(pollingQueue)
+                    .setDbDriver(dbDriver).setUrl(url).setUser(user).setPassword(password).setQueueType(queueType);
+        }
+
         public QConfig create() {
             ClientConfig clientConfig = new ClientConfig(pollingQueue, workerName, batch);
             ServerConfig serverConfig = new ServerConfig(queueType, url, user, password, dbDriver);

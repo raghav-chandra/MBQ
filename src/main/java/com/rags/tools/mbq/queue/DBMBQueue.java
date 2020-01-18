@@ -4,17 +4,21 @@ import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-import java.sql.*;
+import javax.sql.DataSource;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DBMBQueue extends AbstractMBQueue {
 
@@ -32,15 +36,22 @@ public class DBMBQueue extends AbstractMBQueue {
 
     public DBMBQueue(QConfig.ServerConfig config) {
         try {
-            /*Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/raga", "raga", "raga");*/
-            Class.forName(config.getDbDriver());
-            Connection conn = DriverManager.getConnection(config.getUrl(), config.getUser(), config.getPassword());
-            SingleConnectionDataSource ds = new SingleConnectionDataSource(conn, true);
+            DataSource ds = createDS(config);
             jdbcTemplate = new NamedParameterJdbcTemplate(ds);
         } catch (Exception e) {
             throw new RuntimeException("Error in connection");
         }
+    }
+
+    private DataSource createDS(QConfig.ServerConfig config) {
+        BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setUrl(config.getUrl());
+        dataSource.setUsername(config.getUser());
+        dataSource.setPassword(config.getPassword());
+        dataSource.setInitialSize(1);
+        dataSource.setDriverClassName(config.getDbDriver());
+        dataSource.setMaxTotal(10);
+        return dataSource;
     }
 
     @Override
@@ -54,10 +65,11 @@ public class DBMBQueue extends AbstractMBQueue {
 
     @Override
     public List<MBQMessage> get(String queueName, String seqKey, List<QueueStatus> status) {
+        List<String> qStatus = status.stream().map(Enum::name).collect(Collectors.toList());
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("queue", queueName)
                 .addValue("seq", seqKey)
-                .addValue("status", status);
+                .addValue("status", qStatus);
         return jdbcTemplate.query(GET_BY_QUEUE_SEQ_AND_STATUS, param, new MessageRowMapper());
     }
 

@@ -9,7 +9,15 @@ public class DBQueueTester extends QueueTester {
     }
 
     public static void main(String[] args) {
-        execute(1,4,  QueueType.SINGLE_JVM_RDB);
+        QConfig.Builder configBuilder = new QConfig.Builder()
+                .setBatch(10)
+                .setPollingQueue("RAGHAV")
+                .setQueueType(QueueType.SINGLE_JVM_RDB)
+                .setDbDriver("com.mysql.cj.jdbc.Driver")
+                .setUrl("jdbc:mysql://localhost:3306/raga")
+                .setUser("raga")
+                .setPassword("raga");
+        execute(4, 1, configBuilder);
     }
 }
 

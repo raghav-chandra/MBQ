@@ -10,7 +10,11 @@ public class InMemoryQueueTester extends QueueTester {
     }
 
     public static void main(String[] args) {
-        execute(6,1,  QueueType.SINGLE_JVM_INMEMORY);
+        QConfig.Builder configBuilder = new QConfig.Builder()
+                .setBatch(10)
+                .setPollingQueue("RAGHAV")
+                .setQueueType(QueueType.SINGLE_JVM_INMEMORY);
+        execute(6, 1, configBuilder);
     }
 }
 
