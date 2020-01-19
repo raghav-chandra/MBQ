@@ -1,0 +1,10 @@
+{
+  "web.port": 65000,
+  "queue.type": "SINGLE_JVM_RDB",
+  "url": "jdbc:mysql://localhost:3306/raga",
+  "driver": "com.mysql.cj.jdbc.Driver",
+  "username": "raga",
+  "password": "raga",
+  "minConn": 1,
+  "maxConn": 100
+}

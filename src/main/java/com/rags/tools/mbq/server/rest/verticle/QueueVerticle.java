@@ -2,6 +2,7 @@ package com.rags.tools.mbq.server.rest.verticle;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.client.Client;
+import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.server.rest.ErrorMessage;
 import com.rags.tools.mbq.server.rest.RequestType;
 import com.rags.tools.mbq.server.rest.messagecodec.CommitRollbackRequest;
@@ -27,8 +28,7 @@ public class QueueVerticle extends AbstractVerticle {
         EventBus eventBus = getVertx().eventBus();
         JsonObject config = config();
 
-        QueueType queueType = QueueType.valueOf(config.getString("queue.type"));
-        QConfig.ServerConfig serverConfig = new QConfig.Builder().setQueueType(queueType).create().getServerConfig();
+        QConfig.ServerConfig serverConfig = getServerConfig(config);
 
         MBQueueServer server = MBQServerInstance.createOrGet(serverConfig);
 
@@ -111,5 +111,25 @@ public class QueueVerticle extends AbstractVerticle {
                 });
             }
         });
+    }
+
+    private QConfig.ServerConfig getServerConfig(JsonObject config) {
+        QueueType queueType = QueueType.valueOf(config.getString("queue.type"));
+        QConfig.Builder builder = new QConfig.Builder().setQueueType(queueType);
+        switch (queueType) {
+            case SINGLE_JVM_INMEMORY:
+                break;
+            case SINGLE_JVM_RDB:
+            case SINGLE_JVM_HAZELCAST:
+            case SINGLE_JVM_MONGO_DB:
+                builder.setUrl(config.getString("url"));
+                builder.setUser(config.getString("username"));
+                builder.setPassword(config.getString("password"));
+                builder.setDbDriver(config.getString("driver"));
+                break;
+            default:
+                throw new MBQException("Queue Type is not supported");
+        }
+        return builder.create().getServerConfig();
     }
 }

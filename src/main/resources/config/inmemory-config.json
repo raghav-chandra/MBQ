@@ -1,0 +1,4 @@
+{
+  "web.port": 65000,
+  "queue.type": "SINGLE_JVM_INMEMORY"
+}
