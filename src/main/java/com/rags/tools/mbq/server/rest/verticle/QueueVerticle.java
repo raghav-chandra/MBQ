@@ -40,6 +40,7 @@ public class QueueVerticle extends AbstractVerticle {
                 pullHandler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> {
+                    System.out.println("Pull Message Client Name " + client.getName() + ", Client : " + client);
                     List<MBQMessage> messages = server.pull(client);
                     workerHandler.complete(new JsonArray(messages.parallelStream().map(JsonObject::mapFrom).collect(Collectors.toList())));
                 }, resHandler -> {
@@ -60,6 +61,7 @@ public class QueueVerticle extends AbstractVerticle {
                 pushHandler.fail(ErrorMessage.MESSAGES_INVALID.getCode(), ErrorMessage.MESSAGES_INVALID.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> {
+                    System.out.println("Push Message Client Name " + req.getClient().getName() + ", Client : " + req.getClient());
                     List<MBQMessage> messages = server.push(req.getClient(), req.getMessages());
                     workerHandler.complete(new JsonArray(messages.parallelStream().map(JsonObject::mapFrom).collect(Collectors.toList())));
                 }, resHandler -> {

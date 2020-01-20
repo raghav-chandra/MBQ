@@ -11,7 +11,6 @@ public class InMemoryPendingQueue<T> implements PendingQueue<T> {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-
     @Override
     public boolean isEmpty() {
         try {
@@ -24,8 +23,8 @@ public class InMemoryPendingQueue<T> implements PendingQueue<T> {
 
     @Override
     public int size() {
+        lock.readLock().lock();
         try {
-            lock.readLock().lock();
             return queue.size();
         } finally {
             lock.readLock().unlock();
@@ -34,8 +33,8 @@ public class InMemoryPendingQueue<T> implements PendingQueue<T> {
 
     @Override
     public boolean removeAll(List<T> items) {
+        lock.writeLock().lock();
         try {
-            lock.writeLock().lock();
             return queue.removeAll(items);
         } finally {
             lock.writeLock().unlock();
@@ -44,8 +43,8 @@ public class InMemoryPendingQueue<T> implements PendingQueue<T> {
 
     @Override
     public T get(int index) {
+        lock.writeLock().lock();
         try {
-            lock.writeLock().lock();
             return queue.get(index);
         } finally {
             lock.writeLock().unlock();
@@ -54,8 +53,8 @@ public class InMemoryPendingQueue<T> implements PendingQueue<T> {
 
     @Override
     public void addLast(T item) {
+        lock.writeLock().lock();
         try {
-            lock.writeLock().lock();
             this.queue.addLast(item);
         } finally {
             lock.writeLock().unlock();
@@ -64,8 +63,8 @@ public class InMemoryPendingQueue<T> implements PendingQueue<T> {
 
     @Override
     public void add(int index, T item) {
+        lock.writeLock().lock();
         try {
-            lock.writeLock().lock();
             this.queue.add(index, item);
         } finally {
             lock.writeLock().unlock();
@@ -74,8 +73,8 @@ public class InMemoryPendingQueue<T> implements PendingQueue<T> {
 
     @Override
     public void add(T item) {
+        lock.writeLock().lock();
         try {
-            lock.writeLock().lock();
             this.queue.add(item);
         } finally {
             lock.writeLock().unlock();
@@ -84,8 +83,8 @@ public class InMemoryPendingQueue<T> implements PendingQueue<T> {
 
     @Override
     public void addAll(List<T> items) {
+        lock.writeLock().lock();
         try {
-            lock.writeLock().lock();
             queue.addAll(items);
         } finally {
             lock.writeLock().unlock();

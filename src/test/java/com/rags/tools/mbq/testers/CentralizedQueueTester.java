@@ -15,7 +15,7 @@ public class CentralizedQueueTester {
                 .setUrl("http://localhost:65000/")
                 .setUser("raga")
                 .setPassword("raga");
-        execute(1, 4, configBuilder);
+        execute(0, 4, configBuilder);
     }
 
 }

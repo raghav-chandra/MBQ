@@ -30,8 +30,10 @@ public class ClientVerticle extends AbstractVerticle {
             if (client.isInValidForRegistration()) {
                 regClientHandler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
             } else {
-                workers.executeBlocking(wHandler -> wHandler.complete(JsonObject.mapFrom(mbQueueServer.registerClient(client)))
-                        , resHandler -> handleResult(regClientHandler, resHandler, ErrorMessage.CLIENT_REGISTER_FAILED));
+                workers.executeBlocking(wHandler -> {
+                    Client c = mbQueueServer.registerClient(client);
+                    wHandler.complete(JsonObject.mapFrom(c));
+                }, resHandler -> handleResult(regClientHandler, resHandler, ErrorMessage.CLIENT_REGISTER_FAILED));
             }
         });
 
@@ -46,11 +48,11 @@ public class ClientVerticle extends AbstractVerticle {
         });
     }
 
-    private void handleResult(Message<EventBusRequest> regClientHandler, AsyncResult<Object> resHandler, ErrorMessage clientRegisterFailed) {
+    private void handleResult(Message<EventBusRequest> regClientHandler, AsyncResult<Object> resHandler, ErrorMessage filure) {
         if (resHandler.succeeded()) {
             regClientHandler.reply(resHandler.result());
         } else {
-            regClientHandler.fail(clientRegisterFailed.getCode(), clientRegisterFailed.getMessage() + resHandler.cause().getMessage());
+            regClientHandler.fail(filure.getCode(), filure.getMessage() + resHandler.cause().getMessage());
         }
     }
 }

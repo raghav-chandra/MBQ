@@ -9,6 +9,8 @@ import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 import com.rags.tools.mbq.server.rest.messagecodec.CommitRollbackRequest;
 import com.rags.tools.mbq.server.rest.messagecodec.PushRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -23,6 +25,8 @@ import java.util.List;
  * @since 29-12-2019
  */
 public class MBQueueServerProxy implements MBQueueServer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MBQueueServer.class);
 
     private final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
 
@@ -52,14 +56,26 @@ public class MBQueueServerProxy implements MBQueueServer {
 
     @Override
     public Client registerClient(Client client) {
-        byte[] resp = this.post("mbq/registerClient", client);
-        try {
-            RestResponse<Client> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<Client>>() {
-            });
-            return clientResponse.getData();
-        } catch (IOException e) {
-            throw new MBQException("Failed in parsing response from Server", e);
+        int maxRetry = 10;
+        while (maxRetry >= 0) {
+            byte[] resp = this.post("mbq/registerClient", client);
+            try {
+                RestResponse<Client> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<Client>>() {
+                });
+                if (clientResponse.isFailed()) {
+                    System.out.println("Response : " + clientResponse.getMessage());
+                    LOGGER.info("Client [{}] registration failed with message [{}], Retrying again", client, clientResponse.getMessage());
+                    Thread.sleep(500);
+                    maxRetry--;
+                    continue;
+                }
+                return clientResponse.getData();
+            } catch (IOException | InterruptedException e) {
+                LOGGER.error("Client registration failed", e);
+                maxRetry--;
+            }
         }
+        throw new MBQException("Couldn't register client. Max Retry reached");
     }
 
     @Override
@@ -76,7 +92,7 @@ public class MBQueueServerProxy implements MBQueueServer {
     }
 
     private void validateResponse(RestResponse clientResponse) {
-        if(!clientResponse.isSuccess()) {
+        if (!clientResponse.isSuccess()) {
             throw new MBQException(clientResponse.getMessage());
         }
     }

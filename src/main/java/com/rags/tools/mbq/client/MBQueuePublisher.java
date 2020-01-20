@@ -49,10 +49,9 @@ public class MBQueuePublisher implements QueueClient {
         this.timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                String hb = server.ping(client);
-                client.setHeartBeatId(hb);
+                client.setHeartBeatId(server.ping(client));
             }
-        }, 500, 2000);
+        }, 0, 500);
     }
 
     @Override

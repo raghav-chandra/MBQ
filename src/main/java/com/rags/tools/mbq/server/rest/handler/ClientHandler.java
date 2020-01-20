@@ -27,8 +27,8 @@ public class ClientHandler {
         return createClientHandler(RequestType.REGISTER_HEARTBEAT);
     }
 
-    private static Handler<RoutingContext> createClientHandler(RequestType registerClient) {
-        return new AbstractRequestHandler<Client, Client>(registerClient) {
+    private static Handler<RoutingContext> createClientHandler(RequestType requestType) {
+        return new AbstractRequestHandler<Client, Client>(requestType) {
             @Override
             protected Client getRequestData(HttpServerRequest request, Buffer body) {
                 return body != null ? Json.decodeValue(body, Client.class) : new Client(null);

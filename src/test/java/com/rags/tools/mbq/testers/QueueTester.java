@@ -26,31 +26,25 @@ public class QueueTester extends MBQueueClient {
         for (int i = 0; i < publishers; i++) {
             allPublishers.add(new MBQueuePublisher(config.clone().setWorkerName("publisher-" + i).create()));
         }
-
-        List<QueueTester> allConsumers = new ArrayList<>();
-        for (int i = 0; i < consumers; i++) {
-            allConsumers.add(new QueueTester(config.clone().setWorkerName("consumer-" + i).create()));
-        }
+        allPublishers.forEach(MBQueuePublisher::start);
 
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 allPublishers.forEach(client -> {
                     List<QMessage> messages = new LinkedList<>();
-                    for (int i = 0; i < 20; i++) {
+                    for (int i = 0; i < 10; i++) {
                         messages.add(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
                     }
                     client.push(messages);
                 });
             }
-        }, 0, 100);
+        }, 100, 100);
 
-        allPublishers.forEach(client -> new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                client.start();
-            }
-        }, 1));
+        List<QueueTester> allConsumers = new ArrayList<>();
+        for (int i = 0; i < consumers; i++) {
+            allConsumers.add(new QueueTester(config.clone().setWorkerName("consumer-" + i).create()));
+        }
 
         allConsumers.forEach(client -> new Timer().schedule(new TimerTask() {
             @Override
@@ -58,7 +52,6 @@ public class QueueTester extends MBQueueClient {
                 client.start();
             }
         }, 1));
-
         startTime = System.currentTimeMillis();
     }
 

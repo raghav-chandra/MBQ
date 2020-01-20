@@ -20,7 +20,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMBQueueServer.class);
 
-    private static final Map<String, Long> CLIENTS_HB = new ConcurrentHashMap<>();
+    private static final Map<String, HeartBeat> CLIENTS_HB = new ConcurrentHashMap<>();
     private static final Map<Client, List<String>> CLIENTS_MESSAGES = new ConcurrentHashMap<>();
 
     private static final ReentrantLock LOCK = new ReentrantLock();
@@ -40,10 +40,10 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                 long curTime = System.currentTimeMillis();
                 List<String> allInvalids = new ArrayList<>();
 
-                CLIENTS_HB.forEach((id, val) -> {
-                    boolean isInValid = (curTime - val) > PING_INTERVAL;
+                CLIENTS_HB.forEach((id, hb) -> {
+                    boolean isInValid = (curTime - hb.getTimeStamp()) > PING_INTERVAL;
                     if (isInValid) {
-                        LOGGER.warn("Client with ID {} was not active {}, last heart beat received at {}", id, curTime, val);
+                        LOGGER.warn("Client with ID {} was not active {}, last heart beat received at {}", id, curTime, hb);
                         allInvalids.add(id);
                     }
                 });
@@ -75,8 +75,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         Client clientWithId = new Client(id, client.getName(), client.getQueueName(), client.getBatch());
         long currTime = System.currentTimeMillis();
 
-        CLIENTS_HB.put(id, currTime);
         clientWithId.setHeartBeatId(HashingUtil.hashSHA256(id + currTime));
+        CLIENTS_HB.put(id, new HeartBeat(currTime, clientWithId.getHeartBeatId()));
 
         return clientWithId;
     }
@@ -87,16 +87,16 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
     private void validateClient(Client client) {
         String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
-        if (!CLIENTS_HB.containsKey(id)) {
+        if (!CLIENTS_HB.containsKey(id)/* || !client.getHeartBeatId().equals(CLIENTS_HB.get(id).getHeartBeat())*/) {
             LOGGER.error("Client [{}] wasn't active or dint exists", client);
             throw new MBQException("Client is not registered or wasn't active");
         }
 
         long curTime = System.currentTimeMillis();
 
-        if ((curTime - CLIENTS_HB.get(id)) > PING_INTERVAL) {
-            long ts = CLIENTS_HB.remove(id);
-            LOGGER.error("Client [{}] was not active {}", client, ts);
+        if ((curTime - CLIENTS_HB.get(id).getTimeStamp()) > PING_INTERVAL) {
+            HeartBeat hb = CLIENTS_HB.remove(id);
+            LOGGER.error("Client [{}] was not active {}", client, hb.getTimeStamp());
             throw new MBQException("Client was existing and was not active");
         }
     }
@@ -263,13 +263,14 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     @Override
     public String ping(Client client) {
         validateClient(client);
-        //TODO: validate Heartbeat of client
         String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
         long currTime = System.currentTimeMillis();
         LOGGER.info("Received heart beat from client [{}] with Id : {} at {}", client, id, currTime);
-        CLIENTS_HB.put(id, currTime);
 
-        return HashingUtil.hashSHA256(id + currTime);
+        String hb = HashingUtil.hashSHA256(id + currTime);
+        CLIENTS_HB.put(id, new HeartBeat(currTime, hb));
+
+        return hb;
     }
 
     /**
@@ -288,5 +289,23 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
      */
     protected PendingQueueMap getPendingQueueMap() {
         return pendingQueueMap;
+    }
+
+    private static class HeartBeat {
+        private long timeStamp;
+        private String heartBeat;
+
+        public HeartBeat(long timeStamp, String hb) {
+            this.timeStamp = timeStamp;
+            this.heartBeat = hb;
+        }
+
+        public long getTimeStamp() {
+            return timeStamp;
+        }
+
+        public String getHeartBeat() {
+            return heartBeat;
+        }
     }
 }
