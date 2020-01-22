@@ -6,4 +6,7 @@ create table MBQueueMessage (
     Data            Text not null,
     CreatedTime     datetime not null,
     UpdatedTime     datetime null
-) LOCK_TABLE_ROWS
+)
+;
+create index idx_QName_Status on MBQueueMessage(Status, QueueName)
+;
