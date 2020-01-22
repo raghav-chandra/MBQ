@@ -34,7 +34,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         this.queue = mbQueue;
         this.pendingQueueMap = pendingQueueMap;
         init();
-        new Timer().schedule(new TimerTask() {
+        new Timer(true).schedule(new TimerTask() {
             @Override
             public void run() {
                 long curTime = System.currentTimeMillis();

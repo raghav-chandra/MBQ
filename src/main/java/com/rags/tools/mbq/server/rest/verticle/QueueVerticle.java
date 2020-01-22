@@ -40,7 +40,6 @@ public class QueueVerticle extends AbstractVerticle {
                 pullHandler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> {
-                    System.out.println("Pull Message Client Name " + client.getName() + ", Client : " + client);
                     List<MBQMessage> messages = server.pull(client);
                     workerHandler.complete(new JsonArray(messages.parallelStream().map(JsonObject::mapFrom).collect(Collectors.toList())));
                 }, resHandler -> {

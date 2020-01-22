@@ -44,7 +44,7 @@ public class MBQueuePublisher implements QueueClient {
         if (timer != null) {
             throw new MBQException("Client is still running, cant start another instance");
         }
-        this.timer = new Timer();
+        this.timer = new Timer(true);
 
         this.timer.schedule(new TimerTask() {
             @Override

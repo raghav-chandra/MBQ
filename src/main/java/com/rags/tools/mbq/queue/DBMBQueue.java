@@ -2,6 +2,7 @@ package com.rags.tools.mbq.queue;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
+import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -39,19 +40,20 @@ public class DBMBQueue extends AbstractMBQueue {
             DataSource ds = createDS(config);
             jdbcTemplate = new NamedParameterJdbcTemplate(ds);
         } catch (Exception e) {
-            throw new RuntimeException("Error in connection");
+            throw new MBQException("Error in configuring connection pool with RDB", e);
         }
     }
 
     private DataSource createDS(QConfig.ServerConfig config) {
-        BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setUrl(config.getUrl());
-        dataSource.setUsername(config.getUser());
-        dataSource.setPassword(config.getPassword());
-        dataSource.setInitialSize(1);
-        dataSource.setDriverClassName(config.getDbDriver());
-        dataSource.setMaxTotal(10);
-        return dataSource;
+        BasicDataSource ds = new BasicDataSource();
+        ds.setUrl(config.getUrl());
+        ds.setUsername(config.getUser());
+        ds.setPassword(config.getPassword());
+        ds.setInitialSize(1);
+        ds.setDriverClassName(config.getDbDriver());
+        ds.setValidationQuery(config.getValidationQuery());
+        ds.setMaxTotal(config.getMaxConn());
+        return ds;
     }
 
     @Override

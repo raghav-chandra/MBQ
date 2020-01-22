@@ -29,6 +29,8 @@ public class QConfig {
         private String password;
         private QueueType queueType;
         private String dbDriver;
+        private int maxxConn;
+        private String validationQuery;
 
         public Builder setPollingQueue(String pollingQueue) {
             this.pollingQueue = pollingQueue;
@@ -70,14 +72,25 @@ public class QConfig {
             return this;
         }
 
+        public Builder setMaxxConn(int maxxConn) {
+            this.maxxConn = maxxConn;
+            return this;
+        }
+
+        public Builder setValidationQuery(String validationQuery) {
+            this.validationQuery = validationQuery;
+            return this;
+        }
+
         public Builder clone() {
             return new Builder().setBatch(batch).setWorkerName(workerName).setPollingQueue(pollingQueue)
-                    .setDbDriver(dbDriver).setUrl(url).setUser(user).setPassword(password).setQueueType(queueType);
+                    .setDbDriver(dbDriver).setUrl(url).setUser(user).setPassword(password).setQueueType(queueType)
+                    .setValidationQuery(validationQuery).setMaxxConn(maxxConn);
         }
 
         public QConfig create() {
             ClientConfig clientConfig = new ClientConfig(pollingQueue, workerName, batch);
-            ServerConfig serverConfig = new ServerConfig(queueType, url, user, password, dbDriver);
+            ServerConfig serverConfig = new ServerConfig(queueType, url, user, password, dbDriver, validationQuery, maxxConn);
             return new QConfig(clientConfig, serverConfig);
         }
     }
@@ -109,17 +122,21 @@ public class QConfig {
 
     public static class ServerConfig {
         private final String dbDriver;
+        private final String validationQuery;
         private final String url;
         private final String user;
         private final String password;
         private final QueueType queueType;
+        private final int maxConn;
 
-        ServerConfig(QueueType queueType, String url, String user, String password, String dbDriver) {
+        private ServerConfig(QueueType queueType, String url, String user, String password, String dbDriver, String validationQuery, int maxConn) {
             this.url = url;
             this.user = user;
             this.password = password;
             this.queueType = queueType;
             this.dbDriver = dbDriver;
+            this.validationQuery = validationQuery;
+            this.maxConn = maxConn <= 0 ? 1 : maxConn;
         }
 
         public String getUrl() {
@@ -140,6 +157,14 @@ public class QConfig {
 
         public String getDbDriver() {
             return dbDriver;
+        }
+
+        public String getValidationQuery() {
+            return validationQuery;
+        }
+
+        public int getMaxConn() {
+            return maxConn;
         }
     }
 }
