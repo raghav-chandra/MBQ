@@ -1,10 +1,14 @@
 package com.rags.tools.mbq.message;
 
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
+import com.hazelcast.nio.serialization.DataSerializable;
 import com.rags.tools.mbq.QueueStatus;
 
+import java.io.IOException;
 import java.util.Objects;
 
-public class MBQMessage extends QMessage {
+public class MBQMessage extends QMessage implements DataSerializable {
     private String id;
     private QueueStatus status;
     private String queue;
@@ -62,8 +66,23 @@ public class MBQMessage extends QMessage {
         return Objects.equals(id, that.id);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
+    public void writeData(ObjectDataOutput out) throws IOException {
+        out.writeUTF(id);
+        out.writeUTF(status.name());
+        out.writeUTF(queue);
+        out.writeLong(createdTimeStamp);
+        out.writeLong(updatedTimeStamp);
+        out.writeUTF(getSeqKey());
+        out.writeByteArray(getMessage());
+    }
+
+    public void readData(ObjectDataInput in) throws IOException {
+        this.id = in.readUTF();
+        this.status = QueueStatus.valueOf(in.readUTF());
+        this.queue = in.readUTF();
+        this.createdTimeStamp = in.readLong();
+        this.updatedTimeStamp = in.readLong();
+        this.setSeqKey(in.readUTF());
+        this.setMessage(in.readByteArray());
     }
 }

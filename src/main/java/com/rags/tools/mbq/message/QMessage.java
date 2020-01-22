@@ -4,11 +4,11 @@ public class QMessage {
 
     private static final String DEFAULT_SEQ = "raga-seq";
 
-    private final String seqKey;
-    private final byte[] message;
+    private String seqKey;
+    private byte[] message;
 
     public QMessage() {
-        this(null, null);
+
     }
 
     public QMessage(String seqKey, byte[] message) {
@@ -22,5 +22,13 @@ public class QMessage {
 
     public byte[] getMessage() {
         return message;
+    }
+
+    protected void setSeqKey(String seqKey) {
+        this.seqKey = seqKey;
+    }
+
+    protected void setMessage(byte[] message) {
+        this.message = message;
     }
 }
