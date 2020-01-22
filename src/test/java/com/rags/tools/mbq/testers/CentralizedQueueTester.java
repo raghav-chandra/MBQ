@@ -13,9 +13,10 @@ public class CentralizedQueueTester {
                 .setPollingQueue("RAGHAV")
                 .setQueueType(QueueType.CENTRALIZED)
                 .setUrl("http://localhost:65000/")
+                .setValidationQuery("select 1")
                 .setUser("raga")
+                .setMaxxConn(10)
                 .setPassword("raga");
-        execute(6, 2, configBuilder);
+        execute(8, 2, configBuilder);
     }
-
 }
