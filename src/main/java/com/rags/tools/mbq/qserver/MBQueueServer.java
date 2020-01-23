@@ -31,11 +31,12 @@ public interface MBQueueServer {
     /**
      * Commits queue transactions
      *
-     * @param client client information
-     * @param ids    item IDs
+     * @param client         client information
+     * @param processedIds            item IDs
+     * @param messagesToPush all the messages that has to be pushed
      * @return true if commit was successful
      */
-    boolean commit(Client client, List<String> ids);
+    boolean commit(Client client, List<String> processedIds, List<QMessage> messagesToPush);
 
     /**
      * Roll back queue transactions

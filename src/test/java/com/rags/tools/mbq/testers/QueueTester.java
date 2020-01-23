@@ -36,7 +36,10 @@ public class QueueTester extends MBQueueClient {
                     for (int i = 0; i < 10; i++) {
                         messages.add(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
                     }
+                    Transaction transaction = client.getTransaction();
+                    transaction.start();
                     client.push(messages);
+                    transaction.commit();
                 });
             }
         }, 100, 100);

@@ -16,7 +16,7 @@ public class DBQueueTester {
                 .setUrl("jdbc:mysql://localhost:3306/raga")
                 .setUser("raga")
                 .setPassword("raga");
-        execute(4, 1, configBuilder);
+        execute(2, 4, configBuilder);
     }
 }
 

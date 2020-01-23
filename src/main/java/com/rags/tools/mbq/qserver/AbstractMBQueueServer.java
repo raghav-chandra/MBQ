@@ -110,7 +110,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
         try {
             LOCK.lock();
-
             PendingQueue<String> seqQ = getPendingQueueMap().get(queueName);
             if (seqQ.isEmpty()) {
                 return Collections.emptyList();
@@ -147,8 +146,11 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     }
 
     @Override
-    public boolean commit(Client client, List<String> ids) {
-        return updateQueueStatus(client, ids, QueueStatus.COMPLETED);
+    public boolean commit(Client client, List<String> ids, List<QMessage> messagesToBePushed) {
+        //TODO: Wrap around a transaction
+        updateQueueStatus(client, ids, QueueStatus.COMPLETED);
+        push(client, messagesToBePushed);
+        return true;
     }
 
     @Override

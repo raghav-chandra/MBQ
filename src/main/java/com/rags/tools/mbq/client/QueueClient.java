@@ -33,4 +33,11 @@ public interface QueueClient {
      * Stops Q client
      */
     void stop();
+
+    /**
+     * Creates or returns existing Transactions
+     *
+     * @return Q Transaction
+     */
+    MBQueuePublisher.Transaction getTransaction();
 }

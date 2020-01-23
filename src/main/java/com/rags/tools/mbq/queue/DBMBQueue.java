@@ -67,6 +67,10 @@ public class DBMBQueue extends AbstractMBQueue {
 
     @Override
     public List<MBQMessage> get(String queueName, String seqKey, List<QueueStatus> status) {
+        if (status.isEmpty()) {
+            return new LinkedList<>();
+        }
+
         List<String> qStatus = status.stream().map(Enum::name).collect(Collectors.toList());
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("queue", queueName)
@@ -93,6 +97,9 @@ public class DBMBQueue extends AbstractMBQueue {
 
     @Override
     public List<MBQMessage> pull(String queueName, List<String> ids) {
+        if (ids.isEmpty()) {
+            return new LinkedList<>();
+        }
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("queue", queueName)
                 .addValue("ids", ids);
@@ -101,6 +108,10 @@ public class DBMBQueue extends AbstractMBQueue {
 
     @Override
     public List<MBQMessage> push(String queueName, List<QMessage> messages) {
+        if (messages.isEmpty()) {
+            return new LinkedList<>();
+        }
+
         List<MBQMessage> mbqMessages = createMessages(messages, queueName);
         SqlParameterSource[] params = new SqlParameterSource[messages.size()];
 
@@ -122,12 +133,14 @@ public class DBMBQueue extends AbstractMBQueue {
 
     @Override
     public boolean updateStatus(String queueName, List<String> ids, QueueStatus status) {
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("ids", ids)
-                .addValue("queue", queueName)
-                .addValue("status", status.name())
-                .addValue("updatedTS", new Timestamp(System.currentTimeMillis()));
-        jdbcTemplate.update(UPDATE_MBQ_MESSAGE, params);
+        if (!ids.isEmpty()) {
+            SqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("ids", ids)
+                    .addValue("queue", queueName)
+                    .addValue("status", status.name())
+                    .addValue("updatedTS", new Timestamp(System.currentTimeMillis()));
+            jdbcTemplate.update(UPDATE_MBQ_MESSAGE, params);
+        }
         return true;
     }
 

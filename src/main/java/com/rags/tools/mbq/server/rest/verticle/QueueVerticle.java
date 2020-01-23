@@ -81,7 +81,7 @@ public class QueueVerticle extends AbstractVerticle {
                 pushHandler.fail(ErrorMessage.MESSAGES_NOT_FOUND_FOR_COMMIT.getCode(), ErrorMessage.MESSAGES_NOT_FOUND_FOR_COMMIT.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> {
-                    boolean isCommit = server.commit(req.getClient(), req.getIds());
+                    boolean isCommit = server.commit(req.getClient(), req.getIds(), req.getPushMessages());
                     workerHandler.complete(isCommit);
                 }, resHandler -> {
                     if (resHandler.succeeded()) {

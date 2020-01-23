@@ -34,6 +34,12 @@ public class HazelcastMBQueue extends AbstractMBQueue {
     public MBQMessage get(String queueName, String id) {
         IMap<String, MBQMessage> iMap = this.instance.getMap(queueName);
         if (iMap != null) {
+            System.out.println(id);
+            MBQMessage data = iMap.get(id);
+            if(data == null ) {
+                iMap.values().forEach(d-> System.out.println(d.getId()));
+                System.out.println("Raghav CHandra " +  id);
+            }
             return iMap.get(id);
         }
         return null;
@@ -48,7 +54,7 @@ public class HazelcastMBQueue extends AbstractMBQueue {
             Predicate seqKeyQuery = Predicates.equal("seqKey", seqKey);
             return new LinkedList<>(iMap.values(Predicates.and(statusInQuery, seqKeyQuery)));
         }
-        return null;
+        return new LinkedList<>();
     }
 
     @Override
@@ -74,7 +80,7 @@ public class HazelcastMBQueue extends AbstractMBQueue {
         if (iMap != null) {
             return new LinkedList<>(iMap.getAll(new HashSet<>(ids)).values());
         }
-        return null;
+        return new LinkedList<>();
     }
 
     @Override
@@ -85,7 +91,7 @@ public class HazelcastMBQueue extends AbstractMBQueue {
             iMap.putAll(createMap(mbqMessages));
             return mbqMessages;
         }
-        return null;
+        return new LinkedList<>();
     }
 
     private Map<String, MBQMessage> createMap(Collection<MBQMessage> mbqMessages) {

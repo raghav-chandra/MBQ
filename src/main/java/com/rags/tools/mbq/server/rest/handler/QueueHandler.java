@@ -48,7 +48,7 @@ public class QueueHandler {
         return new AbstractRequestHandler<CommitRollbackRequest, Boolean>(requestRollback) {
             @Override
             protected CommitRollbackRequest getRequestData(HttpServerRequest request, Buffer body) {
-                return body != null ? Json.decodeValue(body, CommitRollbackRequest.class) : new CommitRollbackRequest(null, null);
+                return body != null ? Json.decodeValue(body, CommitRollbackRequest.class) : new CommitRollbackRequest();
             }
         };
     }
