@@ -31,7 +31,9 @@ public class QueueTester extends MBQueueClient {
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                allPublishers.forEach(client -> {
+//        while(counter <=100000)
+                long l = System.currentTimeMillis();
+                allPublishers.parallelStream().forEach(client -> {
                     List<QMessage> messages = new LinkedList<>();
                     for (int i = 0; i < 10; i++) {
                         messages.add(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
@@ -41,6 +43,7 @@ public class QueueTester extends MBQueueClient {
                     client.push(messages);
                     transaction.commit();
                 });
+                System.out.println(Thread.currentThread().getName() + "    Time Taken : " + (System.currentTimeMillis()-l));
             }
         }, 100, 100);
 

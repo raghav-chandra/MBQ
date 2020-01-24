@@ -12,7 +12,7 @@ public class InMemoryQueueTester {
                 .setBatch(10)
                 .setPollingQueue("RAGHAV")
                 .setQueueType(QueueType.SINGLE_JVM_INMEMORY);
-        execute(1, 4, configBuilder);
+        execute(4, 1, configBuilder);
     }
 }
 

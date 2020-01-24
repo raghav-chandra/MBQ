@@ -120,22 +120,23 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
             int counter = 0;
             List<String> ids = new ArrayList<>(noOfItem);
-            List<MBQMessage> messagesPulled = new ArrayList<>(noOfItem);
+//            List<MBQMessage> messagesPulled = new ArrayList<>(noOfItem);
             for (int i = 0; i < noOfItem && counter < seqQ.size(); ) {
                 String id = seqQ.get(counter);
                 MBQMessage item = getQueue().get(queueName, id);
                 List<MBQMessage> allMessages = getQueue().get(queueName, item.getSeqKey(), Arrays.asList(QueueStatus.PROCESSING, QueueStatus.ERROR, QueueStatus.HELD));
                 if (allMessages.isEmpty()) {
                     ids.add(id);
-                    messagesPulled.add(item);
+//                    messagesPulled.add(item);
                     items.add(item);
                     i++;
                 }
                 counter++;
             }
-            messagesPulled.forEach(item -> item.updateStatus(QueueStatus.PROCESSING));
-            seqQ.removeAll(ids);
 
+            getQueue().updateStatus(queueName, ids, QueueStatus.PROCESSING);
+//            messagesPulled.forEach(item ->  getQueue().updateStatus()item.updateStatus(QueueStatus.PROCESSING));
+            seqQ.removeAll(ids);
             //Add Client messages ID that is in Process
             CLIENTS_MESSAGES.put(client, ids);
 
@@ -146,10 +147,12 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     }
 
     @Override
-    public boolean commit(Client client, List<String> ids, List<QMessage> messagesToBePushed) {
+    public boolean commit(Client client, List<String> ids, Map<String, List<QMessage>> messagesToBePushed) {
         //TODO: Wrap around a transaction
         updateQueueStatus(client, ids, QueueStatus.COMPLETED);
-        push(client, messagesToBePushed);
+        if (!messagesToBePushed.isEmpty()) {
+            messagesToBePushed.forEach((queueName, messages) -> pushMessage(client, messages, queueName));
+        }
         return true;
     }
 
@@ -215,46 +218,54 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     }
 
     private void pushIdToRightPlace(PendingQueue<String> seqQ, List<String> idsToPushed) {
-        Collections.sort(idsToPushed);
+        LOCK.lock();
+        try {
+            Collections.sort(idsToPushed);
 
-        if (seqQ.isEmpty()) {
-            seqQ.addAll(idsToPushed);
-        } else {
-            idsToPushed.forEach(id -> {
-                int index = -1;
-                for (int i = 0; i < seqQ.size(); i++) {
-                    if (seqQ.get(i).compareTo(id) <= 0) {
-                        index = i;
-                        break;
+            if (seqQ.isEmpty()) {
+                seqQ.addAll(idsToPushed);
+            } else {
+                idsToPushed.forEach(id -> {
+                    int index = -1;
+                    for (int i = 0; i < seqQ.size(); i++) {
+                        if (seqQ.get(i).compareTo(id) <= 0) {
+                            index = i;
+                            break;
+                        }
                     }
-                }
-                if (index == -1) {
-                    seqQ.addLast(id);
-                } else {
-                    seqQ.add(index, id);
-                }
-            });
+                    if (index == -1) {
+                        seqQ.addLast(id);
+                    } else {
+                        seqQ.add(index, id);
+                    }
+                });
+            }
+        } finally {
+            LOCK.unlock();
         }
     }
 
     @Override
     public List<MBQMessage> push(Client client, List<QMessage> messages) {
+        return pushMessage(client, messages, client.getQueueName());
+    }
+
+    private List<MBQMessage> pushMessage(Client client, List<QMessage> messages, String queueName) {
         if (messages == null || messages.isEmpty()) {
             throw new MBQException("Message to be pushed can't be blank");
         }
         validateClient(client);
-        List<MBQMessage> pushedMsgs = getQueue().push(client.getQueueName(), messages);
 
         try {
             LOCK.lock();
-            pushedMsgs.forEach(msg -> getPendingQueueMap().get(client.getQueueName()).add(msg.getId()));
-            System.out.println("No of items in the queue + " + getPendingQueueMap().get(client.getQueueName()).size());
-            LOGGER.info("No of items in the queue {}", getPendingQueueMap().get(client.getQueueName()).size());
+            List<MBQMessage> pushedMsgs = getQueue().push(queueName, messages);
+            pushedMsgs.forEach(msg -> getPendingQueueMap().get(queueName).add(msg.getId()));
+            System.out.println("No of items in the queue + " + getPendingQueueMap().get(queueName).size());
+            LOGGER.info("No of items in the queue {}", getPendingQueueMap().get(queueName).size());
+            return pushedMsgs;
         } finally {
             LOCK.unlock();
         }
-
-        return pushedMsgs;
     }
 
     @Override

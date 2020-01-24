@@ -17,9 +17,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author ragha
@@ -98,7 +96,7 @@ public class MBQueueServerProxy implements MBQueueServer {
         }
     }
 
-    public boolean commit(Client client, List<String> processedIds, List<QMessage> messagesToBePushed) {
+    public boolean commit(Client client, List<String> processedIds, Map<String, List<QMessage>> messagesToBePushed) {
         byte[] resp = this.post("mbq/commit", new CommitRollbackRequest(client, processedIds, messagesToBePushed));
         try {
             RestResponse<Boolean> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<Boolean>>() {
@@ -112,7 +110,7 @@ public class MBQueueServerProxy implements MBQueueServer {
 
     @Override
     public boolean rollback(Client client, List<String> ids) {
-        byte[] resp = this.post("mbq/push", new CommitRollbackRequest(client, ids, new LinkedList<>()));
+        byte[] resp = this.post("mbq/push", new CommitRollbackRequest(client, ids, new HashMap<>()));
         try {
             RestResponse<Boolean> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<Boolean>>() {
             });

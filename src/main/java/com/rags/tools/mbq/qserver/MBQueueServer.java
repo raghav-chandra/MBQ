@@ -5,6 +5,7 @@ import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author ragha
@@ -36,7 +37,7 @@ public interface MBQueueServer {
      * @param messagesToPush all the messages that has to be pushed
      * @return true if commit was successful
      */
-    boolean commit(Client client, List<String> processedIds, List<QMessage> messagesToPush);
+    boolean commit(Client client, List<String> processedIds, Map<String, List<QMessage>> messagesToPush);
 
     /**
      * Roll back queue transactions

@@ -16,40 +16,54 @@ public class MBQueuePublisher implements QueueClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MBQueuePublisher.class);
 
-    private final Client client;
     private final MBQueueServer server;
+    private final QConfig config;
+
+    private Client client;
     private Timer timer;
 
-    private final List<QMessage> messagesToPushed = new LinkedList<>();
+    private final Map<String, List<QMessage>> messagesToPushed = new HashMap<>();
     private final List<MBQMessage> processingMessages = new LinkedList<>();
 
-    private Transaction transaction;
+    private final Transaction transaction;
 
     public MBQueuePublisher(QConfig config) {
         this.server = MBQServerInstance.createOrGet(config.getServerConfig());
-        this.client = server.registerClient(new Client(config.getClientConfig().getWorkerName(), config.getClientConfig().getPollingQueue(), config.getClientConfig().getBatch()));
+        this.config = config;
         this.transaction = new Transaction();
     }
 
     @Override
     public void push(QMessage message) {
-        if (transaction.getStatus() != QTransStatus.START) {
-            throw new MBQException("Transaction is not started");
-        }
-
-        LOGGER.info("Publishing message with Seq Key {} to Queue {}", message.getSeqKey(), getClient().getQueueName());
-        messagesToPushed.add(message);
-//        server.push(this.client, message);
+        push(Collections.singletonList(message));
     }
 
     @Override
     public void push(List<QMessage> messages) {
+        pushMessages(messages, client.getQueueName());
+    }
+
+    private void pushMessages(List<QMessage> messages, String queueName) {
+        validateClient();
         if (transaction.getStatus() != QTransStatus.START) {
             throw new MBQException("Message can not be pushed without transaction");
         }
         LOGGER.info("Publishing {} messages to Queue", messages.size());
-        messagesToPushed.addAll(messages);
-//        server.push(this.client, messages);
+        if (!messagesToPushed.containsKey(queueName)) {
+            messagesToPushed.put(queueName, new LinkedList<>());
+        }
+        messagesToPushed.get(queueName).addAll(messages);
+    }
+
+
+    @Override
+    public void push(QMessage message, String queueName) {
+        pushMessages(Collections.singletonList(message), client.getQueueName());
+    }
+
+    @Override
+    public void push(List<QMessage> messages, String queueName) {
+        pushMessages(messages, client.getQueueName());
     }
 
     @Override
@@ -59,16 +73,19 @@ public class MBQueuePublisher implements QueueClient {
             throw new MBQException("Client is still running, cant start again");
         }
         this.timer = new Timer(true);
+        this.client = server.registerClient(new Client(config.getClientConfig().getWorkerName(), config.getClientConfig().getPollingQueue(), config.getClientConfig().getBatch()));
         this.timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 client.setHeartBeatId(server.ping(client));
             }
-        }, 0, 500);
+        }, 0, 1000);
     }
 
     @Override
     public void stop() {
+        validateClient();
+
         LOGGER.info("Shutting down Q Consumer Client ");
 
         if (timer == null) {
@@ -76,6 +93,7 @@ public class MBQueuePublisher implements QueueClient {
         }
 
         timer.cancel();
+        this.client = null;
         timer = null;
     }
 
@@ -84,12 +102,10 @@ public class MBQueuePublisher implements QueueClient {
         return this.transaction;
     }
 
-    protected void rollBackQueueTrans() {
+    private void rollBackQueueTrans() {
+        validateClient();
         LOGGER.info("Rolling back for the processed items of client [{}]", getClient());
-        /*if (processingMessages.isEmpty() || messagesToPushed.isEmpty()) {
-            throw new MBQException("There's no item processed that has to be rolled back");
-        }
-*/
+
         boolean success = getServer().rollback(getClient(), processingMessages.parallelStream().map(MBQMessage::getId)
                 .collect(Collectors.toList()));
         if (success) {
@@ -100,14 +116,18 @@ public class MBQueuePublisher implements QueueClient {
         }
     }
 
-    void commitQueueTrans() {
+    private void validateClient() {
+        if (this.client == null || this.client.getId() == null || this.client.getHeartBeatId() == null) {
+            throw new MBQException("Client is not registered. Please call start() on client");
+        }
+    }
+
+    private void commitQueueTrans() {
+        validateClient();
         LOGGER.info("Committing Transaction for the processed items of client [{}]", getClient());
-        /*if (processingMessages.isEmpty() || messagesToPushed.isEmpty()) {
-            throw new MBQException("There's no item processed that has to be commited");
-        }*/
 
         boolean success = getServer().commit(getClient(), processingMessages.parallelStream().map(MBQMessage::getId)
-                .collect(Collectors.toList()), getMessagesToPushed());
+                .collect(Collectors.toList()), messagesToPushed);
         if (success) {
             processingMessages.clear();
             messagesToPushed.clear();
@@ -115,12 +135,6 @@ public class MBQueuePublisher implements QueueClient {
             throw new MBQException("Failed while commiting transaction");
         }
     }
-
-
-    protected List<QMessage> getMessagesToPushed() {
-        return messagesToPushed;
-    }
-
 
     protected List<MBQMessage> getProcessingMessages() {
         return processingMessages;
@@ -136,6 +150,10 @@ public class MBQueuePublisher implements QueueClient {
 
     public class Transaction {
         private QTransStatus status = QTransStatus.INIT;
+
+        private Transaction() {
+
+        }
 
         public void start() {
             if (this.status != QTransStatus.ROLLED_BACK && this.status != QTransStatus.COMMITED && this.status != QTransStatus.INIT) {
