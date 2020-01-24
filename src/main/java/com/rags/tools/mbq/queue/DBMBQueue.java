@@ -15,15 +15,12 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DBMBQueue extends AbstractMBQueue {
 
-    private static final String GET_BY_QUEUE_AND_ID = "select * from MBQueueMessage where Id=:id";
+    private static final String GET_BY_QUEUE_AND_ID = "select * from MBQueueMessage where Id in (:ids)";
     private static final String GET_BY_QUEUE_SEQ_AND_STATUS = "select * from MBQueueMessage where QueueName=:queue and Sequence=:seq and Status in (:status)";
     private static final String GET_BY_QUEUE_AND_IDS = "select * from MBQueueMessage where QueueName=:queue Id in (:ids)";
     private static final String GET_PENDING_IDS = "select Id, QueueName from MBQueueMessage where Status='PENDING' order by CreatedTime asc";
@@ -57,12 +54,15 @@ public class DBMBQueue extends AbstractMBQueue {
     }
 
     @Override
-    public MBQMessage get(String queueName, String id) {
+    public List<MBQMessage> get(String queueName, List<String> ids) {
+        if (ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("queue", queueName)
-                .addValue("id", id);
-        List<MBQMessage> messages = jdbcTemplate.query(GET_BY_QUEUE_AND_ID, param, new MessageRowMapper());
-        return messages.isEmpty() ? null : messages.get(0);
+                .addValue("ids", ids);
+        return jdbcTemplate.query(GET_BY_QUEUE_AND_ID, param, new MessageRowMapper());
     }
 
     @Override

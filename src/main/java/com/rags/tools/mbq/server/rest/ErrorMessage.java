@@ -8,12 +8,13 @@ public enum ErrorMessage {
 
     MESSAGES_INVALID(9003, "Message is not present"),
 
-    MESSAGES_NOT_FOUND_FOR_COMMIT(9003, "Message not found for committing"),
-    MESSAGES_NOT_FOUND_FOR_ROLLBACK(9003, "Message not found for rollback"),
+    MESSAGES_NOT_FOUND_FOR_COMMIT(9004, "Message not found for committing"),
+    MESSAGES_NOT_FOUND_FOR_ROLLBACK(9005, "Message not found for rollback"),
 
-    MESSAGE_PUBLISHING_FAILED(9004, "Message publishing failed"),
-    MESSAGE_COMMIT_FAILED(9004, "Message commit failed"),
-    MESSAGE_ROLLBACK_FAILED(9004, "Message rollback failed"),
+    MESSAGE_PUBLISHING_FAILED(9006, "Message publishing failed"),
+    MESSAGE_COMMIT_FAILED(9007, "Message commit failed"),
+    MESSAGE_ROLLBACK_FAILED(9008, "Message rollback failed"),
+    MESSAGE_PULL_FAILED(9009, "Message pull failed"),
     ;
 
     private final int code;

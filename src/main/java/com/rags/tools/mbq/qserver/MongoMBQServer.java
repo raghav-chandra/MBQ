@@ -49,6 +49,6 @@ public class MongoMBQServer extends AbstractMBQueueServer {
 
     @Override
     void init() {
-        getQueue().getAllPendingIds().forEach((key, val) -> getPendingQueueMap().get(key).addAll(val));
+        getQueue().getAllPendingIds().forEach((key, val) -> getPendingQueue(key).addAll(val));
     }
 }

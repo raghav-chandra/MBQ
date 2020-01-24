@@ -50,6 +50,6 @@ public class DBMBQueueServer extends AbstractMBQueueServer {
     @Override
     void init() {
         getQueue().updateStatus(QueueStatus.PROCESSING, QueueStatus.PENDING);
-        getQueue().getAllPendingIds().forEach((key, val) -> getPendingQueueMap().get(key).addAll(val));
+        getQueue().getAllPendingIds().forEach((key, val) -> getPendingQueue(key).addAll(val));
     }
 }

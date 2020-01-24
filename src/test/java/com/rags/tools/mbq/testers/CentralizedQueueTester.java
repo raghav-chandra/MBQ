@@ -9,7 +9,7 @@ public class CentralizedQueueTester {
 
     public static void main(String[] args) {
         QConfig.Builder configBuilder = new QConfig.Builder()
-                .setBatch(10)
+                .setBatch(5)
                 .setPollingQueue("RAGHAV")
                 .setQueueType(QueueType.CENTRALIZED)
                 .setUrl("http://localhost:65000/")
@@ -17,6 +17,6 @@ public class CentralizedQueueTester {
                 .setUser("raga")
                 .setMaxxConn(10)
                 .setPassword("raga");
-        execute(1, 1, configBuilder);
+        execute(2, 10, configBuilder);
     }
 }

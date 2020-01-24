@@ -62,4 +62,7 @@ public interface PendingQueue<T> {
      * @param items all Items
      */
     void addAll(List<T> items);
+
+    void lock();
+    void unlock();
 }

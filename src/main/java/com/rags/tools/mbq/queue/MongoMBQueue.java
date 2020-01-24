@@ -15,7 +15,7 @@ public class MongoMBQueue extends AbstractMBQueue {
     }
 
     @Override
-    public MBQMessage get(String queueName, String id) {
+    public List<MBQMessage> get(String queueName, List<String> ids) {
         return null;
     }
 

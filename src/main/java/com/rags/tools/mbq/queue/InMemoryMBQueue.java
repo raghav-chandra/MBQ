@@ -13,12 +13,14 @@ public class InMemoryMBQueue extends AbstractMBQueue {
 
     private final Map<String, Map<String, MBQMessage>> QUEUE_DS = new ConcurrentHashMap<>();
 
+
+
     @Override
-    public MBQMessage get(String queueName, String id) {
+    public List<MBQMessage> get(String queueName, List<String> ids) {
         if (QUEUE_DS.containsKey(queueName)) {
-            return QUEUE_DS.get(queueName).get(id);
+            return ids.stream().map(id -> QUEUE_DS.get(queueName).get(id)).collect(Collectors.toList());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -27,7 +29,7 @@ public class InMemoryMBQueue extends AbstractMBQueue {
             Map<String, MBQMessage> queue = QUEUE_DS.get(queueName);
             return queue.values().parallelStream().filter(item -> status.contains(item.getStatus()) && item.getSeqKey().equals(seqKey)).collect(Collectors.toList());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -62,7 +64,7 @@ public class InMemoryMBQueue extends AbstractMBQueue {
     @Override
     public boolean updateStatus(String queueName, List<String> ids, QueueStatus status) {
         if (ids == null || ids.isEmpty()) {
-            return false;
+            return true;
         }
 
         if (!QUEUE_DS.containsKey(queueName)) {

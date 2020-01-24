@@ -9,10 +9,10 @@ public class InMemoryQueueTester {
 
     public static void main(String[] args) {
         QConfig.Builder configBuilder = new QConfig.Builder()
-                .setBatch(10)
+                .setBatch(5)
                 .setPollingQueue("RAGHAV")
                 .setQueueType(QueueType.SINGLE_JVM_INMEMORY);
-        execute(4, 1, configBuilder);
+        execute(10, 2, configBuilder);
     }
 }
 

@@ -43,7 +43,7 @@ public class QueueTester extends MBQueueClient {
                     client.push(messages);
                     transaction.commit();
                 });
-                System.out.println(Thread.currentThread().getName() + "    Time Taken : " + (System.currentTimeMillis()-l));
+//                System.out.println(Thread.currentThread().getName() + "    Time Taken : " + (System.currentTimeMillis()-l));
             }
         }, 100, 100);
 

@@ -54,7 +54,13 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                     Optional<Client> existing = CLIENTS_MESSAGES.keySet().parallelStream().filter(c -> c.getId().equals(id)).findFirst();
                     if (existing.isPresent()) {
                         Client client = existing.get();
-                        pushIdToRightPlace(getPendingQueueMap().get(client.getQueueName()), CLIENTS_MESSAGES.get(client));
+                        PendingQueue<String> pendQ = getPendingQueue(client.getQueueName());
+                        pendQ.lock();
+                        try {
+                            pushIdToRightPlace(pendQ, CLIENTS_MESSAGES.get(client));
+                        } finally {
+                            pendQ.unlock();
+                        }
                     }
                 });
             }
@@ -108,18 +114,20 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         String queueName = client.getQueueName();
         int batch = client.getBatch();
 
+        PendingQueue<String> seqQ = getPendingQueue(queueName);
+        if (seqQ.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        int noOfItem = Math.min(seqQ.size(), batch);
+        List<MBQMessage> items = new ArrayList<>(noOfItem);
+
+        int counter = 0;
+        List<String> ids = new ArrayList<>(noOfItem);
+
         try {
-            LOCK.lock();
-            PendingQueue<String> seqQ = getPendingQueueMap().get(queueName);
-            if (seqQ.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            int noOfItem = Math.min(seqQ.size(), batch);
-            List<MBQMessage> items = new ArrayList<>(noOfItem);
-
-            int counter = 0;
-            List<String> ids = new ArrayList<>(noOfItem);
+//            LOCK.lock();
+            seqQ.lock();
 //            List<MBQMessage> messagesPulled = new ArrayList<>(noOfItem);
             for (int i = 0; i < noOfItem && counter < seqQ.size(); ) {
                 String id = seqQ.get(counter);
@@ -138,12 +146,13 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 //            messagesPulled.forEach(item ->  getQueue().updateStatus()item.updateStatus(QueueStatus.PROCESSING));
             seqQ.removeAll(ids);
             //Add Client messages ID that is in Process
-            CLIENTS_MESSAGES.put(client, ids);
-
-            return items;
         } finally {
-            LOCK.unlock();
+            seqQ.unlock();
+//            LOCK.unlock();
         }
+
+        CLIENTS_MESSAGES.put(client, ids);
+        return items;
     }
 
     @Override
@@ -181,16 +190,18 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         //ANY-> HELD/BLOCKED/ERROR
         List<String> allToNotCompleted = new ArrayList<>();
 
+        List<MBQMessage> existingMsgs = getQueue().get(client.getQueueName(), ids);
+
         ids.forEach(id -> {
-            MBQMessage existingMsg = getQueue().get(client.getQueueName(), id);
-            if (existingMsg == null) {
+            Optional<MBQMessage> message = existingMsgs.stream().filter(m -> m.getId().equals(id)).findFirst();
+            if (message.isEmpty()) {
                 throw new MBQException("Message didn't find in the queue with id " + id);
             }
 
             if (status == QueueStatus.COMPLETED) {
-                if (existingMsg.getStatus() == QueueStatus.PROCESSING) {
+                if (message.get().getStatus() == QueueStatus.PROCESSING) {
                     processingToComplete.add(id);
-                } else if (existingMsg.getStatus() != QueueStatus.COMPLETED) {
+                } else if (message.get().getStatus() != QueueStatus.COMPLETED) {
                     restAllToComplete.add(id);
                 }
             } else {
@@ -198,18 +209,27 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             }
         });
 
-        if (!processingToComplete.isEmpty()) {
-            getQueue().updateStatus(client.getQueueName(), processingToComplete, status);
-        }
 
-        if (!restAllToComplete.isEmpty()) {
-            getQueue().updateStatus(client.getQueueName(), restAllToComplete, status);
-            getPendingQueueMap().get(client.getQueueName()).removeAll(restAllToComplete);
-        }
+        List<String> allItems = new LinkedList<>(processingToComplete);
+        allItems.addAll(restAllToComplete);
+        allItems.addAll(allToNotCompleted);
 
-        if (!allToNotCompleted.isEmpty()) {
-            getQueue().updateStatus(client.getQueueName(), restAllToComplete, status);
-            pushIdToRightPlace(getPendingQueueMap().get(client.getQueueName()), allToNotCompleted);
+        getQueue().updateStatus(client.getQueueName(), allItems, status);
+
+        PendingQueue<String> pendQ = getPendingQueue(client.getQueueName());
+        try {
+            pendQ.lock();
+            if (!restAllToComplete.isEmpty()) {
+                pendQ.removeAll(restAllToComplete);
+            }
+
+            if (!allToNotCompleted.isEmpty()) {
+                pendQ.addAll(allToNotCompleted);
+                pushIdToRightPlace(pendQ, allToNotCompleted);
+
+            }
+        } finally {
+            pendQ.unlock();
         }
 
         //Remove Client Messages once processing is done.
@@ -218,30 +238,25 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     }
 
     private void pushIdToRightPlace(PendingQueue<String> seqQ, List<String> idsToPushed) {
-        LOCK.lock();
-        try {
-            Collections.sort(idsToPushed);
+        Collections.sort(idsToPushed);
 
-            if (seqQ.isEmpty()) {
-                seqQ.addAll(idsToPushed);
-            } else {
-                idsToPushed.forEach(id -> {
-                    int index = -1;
-                    for (int i = 0; i < seqQ.size(); i++) {
-                        if (seqQ.get(i).compareTo(id) <= 0) {
-                            index = i;
-                            break;
-                        }
+        if (seqQ.isEmpty()) {
+            seqQ.addAll(idsToPushed);
+        } else {
+            idsToPushed.forEach(id -> {
+                int index = -1;
+                for (int i = 0; i < seqQ.size(); i++) {
+                    if (seqQ.get(i).compareTo(id) <= 0) {
+                        index = i;
+                        break;
                     }
-                    if (index == -1) {
-                        seqQ.addLast(id);
-                    } else {
-                        seqQ.add(index, id);
-                    }
-                });
-            }
-        } finally {
-            LOCK.unlock();
+                }
+                if (index == -1) {
+                    seqQ.addLast(id);
+                } else {
+                    seqQ.add(index, id);
+                }
+            });
         }
     }
 
@@ -256,15 +271,19 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         }
         validateClient(client);
 
+        PendingQueue<String> pendQ = getPendingQueue(queueName);
         try {
-            LOCK.lock();
+//            LOCK.lock();
             List<MBQMessage> pushedMsgs = getQueue().push(queueName, messages);
-            pushedMsgs.forEach(msg -> getPendingQueueMap().get(queueName).add(msg.getId()));
-            System.out.println("No of items in the queue + " + getPendingQueueMap().get(queueName).size());
-            LOGGER.info("No of items in the queue {}", getPendingQueueMap().get(queueName).size());
+
+            pendQ.lock();
+            pushedMsgs.forEach(msg -> getPendingQueue(queueName).add(msg.getId()));
+            System.out.println("No of items in the queue + " + getPendingQueue(queueName).size());
+            LOGGER.info("No of items in the queue {}", getPendingQueue(queueName).size());
             return pushedMsgs;
         } finally {
-            LOCK.unlock();
+            pendQ.unlock();
+//            LOCK.unlock();
         }
     }
 
@@ -295,13 +314,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         return queue;
     }
 
-    /**
-     * Pending queue implementation
-     *
-     * @return Pending Queue Map
-     */
-    protected PendingQueueMap getPendingQueueMap() {
-        return pendingQueueMap;
+    protected PendingQueue<String> getPendingQueue(String queueName) {
+        return pendingQueueMap.get(queueName);
     }
 
     private static class HeartBeat {

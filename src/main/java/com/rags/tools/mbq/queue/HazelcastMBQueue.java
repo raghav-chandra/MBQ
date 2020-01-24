@@ -5,6 +5,7 @@ import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.IQueue;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.query.Predicates;
 import com.rags.tools.mbq.QConfig;
@@ -31,18 +32,16 @@ public class HazelcastMBQueue extends AbstractMBQueue {
     }
 
     @Override
-    public MBQMessage get(String queueName, String id) {
+    public List<MBQMessage> get(String queueName, List<String> ids) {
         IMap<String, MBQMessage> iMap = this.instance.getMap(queueName);
         if (iMap != null) {
-            System.out.println(id);
-            MBQMessage data = iMap.get(id);
-            if(data == null ) {
-                iMap.values().forEach(d-> System.out.println(d.getId()));
-                System.out.println("Raghav CHandra " +  id);
+            Map<String, MBQMessage> data = iMap.getAll(new HashSet<>(ids));
+            if (data.isEmpty()) {
+                iMap.values().forEach(d -> System.out.println(d.getId()));
             }
-            return iMap.get(id);
+            return new LinkedList<>(data.values());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -103,6 +102,9 @@ public class HazelcastMBQueue extends AbstractMBQueue {
 
     @Override
     public boolean updateStatus(String queueName, List<String> ids, QueueStatus status) {
+        if (ids.isEmpty()) {
+            return true;
+        }
         IMap<String, MBQMessage> iMap = this.instance.getMap(queueName);
         if (iMap != null) {
             Collection<MBQMessage> allMessages = iMap.getAll(new HashSet<>(ids)).values();

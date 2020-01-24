@@ -124,15 +124,16 @@ public class MBQueuePublisher implements QueueClient {
 
     private void commitQueueTrans() {
         validateClient();
-        LOGGER.info("Committing Transaction for the processed items of client [{}]", getClient());
-
-        boolean success = getServer().commit(getClient(), processingMessages.parallelStream().map(MBQMessage::getId)
-                .collect(Collectors.toList()), messagesToPushed);
-        if (success) {
-            processingMessages.clear();
-            messagesToPushed.clear();
-        } else {
-            throw new MBQException("Failed while commiting transaction");
+        if (!processingMessages.isEmpty()) {
+            LOGGER.info("Committing Transaction for the processed items of client [{}]", getClient());
+            boolean success = getServer().commit(getClient(), processingMessages.parallelStream().map(MBQMessage::getId)
+                    .collect(Collectors.toList()), messagesToPushed);
+            if (success) {
+                processingMessages.clear();
+                messagesToPushed.clear();
+            } else {
+                throw new MBQException("Failed while commiting transaction");
+            }
         }
     }
 

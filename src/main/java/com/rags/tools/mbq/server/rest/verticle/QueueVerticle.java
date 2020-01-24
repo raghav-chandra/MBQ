@@ -46,7 +46,7 @@ public class QueueVerticle extends AbstractVerticle {
                     if (resHandler.succeeded()) {
                         pullHandler.reply(resHandler.result());
                     } else {
-                        pullHandler.fail(ErrorMessage.CLIENT_REGISTER_FAILED.getCode(), ErrorMessage.CLIENT_REGISTER_FAILED.getMessage() + resHandler.cause().getMessage());
+                        pullHandler.fail(ErrorMessage.MESSAGE_PULL_FAILED.getCode(), ErrorMessage.MESSAGE_PULL_FAILED.getMessage() + resHandler.cause().getMessage());
                     }
                 });
             }

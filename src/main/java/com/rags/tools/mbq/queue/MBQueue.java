@@ -23,6 +23,15 @@ public interface MBQueue {
     MBQMessage get(String queueName, String id);
 
     /**
+     * Retrieves items from the queue based on the item ids
+     *
+     * @param queueName Queue Name
+     * @param ids       q item ids
+     * @return MBQ Messages
+     */
+    List<MBQMessage> get(String queueName, List<String> ids);
+
+    /**
      * Retrieves items from the queue based on the SeqKey and Status
      *
      * @param queueName Queue Name
