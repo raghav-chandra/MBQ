@@ -14,115 +14,52 @@ public class InMemoryPendingQueue<T> implements PendingQueue<T> {
 
     @Override
     public boolean isEmpty() {
-/*
-        try {
-            lock.readLock().lock();
-*/
-            return queue.isEmpty();
-/*
-        } finally {
-            lock.readLock().unlock();
-        }
-*/
+        return queue.isEmpty();
     }
 
     @Override
     public int size() {
-/*
-        lock.readLock().lock();
-        try {
-*/
-            return queue.size();
-/*
-        } finally {
-            lock.readLock().unlock();
-        }
-*/
+        return queue.size();
     }
 
     @Override
     public boolean removeAll(List<T> items) {
-/*
-        lock.writeLock().lock();
-        try {
-*/
-            return queue.removeAll(items);
-/*
-        } finally {
-            lock.writeLock().unlock();
-        }
-*/
+        return queue.removeAll(items);
     }
 
     @Override
     public T get(int index) {
-/*
-        lock.writeLock().lock();
-        try {
-*/
-            return queue.get(index);
-/*
-        } finally {
-            lock.writeLock().unlock();
-        }
-*/
+        return queue.get(index);
     }
 
     @Override
     public void addLast(T item) {
-/*
-        lock.writeLock().lock();
-        try {
-*/
-            this.queue.addLast(item);
-/*
-        } finally {
-            lock.writeLock().unlock();
-        }
-*/
+        this.queue.addLast(item);
     }
 
     @Override
     public void add(int index, T item) {
-/*
-        lock.writeLock().lock();
-        try {
-*/
-            this.queue.add(index, item);
-/*
-        } finally {
-            lock.writeLock().unlock();
-        }
-*/
+        this.queue.add(index, item);
     }
 
     @Override
     public void add(T item) {
-/*
-        lock.writeLock().lock();
-        try {
-*/
-            this.queue.add(item);
-/*
-        } finally {
-            lock.writeLock().unlock();
-        }
-*/
+        this.queue.add(item);
     }
 
     @Override
     public void addAll(List<T> items) {
-/*
-        lock.writeLock().lock();
-        try {
-*/
-            queue.addAll(items);
+        queue.addAll(items);
+    }
 
-/*
-        } finally {
-            lock.writeLock().unlock();
-        }
-*/
+    @Override
+    public void addFirst(T item) {
+        queue.addFirst(item);
+    }
+
+    @Override
+    public void addAllFirst(List<T> items) {
+        items.forEach(queue::addFirst);
     }
 
     @Override

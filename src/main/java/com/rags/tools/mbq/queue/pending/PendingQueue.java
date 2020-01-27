@@ -63,7 +63,23 @@ public interface PendingQueue<T> {
      */
     void addAll(List<T> items);
 
+    /**
+     * Add an item in the queue to the front position
+     *
+     * @param item item to be added
+     */
+    void addFirst(T item);
+
+    /**
+     * Add all items in the queue to the front position
+     *
+     * @param items all Items
+     */
+    void addAllFirst(List<T> items);
+
     void lock();
+
     void unlock();
+
     boolean isLocked();
 }

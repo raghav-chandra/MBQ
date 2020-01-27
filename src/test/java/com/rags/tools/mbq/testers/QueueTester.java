@@ -41,7 +41,6 @@ public class QueueTester extends MBQueueClient {
                         messages.add(new QMessage((counter % DIFF_SEQ) + "DODA", (counter + "BLAH BLAH" + (counter++ % DIFF_SEQ)).getBytes()));
                     }
                     Transaction transaction = client.getTransaction();
-                    LOGGER.info("******************************************{} ----- {}++++++++++++++++{}", Thread.currentThread().getId() , transaction, client.getTransaction().getQueueClient());
                     transaction.start();
                     client.push(messages);
                     transaction.commit();

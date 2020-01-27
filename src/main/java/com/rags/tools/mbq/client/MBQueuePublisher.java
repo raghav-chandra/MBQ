@@ -124,8 +124,9 @@ public class MBQueuePublisher implements QueueClient {
 
     private void commitQueueTrans() {
         validateClient();
-        if (!processingMessages.isEmpty()) {
-            LOGGER.info("Committing Transaction for the processed items of client [{}]", getClient());
+        if (!processingMessages.isEmpty() || !messagesToPushed.isEmpty()) {
+            LOGGER.info("Committing Transaction for client [{}] with processedItems [{}] and message pushed to queues [{}]"
+                    , getClient(), processingMessages.size(), messagesToPushed.size());
             boolean success = getServer().commit(getClient(), processingMessages.parallelStream().map(MBQMessage::getId)
                     .collect(Collectors.toList()), messagesToPushed);
             if (success) {
