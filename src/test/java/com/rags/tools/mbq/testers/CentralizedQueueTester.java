@@ -17,6 +17,6 @@ public class CentralizedQueueTester {
                 .setUser("raga")
                 .setMaxxConn(10)
                 .setPassword("raga");
-        execute(2, 10, configBuilder);
+        execute(2, 4, configBuilder);
     }
 }

@@ -127,12 +127,17 @@ public class InMemoryPendingQueue<T> implements PendingQueue<T> {
 
     @Override
     public void lock() {
-        LOCK.lock();
+//        LOCK.tryLock();
     }
 
     @Override
     public void unlock() {
-        LOCK.unlock();
+//        LOCK.unlock();
+    }
+
+    @Override
+    public boolean isLocked() {
+//        return LOCK.isLocked();
+        return false;
     }
 }
-

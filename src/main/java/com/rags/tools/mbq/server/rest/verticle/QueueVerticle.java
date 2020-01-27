@@ -77,8 +77,6 @@ public class QueueVerticle extends AbstractVerticle {
             CommitRollbackRequest req = (CommitRollbackRequest) pushHandler.body().getReqObj();
             if (req.getClient() == null || req.getClient().isInValid()) {
                 pushHandler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
-            } else if (req.getIds() == null || req.getIds().isEmpty()) {
-                pushHandler.fail(ErrorMessage.MESSAGES_NOT_FOUND_FOR_COMMIT.getCode(), ErrorMessage.MESSAGES_NOT_FOUND_FOR_COMMIT.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> {
                     boolean isCommit = server.commit(req.getClient(), req.getIds(), req.getPushMessages());

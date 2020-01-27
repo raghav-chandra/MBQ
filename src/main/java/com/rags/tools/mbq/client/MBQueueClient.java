@@ -29,7 +29,7 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
                 while (isPolling()) {
                     Transaction transaction = getTransaction();
                     List<MBQMessage> items = getServer().pull(getClient());
-                    LOGGER.info("Polled {} no of messोges to processed for client {}", items.size(), getClient());
+                    LOGGER.debug("Polled {} no of messोges to processed for client {}", items.size(), getClient());
                     getProcessingMessages().addAll(items);
                     try {
                         if (!getProcessingMessages().isEmpty()) {

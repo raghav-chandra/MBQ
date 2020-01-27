@@ -21,6 +21,8 @@ public class QueueTester extends MBQueueClient {
     public static int counter = 1;
     private static long startTime = 0;
 
+    private static final int DIFF_SEQ = 20;
+
     static void execute(int publishers, int consumers, QConfig.Builder config) {
         List<MBQueuePublisher> allPublishers = new ArrayList<>();
         for (int i = 0; i < publishers; i++) {
@@ -36,9 +38,10 @@ public class QueueTester extends MBQueueClient {
                 allPublishers.parallelStream().forEach(client -> {
                     List<QMessage> messages = new LinkedList<>();
                     for (int i = 0; i < 10; i++) {
-                        messages.add(new QMessage((counter % allPublishers.size()) + "DODA", (counter + "BLAH BLAH" + (counter++ % allPublishers.size())).getBytes()));
+                        messages.add(new QMessage((counter % DIFF_SEQ) + "DODA", (counter + "BLAH BLAH" + (counter++ % DIFF_SEQ)).getBytes()));
                     }
                     Transaction transaction = client.getTransaction();
+                    LOGGER.info("******************************************{} ----- {}++++++++++++++++{}", Thread.currentThread().getId() , transaction, client.getTransaction().getQueueClient());
                     transaction.start();
                     client.push(messages);
                     transaction.commit();

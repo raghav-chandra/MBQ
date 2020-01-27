@@ -65,4 +65,5 @@ public interface PendingQueue<T> {
 
     void lock();
     void unlock();
+    boolean isLocked();
 }
