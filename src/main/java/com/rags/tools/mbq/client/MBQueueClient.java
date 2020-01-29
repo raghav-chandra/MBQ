@@ -50,7 +50,7 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
         return polling;
     }
 
-    public abstract void onMessage(List<Object> qItems);
+    public abstract void onMessage(List<byte[]> qItems);
 
     @Override
     public void stop() {

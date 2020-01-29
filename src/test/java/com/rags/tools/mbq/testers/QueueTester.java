@@ -64,7 +64,7 @@ public class QueueTester extends MBQueueClient {
     }
 
     @Override
-    public void onMessage(List<Object> qItems) {
+    public void onMessage(List<byte[]> qItems) {
         qItems.forEach(it -> {
             LOCK.lock();
             CTR++;
