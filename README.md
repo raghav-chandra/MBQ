@@ -8,21 +8,16 @@ An intelligent queue to provide messages based on how you want it and configured
 
 
 How MBQ Works : 
-_________________________________________________________________
------------------------------------------------------------------       
-[XYZ]                |Item #2 - SeqKey A| Item #1 - SeqKey A|=>--       =>Consumer 1
+
+XYZ                  |Item #2 - SeqKey A| Item #1 - SeqKey A|=>--       =>Consumer 1
                                       | Item #3 - No SeqKey |=>--       =>Consumer 2
                                       | Item #4 - No SeqKey |=>--       =>Consumer 3
  |Item #7 - SeqKey K| Item #6 - SeqKey K| Item #5 - SeqKey K|=>--       =>Consumer 4
------------------------------------------------------------------
+ 
 
 
-
------------------------------------------------------------------
-[ABC]                |Item #2 - SeqKey A| Item #1 - SeqKey A|=>--       =>Consumer 5
+ABC                |Item #2 - SeqKey A| Item #1 - SeqKey A|=>--       =>Consumer 5
                                       | Item #3 - No SeqKey |=>--       =>Consumer 6
------------------------------------------------------------------
-_________________________________________________________________
 
 1. You can have Dynamic no of logical queues within MBQ. Queue XYZ and ABC shows 2 logical queues within MBQ. 
 2. Lets look at Queue XYZ and see how Items are being processed 
