@@ -7,7 +7,7 @@ An intelligent queue to provide messages based on how you want it and configured
 * Don't worry if MBQ Server crashes, your items are safe in a Data store. There are various implementation of MBQ available to choose from, In Memory, RDBMS, Hazecast, MongoDB etc.
 
 
-##How MBQ Works : `
+## How MBQ Works :
 
 XYZ
 (Item #2 - SeqKey A), (Item #1 - SeqKey A)=>Consumer 1
