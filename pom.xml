@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.raghav-chandra</groupId>
-    <artifactId>mbq</artifactId>
-    <version>0.0.1</version>
+    <artifactId>tools-mbq</artifactId>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
 
     <name>MBQ</name>
@@ -81,9 +81,9 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
-<!--                        <configuration>-->
-<!--                            <javadocExecutable>/usr/lib/jvm/java-11-openjdk-amd64/bin/javadoc</javadocExecutable>-->
-<!--                        </configuration>-->
+                        <configuration>
+                            <javadocExecutable>/usr/lib/jvm/java-11-openjdk-amd64/bin/javadoc</javadocExecutable>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -146,7 +146,6 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-core</artifactId>
             <version>3.8.0</version>
-<!--            <version>4.0.0-milestone4</version>-->
         </dependency>
 
         <dependency>
@@ -159,7 +158,6 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
             <version>3.8.0</version>
-<!--            <version>4.0.0-milestone4</version>-->
         </dependency>
 
 
@@ -176,12 +174,6 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.28</version>
         </dependency>
-
-        <!--<dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.28</version>
-        </dependency>-->
 
         <dependency>
             <groupId>org.apache.commons</groupId>

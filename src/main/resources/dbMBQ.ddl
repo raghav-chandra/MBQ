@@ -4,6 +4,7 @@ create table MBQueueMessage (
     Sequence        varchar(20) not null,
     Status          varchar(10) not null,
     Data            Text not null,
+    scheduledAt     datetime null,
     CreatedTime     datetime not null,
     UpdatedTime     datetime null
 )

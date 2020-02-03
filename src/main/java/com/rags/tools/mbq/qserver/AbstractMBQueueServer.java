@@ -49,7 +49,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                 allInvalids.forEach(client -> {
                     ClientInfo clientInfo = CLIENTS_HB.get(client);
                     //Move Items to the right place if client is not active
-                    if (!clientInfo.getMessages().isEmpty()) {
+                    if (clientInfo != null && !clientInfo.getMessages().isEmpty()) {
                         PendingQueue<String> pendQ = getPendingQueue(client.getQueueName());
                         synchronized (pendQ) {
                             pendQ.addAllFirst(clientInfo.getMessages());
@@ -119,23 +119,26 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         }
 
         int noOfItem = Math.min(seqQ.size(), batch);
-
+        long currTime = System.currentTimeMillis();
         synchronized (seqQ) {
             for (int i = 0; i < noOfItem && counter < seqQ.size(); ) {
                 String id = seqQ.get(counter);
                 MBQMessage item = getQueue().get(queueName, id);
-                List<MBQMessage> allMessages = getQueue().get(queueName, item.getSeqKey(), Arrays.asList(QueueStatus.PROCESSING, QueueStatus.ERROR, QueueStatus.HELD));
-                if (allMessages.isEmpty()) {
-                    ids.add(id);
-                    items.add(item);
-                    i++;
+
+                if (currTime > item.getScheduledAt()) {
+                    List<MBQMessage> allMessages = getQueue().get(queueName, item.getSeqKey(), Arrays.asList(QueueStatus.PROCESSING, QueueStatus.ERROR, QueueStatus.HELD));
+                    if (allMessages.isEmpty()) {
+                        ids.add(id);
+                        items.add(item);
+                        i++;
+                    }
                 }
                 counter++;
             }
-
-            getQueue().updateStatus(queueName, ids, QueueStatus.PROCESSING);
             seqQ.removeAll(ids);
         }
+
+        getQueue().updateStatus(queueName, ids, QueueStatus.PROCESSING);
 
         CLIENTS_HB.get(client).getMessages().addAll(ids);
         return items;

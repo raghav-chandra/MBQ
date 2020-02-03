@@ -6,5 +6,6 @@
   "username": "raga",
   "password": "raga",
   "minConn": 1,
+  "validationQuery": "select 1",
   "maxConn": 100
 }

@@ -125,6 +125,8 @@ public class QueueVerticle extends AbstractVerticle {
                 builder.setUser(config.getString("username"));
                 builder.setPassword(config.getString("password"));
                 builder.setDbDriver(config.getString("driver"));
+                builder.setValidationQuery(config.getString("validationQuery"));
+                builder.setMaxxConn(config.getInteger("maxxConn") == null ? 1 : config.getInteger("maxxConn"));
                 break;
             default:
                 throw new MBQException("Queue Type is not supported");

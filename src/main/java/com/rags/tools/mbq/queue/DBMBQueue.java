@@ -162,7 +162,7 @@ public class DBMBQueue extends AbstractMBQueue {
             String data = rs.getString("Data");
             long createTS = rs.getTimestamp("CreatedTime").getTime();
             long updatedTS = rs.getTimestamp("UpdatedTime") == null ? 0 : rs.getTimestamp("UpdatedTime").getTime();
-            return new MBQMessage(id, queue, seq, QueueStatus.valueOf(status), data.getBytes(), createTS, updatedTS);
+            return new MBQMessage(id, queue, seq, QueueStatus.valueOf(status), data.getBytes(), createTS, updatedTS, 0);
         }
     }
 }
