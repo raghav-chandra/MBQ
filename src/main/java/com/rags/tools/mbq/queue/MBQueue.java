@@ -46,7 +46,7 @@ public interface MBQueue {
      *
      * @return MBQ pending messages ID and QueueName
      */
-    Map<String, List<String>> getAllPendingIds();
+    Map<String, List<IdSeqKey>> getAllPendingIds();
 
     /**
      * Pulls messages for processing

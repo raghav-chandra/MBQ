@@ -33,7 +33,7 @@ public class InMemoryMBQueue extends AbstractMBQueue {
     }
 
     @Override
-    public Map<String, List<String>> getAllPendingIds() {
+    public Map<String, List<IdSeqKey>> getAllPendingIds() {
         return new HashMap<>();
     }
 

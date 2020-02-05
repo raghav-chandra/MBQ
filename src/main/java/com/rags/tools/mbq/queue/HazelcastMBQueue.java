@@ -5,7 +5,6 @@ import com.hazelcast.config.MapConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.query.Predicates;
 import com.rags.tools.mbq.QConfig;
@@ -57,16 +56,16 @@ public class HazelcastMBQueue extends AbstractMBQueue {
     }
 
     @Override
-    public Map<String, List<String>> getAllPendingIds() {
+    public Map<String, List<IdSeqKey>> getAllPendingIds() {
         Map<String, MapConfig> mapList = instance.getConfig().getMapConfigs();
 
-        Map<String, List<String>> map = new ConcurrentHashMap<>();
+        Map<String, List<IdSeqKey>> map = new ConcurrentHashMap<>();
         mapList.keySet().parallelStream().forEach(qName -> {
             IMap<String, MBQMessage> iMap = this.instance.getMap(qName);
             if (iMap != null) {
                 List<MBQMessage> allMessages = new LinkedList<>(iMap.values(Predicates.equal("status", QueueStatus.PENDING)));
                 allMessages.sort((m1, m2) -> Math.toIntExact(m1.getCreatedTimeStamp() - m2.getCreatedTimeStamp()));
-                map.put(qName, allMessages.stream().map(MBQMessage::getId).collect(Collectors.toList()));
+                map.put(qName, allMessages.stream().map(i -> new IdSeqKey(i.getId(), i.getSeqKey())).collect(Collectors.toList()));
             }
         });
 

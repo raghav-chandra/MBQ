@@ -2,11 +2,9 @@ package com.rags.tools.mbq.queue.pending;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class InMemoryPendingQueue<T> implements PendingQueue<T> {
+public class InMemoryPendingQ<T> implements PendingQ<T> {
 
     private final LinkedList<T> queue = new LinkedList<>();
 

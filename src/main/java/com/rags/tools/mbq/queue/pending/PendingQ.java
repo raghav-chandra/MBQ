@@ -2,7 +2,7 @@ package com.rags.tools.mbq.queue.pending;
 
 import java.util.List;
 
-public interface PendingQueue<T> {
+public interface PendingQ<T> {
 
     /**
      * Checks if queue is empty

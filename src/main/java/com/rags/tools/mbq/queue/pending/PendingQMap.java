@@ -1,6 +1,6 @@
 package com.rags.tools.mbq.queue.pending;
 
-public interface PendingQueueMap {
+public interface PendingQMap<T> {
 
     /**
      * Gets pending Queue containing list of items.
@@ -8,5 +8,5 @@ public interface PendingQueueMap {
      * @param queueName queue Name
      * @return Pending Queue
      */
-    PendingQueue<String> get(String queueName);
+    PendingQ<T> get(String queueName);
 }

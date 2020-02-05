@@ -4,17 +4,17 @@ import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.queue.DBMBQueue;
-import com.rags.tools.mbq.queue.MBQueue;
+import com.rags.tools.mbq.queue.IdSeqKey;
 import com.rags.tools.mbq.queue.QueueType;
-import com.rags.tools.mbq.queue.pending.InMemoryPendingQueueMap;
-import com.rags.tools.mbq.queue.pending.PendingQueueMap;
+import com.rags.tools.mbq.queue.pending.InMemoryPendingIdSeqKeyQMap;
+import com.rags.tools.mbq.queue.pending.PendingQMap;
 
 public class DBMBQueueServer extends AbstractMBQueueServer {
 
     private static MBQueueServer INSTANCE = null;
 
-    private DBMBQueueServer(DBMBQueue dbmbQueue, PendingQueueMap pendingQueueMap) {
-        super(dbmbQueue, pendingQueueMap);
+    private DBMBQueueServer(DBMBQueue dbmbQueue, PendingQMap<IdSeqKey> pendingQMap) {
+        super(dbmbQueue, pendingQMap);
     }
 
     public synchronized static MBQueueServer getInstance(QConfig.ServerConfig config) {
@@ -26,7 +26,7 @@ public class DBMBQueueServer extends AbstractMBQueueServer {
 
     private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new DBMBQueueServer(new DBMBQueue(config), new InMemoryPendingQueueMap());
+        return new DBMBQueueServer(new DBMBQueue(config), new InMemoryPendingIdSeqKeyQMap());
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {

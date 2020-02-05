@@ -5,9 +5,10 @@ import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
+import com.rags.tools.mbq.queue.IdSeqKey;
 import com.rags.tools.mbq.queue.MBQueue;
-import com.rags.tools.mbq.queue.pending.PendingQueue;
-import com.rags.tools.mbq.queue.pending.PendingQueueMap;
+import com.rags.tools.mbq.queue.pending.PendingQ;
+import com.rags.tools.mbq.queue.pending.PendingQMap;
 import com.rags.tools.mbq.util.HashingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,13 +25,13 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
     private static final int PING_INTERVAL = 5000;
 
-    private final PendingQueueMap pendingQueueMap;
+    private final PendingQMap<IdSeqKey> pendingQMap;
 
     private final MBQueue queue;
 
-    public AbstractMBQueueServer(MBQueue mbQueue, PendingQueueMap pendingQueueMap) {
+    public AbstractMBQueueServer(MBQueue mbQueue, PendingQMap<IdSeqKey> pendingQMap) {
         this.queue = mbQueue;
-        this.pendingQueueMap = pendingQueueMap;
+        this.pendingQMap = pendingQMap;
         init();
         new Timer(true).schedule(new TimerTask() {
             @Override
@@ -50,7 +51,9 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                     ClientInfo clientInfo = CLIENTS_HB.get(client);
                     //Move Items to the right place if client is not active
                     if (clientInfo != null && !clientInfo.getMessages().isEmpty()) {
-                        PendingQueue<String> pendQ = getPendingQueue(client.getQueueName());
+                        PendingQ<IdSeqKey> pendQ = getPendingQueue(client.getQueueName());
+                        List<String> ids = clientInfo.getMessages().stream().map(IdSeqKey::getId).collect(Collectors.toList());
+                        getQueue().updateStatus(client.getQueueName(), ids, QueueStatus.PENDING);
                         synchronized (pendQ) {
                             pendQ.addAllFirst(clientInfo.getMessages());
                         }
@@ -109,7 +112,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         String queueName = client.getQueueName();
         int batch = client.getBatch();
 
-        PendingQueue<String> seqQ = getPendingQueue(queueName);
+        PendingQ<IdSeqKey> seqQ = getPendingQueue(queueName);
 
         List<MBQMessage> items = new ArrayList<>();
         int counter = 0;
@@ -122,25 +125,40 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         long currTime = System.currentTimeMillis();
         synchronized (seqQ) {
             for (int i = 0; i < noOfItem && counter < seqQ.size(); ) {
-                String id = seqQ.get(counter);
-                MBQMessage item = getQueue().get(queueName, id);
+                IdSeqKey idKey = seqQ.get(counter);
+                //TODO: Query ony once. Calculate all Ids and then release lock on the queue
+                MBQMessage item = getQueue().get(queueName, idKey.getId());
 
                 if (currTime > item.getScheduledAt()) {
-                    List<MBQMessage> allMessages = getQueue().get(queueName, item.getSeqKey(), Arrays.asList(QueueStatus.PROCESSING, QueueStatus.ERROR, QueueStatus.HELD));
-                    if (allMessages.isEmpty()) {
-                        ids.add(id);
+                    if (QMessage.DEFAULT_SEQ.equals(idKey.getSeqKey())) {
+                        ids.add(idKey.getId());
                         items.add(item);
                         i++;
+                    } else {
+//                        List<MBQMessage> allMessages = getQueue().get(queueName, item.getSeqKey(), Arrays.asList(QueueStatus.PROCESSING, QueueStatus.ERROR, QueueStatus.HELD));
+                        boolean seqKeyUsed = false;
+                        for (int j = 0; j < counter; j++) {
+                            if (seqQ.get(j).getSeqKey().equals(idKey.getSeqKey()) && !ids.contains(seqQ.get(j).getId())) {
+                                seqKeyUsed = true;
+                            }
+                        }
+                        if (!seqKeyUsed) {
+                            ids.add(idKey.getId());
+                            items.add(item);
+                            i++;
+                        }
                     }
                 }
                 counter++;
             }
-            seqQ.removeAll(ids);
+            seqQ.removeAll(items.stream().map(i -> new IdSeqKey(i.getId(), i.getSeqKey())).collect(Collectors.toList()));
         }
 
+        items.parallelStream().forEach(i -> i.updateStatus(QueueStatus.PROCESSING));
+        //TODO: Queue update can we get rid of ?
         getQueue().updateStatus(queueName, ids, QueueStatus.PROCESSING);
 
-        CLIENTS_HB.get(client).getMessages().addAll(ids);
+        CLIENTS_HB.get(client).getMessages().addAll(items.stream().map(item -> new IdSeqKey(item.getId(), item.getSeqKey())).collect(Collectors.toList()));
         return items;
     }
 
@@ -174,38 +192,39 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         List<String> processingToComplete = new ArrayList<>();
 
         //ERROR/HELD/BLOCKED-> COMPLETE
-        List<String> restAllToComplete = new ArrayList<>();
+        List<IdSeqKey> restAllToComplete = new ArrayList<>();
 
         //ANY-> HELD/BLOCKED/ERROR
-        List<String> allToNotCompleted = new ArrayList<>();
+        List<IdSeqKey> allToNotCompleted = new ArrayList<>();
 
         List<MBQMessage> existingMsgs = getQueue().get(client.getQueueName(), ids);
 
         ids.forEach(id -> {
-            Optional<MBQMessage> message = existingMsgs.stream().filter(m -> m.getId().equals(id)).findFirst();
-            if (message.isEmpty()) {
+            Optional<MBQMessage> optionalMBQMessage = existingMsgs.stream().filter(m -> m.getId().equals(id)).findFirst();
+            if (optionalMBQMessage.isEmpty()) {
                 throw new MBQException("Message didn't find in the queue with id " + id);
             }
 
+            MBQMessage message = optionalMBQMessage.get();
             if (status == QueueStatus.COMPLETED) {
-                if (message.get().getStatus() == QueueStatus.PROCESSING) {
+                if (message.getStatus() == QueueStatus.PROCESSING) {
                     processingToComplete.add(id);
-                } else if (message.get().getStatus() != QueueStatus.COMPLETED) {
-                    restAllToComplete.add(id);
+                } else if (message.getStatus() != QueueStatus.COMPLETED) {
+                    restAllToComplete.add(new IdSeqKey(message.getId(), message.getSeqKey()));
                 }
             } else {
-                allToNotCompleted.add(id);
+                allToNotCompleted.add(new IdSeqKey(message.getId(), message.getSeqKey()));
             }
         });
 
 
         List<String> allItems = new LinkedList<>(processingToComplete);
-        allItems.addAll(restAllToComplete);
-        allItems.addAll(allToNotCompleted);
+        allItems.addAll(restAllToComplete.parallelStream().map(IdSeqKey::getId).collect(Collectors.toList()));
+        allItems.addAll(allToNotCompleted.parallelStream().map(IdSeqKey::getId).collect(Collectors.toList()));
 
         getQueue().updateStatus(client.getQueueName(), allItems, status);
 
-        PendingQueue<String> pendQ = getPendingQueue(client.getQueueName());
+        PendingQ<IdSeqKey> pendQ = getPendingQueue(client.getQueueName());
         synchronized (pendQ) {
             if (!restAllToComplete.isEmpty()) {
                 pendQ.removeAll(restAllToComplete);
@@ -213,7 +232,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
             if (!allToNotCompleted.isEmpty()) {
                 pendQ.addAllFirst(allToNotCompleted);
-//                    pushIdToRightPlace(pendQ, allToNotCompleted);
             }
         }
         //Remove Client Messages once processing is done.
@@ -221,28 +239,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         return true;
     }
 
-    /*private void pushIdToRightPlace(PendingQueue<String> seqQ, List<String> idsToPushed) {
-        Collections.sort(idsToPushed);
-
-        if (seqQ.isEmpty()) {
-            seqQ.addAll(idsToPushed);
-        } else {
-            idsToPushed.forEach(id -> {
-                int index = -1;
-                for (int i = 0; i < seqQ.size(); i++) {
-                    if (seqQ.get(i).compareTo(id) <= 0) {
-                        index = i;
-                        break;
-                    }
-                }
-                if (index == -1) {
-                    seqQ.addLast(id);
-                } else {
-                    seqQ.add(index, id);
-                }
-            });
-        }
-    }*/
 
     @Override
     public List<MBQMessage> push(Client client, List<QMessage> messages) {
@@ -255,18 +251,16 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         }
         validateClient(client);
 
-        PendingQueue<String> pendQ = getPendingQueue(queueName);
+        PendingQ<IdSeqKey> pendQ = getPendingQueue(queueName);
         List<MBQMessage> pushedMsgs = getQueue().push(queueName, messages);
-        List<String> ids = pushedMsgs.stream().map(MBQMessage::getId).collect(Collectors.toList());
+        List<IdSeqKey> ids = pushedMsgs.stream().map(i -> new IdSeqKey(i.getId(), i.getSeqKey())).collect(Collectors.toList());
 
         synchronized (pendQ) {
             pendQ.addAll(ids);
         }
 
         LOGGER.info("No of items in the queue {}", pendQ.size());
-        CLIENTS_HB.get(client).getMessages().addAll(ids);
         return pushedMsgs;
-
     }
 
     @Override
@@ -296,14 +290,14 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         return queue;
     }
 
-    protected PendingQueue<String> getPendingQueue(String queueName) {
-        return pendingQueueMap.get(queueName);
+    protected PendingQ<IdSeqKey> getPendingQueue(String queueName) {
+        return pendingQMap.get(queueName);
     }
 
     private static class ClientInfo {
         private long timeStamp;
         private String heartBeat;
-        private List<String> messages = new ArrayList<>();
+        private List<IdSeqKey> messages = new ArrayList<>();
 
         public ClientInfo(long timeStamp, String hb) {
             this.timeStamp = timeStamp;
@@ -318,26 +312,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             return heartBeat;
         }
 
-        public List<String> getMessages() {
+        public List<IdSeqKey> getMessages() {
             return messages;
-        }
-    }
-
-    private class MessageInfo {
-        private String id;
-        private String seqKey;
-
-        public MessageInfo(String id, String seqKey) {
-            this.id = id;
-            this.seqKey = seqKey;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getSeqKey() {
-            return seqKey;
         }
     }
 }

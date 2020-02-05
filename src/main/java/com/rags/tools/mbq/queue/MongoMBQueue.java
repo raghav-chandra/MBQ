@@ -25,7 +25,7 @@ public class MongoMBQueue extends AbstractMBQueue {
     }
 
     @Override
-    public Map<String, List<String>> getAllPendingIds() {
+    public Map<String, List<IdSeqKey>> getAllPendingIds() {
         return null;
     }
 

@@ -2,7 +2,7 @@ package com.rags.tools.mbq.message;
 
 public class QMessage {
 
-    private static final String DEFAULT_SEQ = "raga-seq";
+    public static final String DEFAULT_SEQ = "raga-seq";
 
     private String seqKey;
     private byte[] message;
