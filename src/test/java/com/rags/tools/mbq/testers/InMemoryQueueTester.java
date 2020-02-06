@@ -11,8 +11,9 @@ public class InMemoryQueueTester {
         QConfig.Builder configBuilder = new QConfig.Builder()
                 .setBatch(5)
                 .setPollingQueue("RAGHAV")
+                .setDaemon(false)
                 .setQueueType(QueueType.SINGLE_JVM_INMEMORY);
-        execute(100, 16, configBuilder);
+        execute(400, 20, configBuilder);
     }
 }
 

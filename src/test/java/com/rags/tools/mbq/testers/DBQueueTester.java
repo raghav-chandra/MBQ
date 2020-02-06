@@ -15,7 +15,8 @@ public class DBQueueTester {
                 .setDbDriver("com.mysql.cj.jdbc.Driver")
                 .setUrl("jdbc:mysql://localhost:3306/raga")
                 .setUser("raga")
-                .setPassword("raga");
+                .setPassword("raga")
+                .setDaemon(false);
         execute(4, 4, configBuilder);
     }
 }

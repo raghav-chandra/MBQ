@@ -31,6 +31,7 @@ public class QConfig {
         private String dbDriver;
         private int maxxConn;
         private String validationQuery;
+        private boolean daemon = true;
 
         public Builder setPollingQueue(String pollingQueue) {
             this.pollingQueue = pollingQueue;
@@ -82,15 +83,20 @@ public class QConfig {
             return this;
         }
 
+        public Builder setDaemon(boolean daemon) {
+            this.daemon = daemon;
+            return this;
+        }
+
         public Builder clone() {
             return new Builder().setBatch(batch).setWorkerName(workerName).setPollingQueue(pollingQueue)
                     .setDbDriver(dbDriver).setUrl(url).setUser(user).setPassword(password).setQueueType(queueType)
-                    .setValidationQuery(validationQuery).setMaxxConn(maxxConn);
+                    .setValidationQuery(validationQuery).setMaxxConn(maxxConn).setDaemon(daemon);
         }
 
         public QConfig create() {
-            ClientConfig clientConfig = new ClientConfig(pollingQueue, workerName, batch);
-            ServerConfig serverConfig = new ServerConfig(queueType, url, user, password, dbDriver, validationQuery, maxxConn);
+            ClientConfig clientConfig = new ClientConfig(pollingQueue, workerName, batch, daemon);
+            ServerConfig serverConfig = new ServerConfig(queueType, url, user, password, dbDriver, validationQuery, maxxConn, daemon);
             return new QConfig(clientConfig, serverConfig);
         }
     }
@@ -100,11 +106,13 @@ public class QConfig {
         private final String pollingQueue;
         private final String workerName;
         private final int batch;
+        private final boolean daemon;
 
-        ClientConfig(String pollingQueue, String workerName, int batch) {
+        ClientConfig(String pollingQueue, String workerName, int batch, boolean daemon) {
             this.pollingQueue = pollingQueue;
             this.workerName = workerName;
             this.batch = batch;
+            this.daemon = daemon;
         }
 
         public String getPollingQueue() {
@@ -118,6 +126,10 @@ public class QConfig {
         public int getBatch() {
             return batch;
         }
+
+        public boolean isDaemon() {
+            return daemon;
+        }
     }
 
     public static class ServerConfig {
@@ -128,8 +140,9 @@ public class QConfig {
         private final String password;
         private final QueueType queueType;
         private final int maxConn;
+        private final boolean daemon;
 
-        private ServerConfig(QueueType queueType, String url, String user, String password, String dbDriver, String validationQuery, int maxConn) {
+        private ServerConfig(QueueType queueType, String url, String user, String password, String dbDriver, String validationQuery, int maxConn, boolean daemon) {
             this.url = url;
             this.user = user;
             this.password = password;
@@ -137,6 +150,7 @@ public class QConfig {
             this.dbDriver = dbDriver;
             this.validationQuery = validationQuery;
             this.maxConn = maxConn <= 0 ? 1 : maxConn;
+            this.daemon = daemon;
         }
 
         public String getUrl() {
@@ -165,6 +179,10 @@ public class QConfig {
 
         public int getMaxConn() {
             return maxConn;
+        }
+
+        public boolean isDaemon() {
+            return daemon;
         }
     }
 }

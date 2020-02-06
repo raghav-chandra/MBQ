@@ -33,6 +33,10 @@ public class MBQueuePublisher implements QueueClient {
         this.transaction = new Transaction();
     }
 
+    public QConfig getConfig() {
+        return config;
+    }
+
     @Override
     public void push(QMessage message) {
         push(Collections.singletonList(message));
@@ -72,7 +76,7 @@ public class MBQueuePublisher implements QueueClient {
         if (timer != null) {
             throw new MBQException("Client is still running, cant start again");
         }
-        this.timer = new Timer(true);
+        this.timer = new Timer(config.getClientConfig().isDaemon());
         this.client = server.registerClient(new Client(config.getClientConfig().getWorkerName(), config.getClientConfig().getPollingQueue(), config.getClientConfig().getBatch()));
         this.timer.schedule(new TimerTask() {
             @Override

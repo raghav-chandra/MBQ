@@ -71,10 +71,10 @@ public class QueueTester extends MBQueueClient {
             LOCK.unlock();
 
         });
+        int ct = CTR;
 
         long timeTaken = System.currentTimeMillis() - startTime;
         float divider = timeTaken / 1000f;
-        int ct = CTR;
         System.out.println("Completed " + ct + " no of messages in " + timeTaken + " millis. Throughput per Sec : " + ct / divider);
         LOGGER.info("Completed {} no of messages in {} millis. Throughput per Sec : {}", ct, timeTaken, ct / divider);
     }

@@ -22,6 +22,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMBQueueServer.class);
 
     private static final Map<Client, ClientInfo> CLIENTS_HB = new ConcurrentHashMap<>();
+    private static final Map<String, Boolean> SEQ_KEY = new ConcurrentHashMap<>();
 
     private static final int PING_INTERVAL = 5000;
 
@@ -52,13 +53,15 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                     //Move Items to the right place if client is not active
                     if (clientInfo != null && !clientInfo.getMessages().isEmpty()) {
                         PendingQ<IdSeqKey> pendQ = getPendingQueue(client.getQueueName());
-                        List<String> ids = clientInfo.getMessages().stream().map(IdSeqKey::getId).collect(Collectors.toList());
-                        getQueue().updateStatus(client.getQueueName(), ids, QueueStatus.PENDING);
+                        //TODO: Queue update can we get rid of ?
+//                        List<String> ids = clientInfo.getMessages().stream().map(IdSeqKey::getId).collect(Collectors.toList());
+//                        getQueue().updateStatus(client.getQueueName(), ids, QueueStatus.PENDING);
                         synchronized (pendQ) {
                             pendQ.addAllFirst(clientInfo.getMessages());
-                        }
-                    }
 
+                        }
+                        clientInfo.getMessages().forEach(m -> SEQ_KEY.remove(m.getSeqKey()));
+                    }
                     CLIENTS_HB.remove(client);
 
                 });
@@ -135,7 +138,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                         items.add(item);
                         i++;
                     } else {
-//                        List<MBQMessage> allMessages = getQueue().get(queueName, item.getSeqKey(), Arrays.asList(QueueStatus.PROCESSING, QueueStatus.ERROR, QueueStatus.HELD));
                         boolean seqKeyUsed = false;
                         for (int j = 0; j < counter; j++) {
                             if (seqQ.get(j).getSeqKey().equals(idKey.getSeqKey()) && !ids.contains(seqQ.get(j).getId())) {
@@ -154,9 +156,13 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             seqQ.removeAll(items.stream().map(i -> new IdSeqKey(i.getId(), i.getSeqKey())).collect(Collectors.toList()));
         }
 
-        items.parallelStream().forEach(i -> i.updateStatus(QueueStatus.PROCESSING));
+        items.parallelStream().forEach(i -> {
+            i.updateStatus(QueueStatus.PROCESSING);
+            SEQ_KEY.put(i.getSeqKey(), Boolean.TRUE);
+        });
         //TODO: Queue update can we get rid of ?
-        getQueue().updateStatus(queueName, ids, QueueStatus.PROCESSING);
+        //Queue only knows what all items are there in the queue
+//        getQueue().updateStatus(queueName, ids, QueueStatus.PROCESSING);
 
         CLIENTS_HB.get(client).getMessages().addAll(items.stream().map(item -> new IdSeqKey(item.getId(), item.getSeqKey())).collect(Collectors.toList()));
         return items;
@@ -236,6 +242,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         }
         //Remove Client Messages once processing is done.
         CLIENTS_HB.get(client).getMessages().clear();
+        CLIENTS_HB.get(client).getMessages().forEach(m -> SEQ_KEY.remove(m.getSeqKey()));
         return true;
     }
 
@@ -257,6 +264,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
         synchronized (pendQ) {
             pendQ.addAll(ids);
+            LOGGER.debug("Total No of items in the queue {} is {}", queueName, pendQ.size());
         }
 
         LOGGER.info("No of items in the queue {}", pendQ.size());

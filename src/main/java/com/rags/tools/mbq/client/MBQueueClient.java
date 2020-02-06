@@ -23,7 +23,7 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
     @Override
     public void start() {
         super.start();
-        new Timer(true).schedule(new TimerTask() {
+        new Timer(getConfig().getClientConfig().isDaemon()).schedule(new TimerTask() {
             @Override
             public void run() {
                 while (isPolling()) {

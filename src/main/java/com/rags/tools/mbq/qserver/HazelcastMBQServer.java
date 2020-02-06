@@ -36,7 +36,7 @@ public class HazelcastMBQServer extends AbstractMBQueueServer {
         }
 
         if (config.getUrl() == null || config.getUrl().trim().isEmpty()) {
-            throw new MBQException("Wrong configuration passed. You are trying to setup DB as QueueType but DB URL is not provided");
+            throw new MBQException("Wrong configuration passed. You are trying to setup DB as QueueType but Hazelcast URL is not provided");
         }
 
         if (config.getUser() == null || config.getUser().trim().isEmpty()) {
