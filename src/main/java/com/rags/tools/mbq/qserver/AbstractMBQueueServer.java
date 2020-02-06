@@ -22,7 +22,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMBQueueServer.class);
 
     private static final Map<Client, ClientInfo> CLIENTS_HB = new ConcurrentHashMap<>();
-    private static final Map<String, Boolean> SEQ_KEY = new ConcurrentHashMap<>();
 
     private static final int PING_INTERVAL = 5000;
 
@@ -60,7 +59,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                             pendQ.addAllFirst(clientInfo.getMessages());
 
                         }
-                        clientInfo.getMessages().forEach(m -> SEQ_KEY.remove(m.getSeqKey()));
                     }
                     CLIENTS_HB.remove(client);
 
@@ -156,10 +154,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             seqQ.removeAll(items.stream().map(i -> new IdSeqKey(i.getId(), i.getSeqKey())).collect(Collectors.toList()));
         }
 
-        items.parallelStream().forEach(i -> {
-            i.updateStatus(QueueStatus.PROCESSING);
-            SEQ_KEY.put(i.getSeqKey(), Boolean.TRUE);
-        });
+        items.parallelStream().forEach(i -> i.updateStatus(QueueStatus.PROCESSING));
         //TODO: Queue update can we get rid of ?
         //Queue only knows what all items are there in the queue
 //        getQueue().updateStatus(queueName, ids, QueueStatus.PROCESSING);
@@ -242,7 +237,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         }
         //Remove Client Messages once processing is done.
         CLIENTS_HB.get(client).getMessages().clear();
-        CLIENTS_HB.get(client).getMessages().forEach(m -> SEQ_KEY.remove(m.getSeqKey()));
         return true;
     }
 
