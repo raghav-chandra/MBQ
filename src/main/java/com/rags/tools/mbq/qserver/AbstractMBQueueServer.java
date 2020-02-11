@@ -52,12 +52,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                     //Move Items to the right place if client is not active
                     if (clientInfo != null && !clientInfo.getMessages().isEmpty()) {
                         PendingQ<IdSeqKey> pendQ = getPendingQueue(client.getQueueName());
-                        //TODO: Queue update can we get rid of ?
-//                        List<String> ids = clientInfo.getMessages().stream().map(IdSeqKey::getId).collect(Collectors.toList());
-//                        getQueue().updateStatus(client.getQueueName(), ids, QueueStatus.PENDING);
                         synchronized (pendQ) {
                             pendQ.addAllFirst(clientInfo.getMessages());
-
                         }
                     }
                     CLIENTS_HB.remove(client);
@@ -155,9 +151,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         }
 
         items.parallelStream().forEach(i -> i.updateStatus(QueueStatus.PROCESSING));
-        //TODO: Queue update can we get rid of ?
-        //Queue only knows what all items are there in the queue
-//        getQueue().updateStatus(queueName, ids, QueueStatus.PROCESSING);
 
         CLIENTS_HB.get(client).getMessages().addAll(items.stream().map(item -> new IdSeqKey(item.getId(), item.getSeqKey())).collect(Collectors.toList()));
         return items;
