@@ -14,7 +14,6 @@ public class MBQMessage extends QMessage implements DataSerializable {
     private String queue;
     private long createdTimeStamp;
     private long updatedTimeStamp;
-    private long scheduledAt;
 
     public MBQMessage() {
     }
@@ -29,13 +28,13 @@ public class MBQMessage extends QMessage implements DataSerializable {
 
 
     public MBQMessage(String id, String queue, String seq, QueueStatus status, byte[] data, long createdTS, long updatedTS, long scheduledAt) {
-        super(seq, data);
+        super(seq, data, scheduledAt);
         this.id = id;
         this.queue = queue;
         this.status = status;
         this.createdTimeStamp = createdTS;
         this.updatedTimeStamp = updatedTS;
-        this.scheduledAt = scheduledAt;
+
     }
 
     public String getId() {
@@ -52,10 +51,6 @@ public class MBQMessage extends QMessage implements DataSerializable {
 
     public long getUpdatedTimeStamp() {
         return updatedTimeStamp;
-    }
-
-    public long getScheduledAt() {
-        return scheduledAt;
     }
 
     public void updateStatus(QueueStatus status) {
@@ -83,7 +78,7 @@ public class MBQMessage extends QMessage implements DataSerializable {
         out.writeUTF(queue);
         out.writeLong(createdTimeStamp);
         out.writeLong(updatedTimeStamp);
-        out.writeLong(scheduledAt);
+        out.writeLong(getScheduledAt());
         out.writeUTF(getSeqKey());
         out.writeByteArray(getMessage());
     }
@@ -94,7 +89,7 @@ public class MBQMessage extends QMessage implements DataSerializable {
         this.queue = in.readUTF();
         this.createdTimeStamp = in.readLong();
         this.updatedTimeStamp = in.readLong();
-        this.scheduledAt = in.readLong();
+        this.setScheduledAt(in.readLong());
         this.setSeqKey(in.readUTF());
         this.setMessage(in.readByteArray());
     }

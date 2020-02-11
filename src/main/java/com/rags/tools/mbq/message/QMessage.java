@@ -6,7 +6,7 @@ public class QMessage {
 
     private String seqKey;
     private byte[] message;
-    private long scheduleAt;
+    private long scheduledAt;
 
     public QMessage() {
         this(null, null, 0);
@@ -19,7 +19,7 @@ public class QMessage {
     public QMessage(String seqKey, byte[] message, long scheduleAt) {
         this.seqKey = seqKey;
         this.message = message;
-        this.scheduleAt = scheduleAt;
+        this.scheduledAt = scheduleAt;
     }
 
     public String getSeqKey() {
@@ -30,8 +30,8 @@ public class QMessage {
         return message;
     }
 
-    public long getScheduleAt() {
-        return scheduleAt;
+    public long getScheduledAt() {
+        return scheduledAt;
     }
 
     protected void setSeqKey(String seqKey) {
@@ -42,7 +42,7 @@ public class QMessage {
         this.message = message;
     }
 
-    public void setScheduleAt(long scheduleAt) {
-        this.scheduleAt = scheduleAt;
+    public void setScheduledAt(long scheduleAt) {
+        this.scheduledAt = scheduleAt;
     }
 }

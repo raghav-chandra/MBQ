@@ -261,7 +261,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             LOGGER.debug("Total No of items in the queue {} is {}", queueName, pendQ.size());
         }
 
-        LOGGER.info("No of items in the queue {}", pendQ.size());
         return pushedMsgs;
     }
 

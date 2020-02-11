@@ -25,7 +25,7 @@ public class DBMBQueue extends AbstractMBQueue {
     private static final String GET_BY_QUEUE_AND_IDS = "select * from MBQueueMessage where QueueName=:queue Id in (:ids)";
     private static final String GET_PENDING_IDS = "select Id, Sequence, QueueName from MBQueueMessage where Status='PENDING' order by CreatedTime asc";
 
-    private static final String INSERT_MBQ_MESSAGE = "insert into MBQueueMessage values (:id,:queue,:seq,:status,:data,:createTS,:updatedTS)";
+    private static final String INSERT_MBQ_MESSAGE = "insert into MBQueueMessage (Id, QueueName, Sequence, Status, Data, ScheduledAt, CreatedTime, UpdatedTime) values (:id,:queue,:seq,:status,:data,:scheduledAt, :createTS,:updatedTS)";
     private static final String UPDATE_MBQ_MESSAGE = "update MBQueueMessage set Status=:status, UpdatedTime=:updatedTS where Id in (:ids) and QueueName=:queue";
 
     private static final String UPDATE_QUEUE_STATUS_TO_NEW = "update MBQueueMessage set Status=:newStatus where Status=:prevStatus";
@@ -124,6 +124,7 @@ public class DBMBQueue extends AbstractMBQueue {
                     .addValue("status", msg.getStatus().name())
                     .addValue("data", new String(msg.getMessage()))
                     .addValue("seq", msg.getSeqKey())
+                    .addValue("scheduledAt", new Timestamp(msg.getScheduledAt()))
                     .addValue("createTS", new Timestamp(msg.getCreatedTimeStamp()))
                     .addValue("updatedTS", null);
         }
