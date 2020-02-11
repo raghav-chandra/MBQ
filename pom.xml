@@ -11,7 +11,7 @@
 
     <name>MBQ</name>
     <description>MBQ is an Intelligent queue that can provide items for processing based on the sequencing attached to
-        each item
+        each item. 0.5.0 Version has capability to configure DB, InMemory as queue.
     </description>
     <url>https://github.com/raghav-chandra/MBQ</url>
 
