@@ -3,6 +3,7 @@ package com.rags.tools.mbq.testers;
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.client.MBQueueClient;
 import com.rags.tools.mbq.client.MBQueuePublisher;
+import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,7 @@ public class QueueTester extends MBQueueClient {
     }
 
     @Override
-    public void onMessage(List<byte[]> qItems) {
+    public void onMessage(List<MBQMessage.ProcessingItem> qItems) {
         qItems.forEach(it -> {
             LOCK.lock();
             CTR++;

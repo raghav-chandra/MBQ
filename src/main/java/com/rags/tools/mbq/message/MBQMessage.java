@@ -1,5 +1,6 @@
 package com.rags.tools.mbq.message;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
@@ -92,5 +93,35 @@ public class MBQMessage extends QMessage implements DataSerializable {
         this.setScheduledAt(in.readLong());
         this.setSeqKey(in.readUTF());
         this.setMessage(in.readByteArray());
+    }
+
+    @JsonIgnore
+    public ProcessingItem getProcessingItem() {
+        return new ProcessingItem(id, getMessage(), status);
+    }
+
+    public static class ProcessingItem {
+        private String id;
+        private byte[] message;
+
+        private QueueStatus queueStatus;
+
+        public ProcessingItem(String id, byte[] message, QueueStatus queueStatus) {
+            this.id = id;
+            this.message = message;
+            this.queueStatus = queueStatus;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public byte[] getMessage() {
+            return message;
+        }
+
+        public QueueStatus getQueueStatus() {
+            return queueStatus;
+        }
     }
 }

@@ -68,7 +68,7 @@ public class InMemoryMBQueue extends AbstractMBQueue {
         }
 
         if (!QUEUE_DS.containsKey(queueName)) {
-            throw new MBQException("Queue doesn't exists " + queueName);
+            return false;
         }
 
         Map<String, MBQMessage> q = QUEUE_DS.get(queueName);

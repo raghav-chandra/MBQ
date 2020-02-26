@@ -1,5 +1,6 @@
 package com.rags.tools.mbq.qserver;
 
+import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
@@ -37,7 +38,7 @@ public interface MBQueueServer {
      * @param messagesToPush all the messages that has to be pushed
      * @return true if commit was successful
      */
-    boolean commit(Client client, List<String> processedIds, Map<String, List<QMessage>> messagesToPush);
+    boolean commit(Client client, Map<QueueStatus,List<String>> processedIds, Map<String, List<QMessage>> messagesToPush);
 
     /**
      * Roll back queue transactions
@@ -46,7 +47,7 @@ public interface MBQueueServer {
      * @param ids    item IDs
      * @return true if rollback was successful
      */
-    boolean rollback(Client client, List<String> ids);
+    boolean rollback(Client client, Map<QueueStatus,List<String>> ids);
 
     /**
      * Pushes messages to the queue

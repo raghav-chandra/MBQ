@@ -1,6 +1,7 @@
 package com.rags.tools.mbq.client;
 
 import com.rags.tools.mbq.QConfig;
+import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
@@ -23,7 +24,7 @@ public class MBQueuePublisher implements QueueClient {
     private Timer timer;
 
     private final Map<String, List<QMessage>> messagesToPushed = new HashMap<>();
-    private final List<MBQMessage> processingMessages = new LinkedList<>();
+    private final List<MBQMessage.ProcessingItem> processingItems = new LinkedList<>();
 
     private final Transaction transaction;
 
@@ -110,10 +111,12 @@ public class MBQueuePublisher implements QueueClient {
         validateClient();
         LOGGER.info("Rolling back for the processed items of client [{}]", getClient());
 
-        boolean success = getServer().rollback(getClient(), processingMessages.parallelStream().map(MBQMessage::getId)
-                .collect(Collectors.toList()));
+        Map<QueueStatus, List<String>> procIds = new HashMap<>();
+        procIds.put(QueueStatus.PENDING, processingItems.parallelStream().map(MBQMessage.ProcessingItem::getId).collect(Collectors.toList()));
+
+        boolean success = getServer().rollback(getClient(), procIds);
         if (success) {
-            processingMessages.clear();
+            processingItems.clear();
             messagesToPushed.clear();
         } else {
             throw new MBQException("Failed while rolling back transaction");
@@ -128,13 +131,23 @@ public class MBQueuePublisher implements QueueClient {
 
     private void commitQueueTrans() {
         validateClient();
-        if (!processingMessages.isEmpty() || !messagesToPushed.isEmpty()) {
+
+        if (!processingItems.isEmpty() || !messagesToPushed.isEmpty()) {
             LOGGER.info("Committing Transaction for client [{}] with processedItems [{}] and message pushed to queues [{}]"
-                    , getClient(), processingMessages.size(), messagesToPushed.size());
-            boolean success = getServer().commit(getClient(), processingMessages.parallelStream().map(MBQMessage::getId)
-                    .collect(Collectors.toList()), messagesToPushed);
+                    , getClient(), processingItems.size(), messagesToPushed.size());
+
+            Map<QueueStatus, List<String>> processingItemMap = processingItems.stream().reduce(new HashMap<>(), (acc, msg) -> {
+                QueueStatus queueStatus = msg.getQueueStatus() == QueueStatus.PROCESSING ? QueueStatus.COMPLETED : msg.getQueueStatus();
+                if (!acc.containsKey(msg.getQueueStatus())) {
+                    acc.put(queueStatus, new ArrayList<>());
+                }
+                acc.get(queueStatus).add(msg.getId());
+                return acc;
+            }, (map1, map2) -> map1);
+
+            boolean success = getServer().commit(getClient(), processingItemMap, messagesToPushed);
             if (success) {
-                processingMessages.clear();
+                processingItems.clear();
                 messagesToPushed.clear();
             } else {
                 throw new MBQException("Failed while commiting transaction");
@@ -142,8 +155,8 @@ public class MBQueuePublisher implements QueueClient {
         }
     }
 
-    protected List<MBQMessage> getProcessingMessages() {
-        return processingMessages;
+    protected List<MBQMessage.ProcessingItem> getProcessingItems() {
+        return processingItems;
     }
 
     protected Client getClient() {

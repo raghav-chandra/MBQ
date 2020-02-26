@@ -130,7 +130,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                 MBQMessage item = getQueue().get(queueName, idKey.getId());
 
                 if (currTime > item.getScheduledAt()) {
-                    if (QMessage.DEFAULT_SEQ.equals(idKey.getSeqKey())) {
+                    if (idKey.getSeqKey() == null) {
                         ids.add(idKey.getId());
                         items.add(item);
                         i++;
@@ -160,18 +160,13 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     }
 
     @Override
-    public boolean commit(Client client, List<String> ids, Map<String, List<QMessage>> messagesToBePushed) {
+    public boolean commit(Client client, Map<QueueStatus, List<String>> ids, Map<String, List<QMessage>> messagesToBePushed) {
         //TODO: Wrap around a transaction
-        updateQueueStatus(client, ids, QueueStatus.COMPLETED);
+        ids.forEach((status, procIds) -> updateQueueStatus(client, procIds, status == QueueStatus.PROCESSING ? QueueStatus.COMPLETED : status));
         if (!messagesToBePushed.isEmpty()) {
             messagesToBePushed.forEach((queueName, messages) -> pushMessage(client, messages, queueName));
         }
         return true;
-    }
-
-    @Override
-    public boolean rollback(Client client, List<String> ids) {
-        return updateQueueStatus(client, ids, QueueStatus.PENDING);
     }
 
     private boolean updateQueueStatus(Client client, List<String> ids, QueueStatus status) {
@@ -233,6 +228,12 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         }
         //Remove Client Messages once processing is done.
         CLIENTS_HB.get(client).getMessages().clear();
+        return true;
+    }
+
+    @Override
+    public boolean rollback(Client client, Map<QueueStatus, List<String>> ids) {
+        ids.forEach((status, procIds) -> updateQueueStatus(client, procIds, QueueStatus.PENDING));
         return true;
     }
 

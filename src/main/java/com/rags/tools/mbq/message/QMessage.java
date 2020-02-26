@@ -2,8 +2,6 @@ package com.rags.tools.mbq.message;
 
 public class QMessage {
 
-    public static final String DEFAULT_SEQ = "raga-seq";
-
     private String seqKey;
     private byte[] message;
     private long scheduledAt;
@@ -23,7 +21,7 @@ public class QMessage {
     }
 
     public String getSeqKey() {
-        return seqKey == null ? DEFAULT_SEQ : seqKey;
+        return seqKey;
     }
 
     public byte[] getMessage() {

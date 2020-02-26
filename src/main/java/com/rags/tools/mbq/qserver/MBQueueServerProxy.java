@@ -3,6 +3,7 @@ package com.rags.tools.mbq.qserver;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rags.tools.mbq.QConfig;
+import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
@@ -96,7 +97,7 @@ public class MBQueueServerProxy implements MBQueueServer {
         }
     }
 
-    public boolean commit(Client client, List<String> processedIds, Map<String, List<QMessage>> messagesToBePushed) {
+    public boolean commit(Client client, Map<QueueStatus,List<String>> processedIds, Map<String, List<QMessage>> messagesToBePushed) {
         byte[] resp = this.post("mbq/commit", new CommitRollbackRequest(client, processedIds, messagesToBePushed));
         try {
             RestResponse<Boolean> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<Boolean>>() {
@@ -109,7 +110,7 @@ public class MBQueueServerProxy implements MBQueueServer {
     }
 
     @Override
-    public boolean rollback(Client client, List<String> ids) {
+    public boolean rollback(Client client, Map<QueueStatus,List<String>> ids) {
         byte[] resp = this.post("mbq/push", new CommitRollbackRequest(client, ids, new HashMap<>()));
         try {
             RestResponse<Boolean> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<Boolean>>() {

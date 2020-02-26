@@ -2,10 +2,10 @@ package com.rags.tools.mbq.client;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.message.MBQMessage;
-import com.rags.tools.mbq.message.QMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -30,11 +30,12 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
                     Transaction transaction = getTransaction();
                     List<MBQMessage> items = getServer().pull(getClient());
                     LOGGER.debug("Polled {} no of messोges to processed for client {}", items.size(), getClient());
-                    getProcessingMessages().addAll(items);
+                    List<MBQMessage.ProcessingItem> processingItems = items.stream().map(MBQMessage::getProcessingItem).collect(Collectors.toList());
+                    getProcessingItems().addAll(processingItems);
                     try {
-                        if (!getProcessingMessages().isEmpty()) {
+                        if (!getProcessingItems().isEmpty()) {
                             transaction.start();
-                            onMessage(items.stream().map(QMessage::getMessage).collect(Collectors.toUnmodifiableList()));
+                            onMessage(Collections.unmodifiableList(processingItems));
                             transaction.commit();
                         }
                     } catch (Throwable t) {
@@ -50,7 +51,7 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
         return polling;
     }
 
-    public abstract void onMessage(List<byte[]> qItems);
+    public abstract void onMessage(List<MBQMessage.ProcessingItem> qItems);
 
     @Override
     public void stop() {
