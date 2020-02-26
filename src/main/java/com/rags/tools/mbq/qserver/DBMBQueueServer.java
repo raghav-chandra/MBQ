@@ -46,10 +46,4 @@ public class DBMBQueueServer extends AbstractMBQueueServer {
             throw new MBQException("Wrong configuration passed. You are trying to setup DB as QueueType but username is not provided");
         }
     }
-
-    @Override
-    void init() {
-        getQueue().updateStatus(QueueStatus.PROCESSING, QueueStatus.PENDING);
-        getQueue().getAllPendingIds().forEach((key, val) -> getPendingQueue(key).addAll(val));
-    }
 }

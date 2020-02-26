@@ -46,9 +46,4 @@ public class MongoMBQServer extends AbstractMBQueueServer {
             throw new MBQException("Wrong configuration passed. You are trying to setup Mongo DB as QueueType but username is not provided");
         }
     }
-
-    @Override
-    void init() {
-        getQueue().getAllPendingIds().forEach((key, val) -> getPendingQueue(key).addAll(val));
-    }
 }

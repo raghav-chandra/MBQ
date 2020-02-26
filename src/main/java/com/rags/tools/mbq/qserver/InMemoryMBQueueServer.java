@@ -34,8 +34,4 @@ public class InMemoryMBQueueServer extends AbstractMBQueueServer {
             throw new MBQException("Wrong configuration passed. You are trying to setup In Memory queue with other QueueType");
         }
     }
-
-    @Override
-    void init() {
-    }
 }
