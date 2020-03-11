@@ -3,6 +3,7 @@ package com.rags.tools.mbq.server.rest;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.server.rest.handler.ClientHandler;
 import com.rags.tools.mbq.server.rest.handler.QueueHandler;
+import com.rags.tools.mbq.server.rest.messagecodec.CommitRollbackRequest;
 import com.rags.tools.mbq.server.rest.messagecodec.DefMessageCodec;
 import com.rags.tools.mbq.server.rest.messagecodec.EventBusRequest;
 import com.rags.tools.mbq.server.rest.verticle.ClientVerticle;
@@ -33,6 +34,7 @@ public class MBQServerStartup extends AbstractVerticle {
         getVertx()
                 .eventBus()
                 .registerCodec(new DefMessageCodec<Client>(Client.class))
+                .registerCodec(new DefMessageCodec<CommitRollbackRequest>(CommitRollbackRequest.class))
                 .registerCodec(new DefMessageCodec<EventBusRequest>(EventBusRequest.class));
 
         VERTICLES.forEach(verticle ->

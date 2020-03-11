@@ -65,7 +65,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
     void init() {
         getQueue().updateStatus(QueueStatus.PROCESSING, QueueStatus.PENDING);
-        getQueue().getAllPendingIds().forEach((key, val) -> getPendingQueue(key).addAll(val));
+        getQueue().getAllPendingIds().forEach((queueName, val) -> getPendingQueue(queueName).addAll(val));
     }
 
     @Override

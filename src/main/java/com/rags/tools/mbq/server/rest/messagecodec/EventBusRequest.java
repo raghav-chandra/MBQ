@@ -1,9 +1,12 @@
 package com.rags.tools.mbq.server.rest.messagecodec;
 
 public class EventBusRequest {
-    private final String remoteHost;
-    private final String cookie;
-    private final Object reqObj;
+    private String remoteHost;
+    private String cookie;
+    private Object reqObj;
+
+    public EventBusRequest() {
+    }
 
     public EventBusRequest(String remoteHost, String cookie, Object reqObj) {
         this.remoteHost = remoteHost;
