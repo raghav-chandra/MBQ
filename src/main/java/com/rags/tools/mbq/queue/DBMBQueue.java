@@ -23,7 +23,7 @@ public class DBMBQueue extends AbstractMBQueue {
     private static final String GET_BY_QUEUE_AND_ID = "select * from MBQueueMessage where Id in (:ids)";
     private static final String GET_BY_QUEUE_SEQ_AND_STATUS = "select * from MBQueueMessage where QueueName=:queue and Sequence=:seq and Status in (:status)";
     private static final String GET_BY_QUEUE_AND_IDS = "select * from MBQueueMessage where QueueName=:queue Id in (:ids)";
-    private static final String GET_PENDING_IDS = "select Id, Sequence, QueueName from MBQueueMessage where Status='PENDING' order by CreatedTime asc";
+    private static final String GET_PENDING_IDS = "select Id, Sequence, QueueName, Status from MBQueueMessage where Status='PENDING' order by CreatedTime asc";
 
     private static final String INSERT_MBQ_MESSAGE = "insert into MBQueueMessage (Id, QueueName, Sequence, Status, Data, ScheduledAt, CreatedTime, UpdatedTime) values (:id,:queue,:seq,:status,:data,:scheduledAt, :createTS,:updatedTS)";
     private static final String UPDATE_MBQ_MESSAGE = "update MBQueueMessage set Status=:status, UpdatedTime=:updatedTS where Id in (:ids) and QueueName=:queue";
@@ -87,10 +87,11 @@ public class DBMBQueue extends AbstractMBQueue {
                 String id = rs.getString("Id");
                 String queueName = rs.getString("QueueName");
                 String seq = rs.getString("Sequence");
+                QueueStatus status = QueueStatus.valueOf(rs.getString("Status"));
                 if (!queueMap.containsKey(queueName)) {
                     queueMap.put(queueName, new LinkedList<>());
                 }
-                queueMap.get(queueName).add(new IdSeqKey(id, seq));
+                queueMap.get(queueName).add(new IdSeqKey(id, seq, status));
             }
             return queueMap;
         });
