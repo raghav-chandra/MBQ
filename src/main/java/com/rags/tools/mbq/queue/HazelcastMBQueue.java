@@ -65,7 +65,7 @@ public class HazelcastMBQueue extends AbstractMBQueue {
             if (iMap != null) {
                 List<MBQMessage> allMessages = new LinkedList<>(iMap.values(Predicates.equal("status", QueueStatus.PENDING)));
                 allMessages.sort((m1, m2) -> Math.toIntExact(m1.getCreatedTimeStamp() - m2.getCreatedTimeStamp()));
-                map.put(qName, allMessages.stream().map(i -> new IdSeqKey(i.getId(), i.getSeqKey(), i.getStatus())).collect(Collectors.toList()));
+                map.put(qName, allMessages.stream().map(i -> new IdSeqKey(i.getId(), i.getSeqKey(), i.getStatus(), i.getScheduledAt())).collect(Collectors.toList()));
             }
         });
 

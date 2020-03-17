@@ -203,10 +203,10 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                 if (message.getStatus() == QueueStatus.PROCESSING) {
                     processingToComplete.add(id);
                 } else if (message.getStatus() != QueueStatus.COMPLETED) {
-                    restAllToComplete.add(new IdSeqKey(message.getId(), message.getSeqKey(), message.getStatus()));
+                    restAllToComplete.add(new IdSeqKey(message.getId(), message.getSeqKey(), message.getStatus(), message.getScheduledAt()));
                 }
             } else {
-                allToNotCompleted.add(new IdSeqKey(message.getId(), message.getSeqKey(), message.getStatus()));
+                allToNotCompleted.add(new IdSeqKey(message.getId(), message.getSeqKey(), message.getStatus(), message.getScheduledAt()));
             }
         });
 
@@ -253,7 +253,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
         PendingQ<IdSeqKey> pendQ = getPendingQueue(queueName);
         List<MBQMessage> pushedMsgs = getQueue().push(queueName, messages);
-        List<IdSeqKey> ids = pushedMsgs.stream().map(i -> new IdSeqKey(i.getId(), i.getSeqKey(), i.getStatus())).collect(Collectors.toList());
+        List<IdSeqKey> ids = pushedMsgs.stream().map(i -> new IdSeqKey(i.getId(), i.getSeqKey(), i.getStatus(), i.getScheduledAt())).collect(Collectors.toList());
 
         synchronized (pendQ) {
             pendQ.addAll(ids);

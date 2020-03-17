@@ -7,12 +7,14 @@ import java.util.Objects;
 public class IdSeqKey {
     private final String id;
     private final String seqKey;
+    private final long scheduledAt;
     private QueueStatus status;
 
-    public IdSeqKey(String id, String seqKey, QueueStatus status) {
+    public IdSeqKey(String id, String seqKey, QueueStatus status, long scheduledAt) {
         this.id = id;
         this.seqKey = seqKey;
         this.status = status;
+        this.scheduledAt = scheduledAt;
     }
 
     public String getId() {
@@ -25,6 +27,10 @@ public class IdSeqKey {
 
     public QueueStatus getStatus() {
         return status;
+    }
+
+    public long getScheduledAt() {
+        return scheduledAt;
     }
 
     @Override

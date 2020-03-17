@@ -82,4 +82,11 @@ public interface PendingQ<T> {
     void unlock();
 
     boolean isLocked();
+
+    /**
+     * Returns all the elements found in the given items
+     * @param items given items
+     * @return all found items
+     */
+    List<T> find(List<T> items);
 }

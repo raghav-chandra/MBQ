@@ -3,6 +3,7 @@ package com.rags.tools.mbq.queue.pending;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public class InMemoryPendingQ<T> implements PendingQ<T> {
 
@@ -74,5 +75,10 @@ public class InMemoryPendingQ<T> implements PendingQ<T> {
     public boolean isLocked() {
 //        return LOCK.isLocked();
         return false;
+    }
+
+    @Override
+    public List<T> find(List<T> items) {
+        return queue.stream().filter(items::contains).collect(Collectors.toList());
     }
 }
