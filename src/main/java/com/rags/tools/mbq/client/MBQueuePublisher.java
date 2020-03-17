@@ -138,7 +138,7 @@ public class MBQueuePublisher implements QueueClient {
 
             Map<QueueStatus, List<String>> processingItemMap = processingItems.stream().reduce(new HashMap<>(), (acc, msg) -> {
                 QueueStatus queueStatus = msg.getQueueStatus() == QueueStatus.PROCESSING ? QueueStatus.COMPLETED : msg.getQueueStatus();
-                if (!acc.containsKey(msg.getQueueStatus())) {
+                if (!acc.containsKey(queueStatus)) {
                     acc.put(queueStatus, new ArrayList<>());
                 }
                 acc.get(queueStatus).add(msg.getId());
