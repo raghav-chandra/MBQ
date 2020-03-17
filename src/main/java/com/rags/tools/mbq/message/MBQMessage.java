@@ -27,9 +27,8 @@ public class MBQMessage extends QMessage implements DataSerializable {
         this(id, queue, seqKey, QueueStatus.PENDING, message, System.currentTimeMillis(), 0, scheduledAt);
     }
 
-
     public MBQMessage(String id, String queue, String seq, QueueStatus status, byte[] data, long createdTS, long updatedTS, long scheduledAt) {
-        super(seq, data, scheduledAt);
+        super(seq, data, scheduledAt == 0 ? createdTS : scheduledAt);
         this.id = id;
         this.queue = queue;
         this.status = status;
