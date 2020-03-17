@@ -22,7 +22,7 @@ public class QueueTester extends MBQueueClient {
     public static int counter = 1;
     private static long startTime = 0;
 
-    private static final int DIFF_SEQ = 20;
+    private static final int DIFF_SEQ = 500;
 
     static void execute(int publishers, int consumers, QConfig.Builder config) {
         List<MBQueuePublisher> allPublishers = new ArrayList<>();
@@ -34,7 +34,6 @@ public class QueueTester extends MBQueueClient {
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-//        while(counter <=100000)
                 long l = System.currentTimeMillis();
                 allPublishers.parallelStream().forEach(client -> {
                     List<QMessage> messages = new LinkedList<>();
@@ -46,7 +45,6 @@ public class QueueTester extends MBQueueClient {
                     client.push(messages);
                     transaction.commit();
                 });
-//                System.out.println(Thread.currentThread().getName() + "    Time Taken : " + (System.currentTimeMillis()-l));
             }
         }, 100, 100);
 
