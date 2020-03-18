@@ -9,12 +9,18 @@ public class IdSeqKey {
     private final String seqKey;
     private final long scheduledAt;
     private QueueStatus status;
+    private int index;
 
-    public IdSeqKey(String id, String seqKey, QueueStatus status, long scheduledAt) {
+    public IdSeqKey(int index, String id, String seqKey, QueueStatus status, long scheduledAt) {
+        this.index = index;
         this.id = id;
         this.seqKey = seqKey;
         this.status = status;
         this.scheduledAt = scheduledAt;
+    }
+
+    public IdSeqKey(String id, String seqKey, QueueStatus status, long scheduledAt) {
+        this(-1, id, seqKey, status, scheduledAt);
     }
 
     public String getId() {
@@ -49,5 +55,13 @@ public class IdSeqKey {
 
     public void setStatus(QueueStatus status) {
         this.status = status;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 }

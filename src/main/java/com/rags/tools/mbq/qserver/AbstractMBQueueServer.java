@@ -21,7 +21,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMBQueueServer.class);
 
-    private static final Map<Client, ClientInfo> CLIENTS_HB = new ConcurrentHashMap<>();
+    private static final Map<Client, ClientInfo> CLIENTS_HB = new ConcurrentHashMap<>(2048, .9f, 512);
+    private static final Map<String, Set<String>> USED_SEQ = new ConcurrentHashMap<>(256, .75f, 64);
 
     private static final int PING_INTERVAL = 5000;
 
@@ -52,8 +53,15 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                     //Move Items to the right place if client is not active
                     if (clientInfo != null && !clientInfo.getMessages().isEmpty()) {
                         PendingQ<IdSeqKey> pendQ = getPendingQueue(client.getQueueName());
+                        long curr = System.currentTimeMillis();
+                        if (LOGGER.isDebugEnabled()) {
+                            curr = System.currentTimeMillis();
+                        }
                         synchronized (pendQ) {
                             pendQ.addAllFirst(clientInfo.getMessages());
+                        }
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Total time queue {} was blocked to rollback {} no of messages, is {}", client.getQueueName(), clientInfo.getMessages(), (System.currentTimeMillis() - curr));
                         }
                     }
                     CLIENTS_HB.remove(client);
@@ -181,11 +189,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
         validateClient(client);
 
-        //PROCESSING-> COMPLETE
-        List<String> processingToComplete = new ArrayList<>();
-
         //ERROR/HELD/BLOCKED-> COMPLETE
-        List<IdSeqKey> restAllToComplete = new ArrayList<>();
+        List<IdSeqKey> allToComplete = new ArrayList<>();
 
         //ANY-> HELD/BLOCKED/ERROR
         List<IdSeqKey> allToNotCompleted = new ArrayList<>();
@@ -200,27 +205,22 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
             MBQMessage message = optionalMBQMessage.get();
             if (status == QueueStatus.COMPLETED) {
-                if (message.getStatus() == QueueStatus.PROCESSING) {
-                    processingToComplete.add(id);
-                } else if (message.getStatus() != QueueStatus.COMPLETED) {
-                    restAllToComplete.add(new IdSeqKey(message.getId(), message.getSeqKey(), message.getStatus(), message.getScheduledAt()));
-                }
+                allToComplete.add(new IdSeqKey(message.getId(), message.getSeqKey(), message.getStatus(), message.getScheduledAt()));
             } else {
                 allToNotCompleted.add(new IdSeqKey(message.getId(), message.getSeqKey(), message.getStatus(), message.getScheduledAt()));
             }
         });
 
 
-        List<String> allItems = new LinkedList<>(processingToComplete);
-        allItems.addAll(restAllToComplete.parallelStream().map(IdSeqKey::getId).collect(Collectors.toList()));
-        allItems.addAll(allToNotCompleted.parallelStream().map(IdSeqKey::getId).collect(Collectors.toList()));
+        List<IdSeqKey> allItems = new LinkedList<>(allToComplete);
+        allItems.addAll(allToNotCompleted);
 
-        getQueue().updateStatus(client.getQueueName(), allItems, status);
+        getQueue().updateStatus(client.getQueueName(), allItems.stream().map(IdSeqKey::getId).collect(Collectors.toList()), status);
 
         PendingQ<IdSeqKey> pendQ = getPendingQueue(client.getQueueName());
         synchronized (pendQ) {
-            if (!restAllToComplete.isEmpty()) {
-                pendQ.removeAll(restAllToComplete);
+            if (!allToComplete.isEmpty()) {
+                pendQ.removeAll(allToComplete);
             }
 
             if (!allToNotCompleted.isEmpty()) {
