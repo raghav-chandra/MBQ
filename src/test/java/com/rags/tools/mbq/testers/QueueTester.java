@@ -74,7 +74,6 @@ public class QueueTester extends MBQueueClient {
 
         long timeTaken = System.currentTimeMillis() - startTime;
         float divider = timeTaken / 1000f;
-        System.out.println(Thread.currentThread().getName() + " Completed " + ct + " no of messages in " + timeTaken + " millis. Throughput per Sec : " + ct / divider);
         LOGGER.info("Completed {} no of messages in {} millis. Throughput per Sec : {}", ct, timeTaken, ct / divider);
         /*try {
             Thread.sleep(8000);
