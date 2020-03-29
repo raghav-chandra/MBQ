@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class InMemoryMBQueue extends AbstractMBQueue {
+public class InMemoryMBQDataStore extends AbstractMBQDataStore {
 
     private final Map<String, Map<String, MBQMessage>> QUEUE_DS = new ConcurrentHashMap<>();
 

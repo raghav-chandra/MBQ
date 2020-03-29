@@ -20,12 +20,12 @@ import java.util.stream.Collectors;
  * @author ragha
  * @since 29-12-2019
  */
-public class HazelcastMBQueue extends AbstractMBQueue {
+public class HazelcastMBQDataStore extends AbstractMBQDataStore {
 
     private final HazelcastInstance instance;
 
     //TODO: Use Entry Processor for Atomicity of operations
-    public HazelcastMBQueue(QConfig.ServerConfig serverConfig) {
+    public HazelcastMBQDataStore(QConfig.ServerConfig serverConfig) {
         Config config = new Config();
         this.instance = Hazelcast.newHazelcastInstance(config);
     }

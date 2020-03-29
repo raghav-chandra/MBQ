@@ -11,7 +11,7 @@ import java.util.Map;
  * @author ragha
  * @since 29-12-2019
  */
-public interface MBQueue {
+public interface MBQDataStore {
 
     /**
      * Retrieves items from the queue based on the item id

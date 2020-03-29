@@ -18,7 +18,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class DBMBQueue extends AbstractMBQueue {
+public class DBMBQueueDataStore extends AbstractMBQDataStore {
 
     private static final String GET_BY_QUEUE_AND_ID = "select * from MBQueueMessage where Id in (:ids)";
     private static final String GET_BY_QUEUE_SEQ_AND_STATUS = "select * from MBQueueMessage where QueueName=:queue and Sequence=:seq and Status in (:status)";
@@ -32,7 +32,7 @@ public class DBMBQueue extends AbstractMBQueue {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public DBMBQueue(QConfig.ServerConfig config) {
+    public DBMBQueueDataStore(QConfig.ServerConfig config) {
         try {
             DataSource ds = createDS(config);
             jdbcTemplate = new NamedParameterJdbcTemplate(ds);

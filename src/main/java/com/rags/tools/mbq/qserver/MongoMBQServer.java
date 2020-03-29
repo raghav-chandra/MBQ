@@ -3,8 +3,8 @@ package com.rags.tools.mbq.qserver;
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.queue.IdSeqKey;
-import com.rags.tools.mbq.queue.MBQueue;
-import com.rags.tools.mbq.queue.MongoMBQueue;
+import com.rags.tools.mbq.queue.MBQDataStore;
+import com.rags.tools.mbq.queue.MongoMBQDataStore;
 import com.rags.tools.mbq.queue.QueueType;
 import com.rags.tools.mbq.queue.pending.InMemoryPendingIdSeqKeyQMap;
 import com.rags.tools.mbq.queue.pending.PendingQMap;
@@ -13,8 +13,8 @@ public class MongoMBQServer extends AbstractMBQueueServer {
 
     private static MBQueueServer INSTANCE = null;
 
-    public MongoMBQServer(MBQueue mbQueue, PendingQMap<IdSeqKey> pendingQMap) {
-        super(mbQueue, pendingQMap);
+    public MongoMBQServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap) {
+        super(mbqDataStore, pendingQMap);
     }
 
     public synchronized static MBQueueServer getInstance(QConfig.ServerConfig config) {
@@ -26,7 +26,7 @@ public class MongoMBQServer extends AbstractMBQueueServer {
 
     private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new MongoMBQServer(new MongoMBQueue(config), new InMemoryPendingIdSeqKeyQMap());
+        return new MongoMBQServer(new MongoMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap());
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {

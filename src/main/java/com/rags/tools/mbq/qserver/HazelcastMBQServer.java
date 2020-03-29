@@ -1,11 +1,10 @@
 package com.rags.tools.mbq.qserver;
 
 import com.rags.tools.mbq.QConfig;
-import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.exception.MBQException;
-import com.rags.tools.mbq.queue.HazelcastMBQueue;
+import com.rags.tools.mbq.queue.HazelcastMBQDataStore;
 import com.rags.tools.mbq.queue.IdSeqKey;
-import com.rags.tools.mbq.queue.MBQueue;
+import com.rags.tools.mbq.queue.MBQDataStore;
 import com.rags.tools.mbq.queue.QueueType;
 import com.rags.tools.mbq.queue.pending.InMemoryPendingIdSeqKeyQMap;
 import com.rags.tools.mbq.queue.pending.PendingQMap;
@@ -14,8 +13,8 @@ public class HazelcastMBQServer extends AbstractMBQueueServer {
 
     private static MBQueueServer INSTANCE;
 
-    private HazelcastMBQServer(MBQueue queue, PendingQMap<IdSeqKey> pendingQMap) {
-        super(queue, pendingQMap);
+    private HazelcastMBQServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap) {
+        super(mbqDataStore, pendingQMap);
     }
 
     public synchronized static MBQueueServer getInstance(QConfig.ServerConfig config) {
@@ -27,7 +26,7 @@ public class HazelcastMBQServer extends AbstractMBQueueServer {
 
     private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new HazelcastMBQServer(new HazelcastMBQueue(config), new InMemoryPendingIdSeqKeyQMap());
+        return new HazelcastMBQServer(new HazelcastMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap());
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {

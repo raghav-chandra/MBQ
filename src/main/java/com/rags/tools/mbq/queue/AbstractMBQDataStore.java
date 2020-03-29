@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class AbstractMBQueue implements MBQueue {
+public abstract class AbstractMBQDataStore implements MBQDataStore {
 
 
     @Override

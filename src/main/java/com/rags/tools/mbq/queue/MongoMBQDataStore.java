@@ -8,9 +8,9 @@ import com.rags.tools.mbq.message.QMessage;
 import java.util.List;
 import java.util.Map;
 
-public class MongoMBQueue extends AbstractMBQueue {
+public class MongoMBQDataStore extends AbstractMBQDataStore {
 
-    public MongoMBQueue(QConfig.ServerConfig config) {
+    public MongoMBQDataStore(QConfig.ServerConfig config) {
 
     }
 

@@ -11,11 +11,7 @@ public class InMemoryPendingIdSeqKeyQMap implements PendingQMap<IdSeqKey> {
 
     @Override
     public PendingQ<IdSeqKey> get(String queueName) {
-        if (!QUEUE.containsKey(queueName)) {
-            QUEUE.put(queueName, new InMemoryPendingQ<>());
-        }
-
-        return QUEUE.get(queueName);
+        return QUEUE.putIfAbsent(queueName, new InMemoryPendingQ<>());
     }
 
 }

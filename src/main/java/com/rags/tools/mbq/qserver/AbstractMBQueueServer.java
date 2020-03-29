@@ -6,7 +6,7 @@ import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 import com.rags.tools.mbq.queue.IdSeqKey;
-import com.rags.tools.mbq.queue.MBQueue;
+import com.rags.tools.mbq.queue.MBQDataStore;
 import com.rags.tools.mbq.queue.pending.PendingQ;
 import com.rags.tools.mbq.queue.pending.PendingQMap;
 import com.rags.tools.mbq.util.HashingUtil;
@@ -28,10 +28,10 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
     private final PendingQMap<IdSeqKey> pendingQMap;
 
-    private final MBQueue queue;
+    private final MBQDataStore queueDataStore;
 
-    public AbstractMBQueueServer(MBQueue mbQueue, PendingQMap<IdSeqKey> pendingQMap) {
-        this.queue = mbQueue;
+    public AbstractMBQueueServer(MBQDataStore MBQDataStore, PendingQMap<IdSeqKey> pendingQMap) {
+        this.queueDataStore = MBQDataStore;
         this.pendingQMap = pendingQMap;
         init();
         new Timer(true).schedule(new TimerTask() {
@@ -52,28 +52,33 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                     ClientInfo clientInfo = CLIENTS_HB.get(client);
                     //Move Items to the right place if client is not active
                     if (clientInfo != null && !clientInfo.getMessages().isEmpty()) {
-                        PendingQ<IdSeqKey> pendQ = getPendingQueue(client.getQueueName());
-                        long curr = System.currentTimeMillis();
+                        String queueName = client.getQueueName();
+                        PendingQ<IdSeqKey> pendQ = getPendingQueue(queueName);
+                        long curr = 0;
                         if (LOGGER.isDebugEnabled()) {
                             curr = System.currentTimeMillis();
                         }
                         synchronized (pendQ) {
                             pendQ.addAllFirst(clientInfo.getMessages());
+                            USED_SEQ.get(queueName).removeAll(clientInfo.getMessages().stream().map(IdSeqKey::getSeqKey).collect(Collectors.toList()));
                         }
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Total time queue {} was blocked to rollback {} no of messages, is {}", client.getQueueName(), clientInfo.getMessages(), (System.currentTimeMillis() - curr));
+                            LOGGER.debug("Total time queue {} was blocked to rollback {} no of messages, is {}", queueName, clientInfo.getMessages(), (System.currentTimeMillis() - curr));
                         }
                     }
                     CLIENTS_HB.remove(client);
 
                 });
             }
-        }, 0, 1000);
+        }, 0, 2000);
     }
 
     void init() {
-        getQueue().updateStatus(QueueStatus.PROCESSING, QueueStatus.PENDING);
-        getQueue().getAllPendingIds().forEach((queueName, val) -> getPendingQueue(queueName).addAll(val));
+        getQueueDataStore().updateStatus(QueueStatus.PROCESSING, QueueStatus.PENDING);
+        getQueueDataStore().getAllPendingIds().forEach((queueName, val) -> {
+            USED_SEQ.putIfAbsent(queueName, new HashSet<>(20000)).addAll(val.stream().map(IdSeqKey::getSeqKey).collect(Collectors.toSet()));
+            getPendingQueue(queueName).addAll(val);
+        });
     }
 
     @Override
@@ -124,43 +129,40 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             return Collections.emptyList();
         }
 
-        List<MBQMessage> items = new ArrayList<>();
         int batch = client.getBatch(), counter = 0;
-        List<String> ids = new ArrayList<>();
         List<IdSeqKey> idSeqKeys = new ArrayList<>();
 
         int noOfItem = Math.min(seqQ.size(), batch);
         long currTime = System.currentTimeMillis();
+        Set<String> markedBlockedSeq = new HashSet<>();
         synchronized (seqQ) {
+//            long c = System.currentTimeMillis();
             for (int i = 0; i < noOfItem && counter < seqQ.size(); counter++) {
                 IdSeqKey idKey = seqQ.get(counter);
-                //TODO: Query ony once. Calculate all Ids and then release lock on the queue
-                MBQMessage item = getQueue().get(queueName, idKey.getId());
 
-                if (currTime > item.getScheduledAt()) {
-                    if (idKey.getSeqKey() == null) {
-                        ids.add(idKey.getId());
-                        items.add(item);
-                        idSeqKeys.add(idKey);
-                        i++;
-                    } else {
-                        boolean seqKeyUsed = false;
-                        for (int j = 0; j < counter; j++) {
-                            if (seqQ.get(j).getSeqKey().equals(idKey.getSeqKey()) && !ids.contains(seqQ.get(j).getId())) {
-                                seqKeyUsed = true;
-                            }
-                        }
-                        if (!seqKeyUsed) {
-                            ids.add(idKey.getId());
-                            items.add(item);
-                            idSeqKeys.add(idKey);
-                            i++;
-                        }
-                    }
+                if (idKey.getStatus().isBlocking()) {
+                    markedBlockedSeq.add(idKey.getSeqKey());
+                }
+
+                if (currTime >= idKey.getScheduledAt()
+                        && (idKey.getSeqKey() == null || !USED_SEQ.get(queueName).contains(idKey.getSeqKey()))
+                        && !markedBlockedSeq.contains(idKey.getSeqKey())
+                        && idKey.getStatus() == QueueStatus.PENDING) {
+                    idSeqKeys.add(idKey);
+                    i++;
                 }
             }
+            USED_SEQ.get(queueName).addAll(idSeqKeys.stream().map(IdSeqKey::getSeqKey).collect(Collectors.toList()));
+//            LOGGER.debug("Time Taken to pull {}", (System.currentTimeMillis() - c));
             seqQ.removeAll(idSeqKeys);
         }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Total time queue {} was blocked to pull {} no of messages, is {}", queueName, idSeqKeys.size(), (System.currentTimeMillis() - currTime));
+        }
+
+        List<MBQMessage> items = getQueueDataStore().get(queueName, idSeqKeys.stream().map(IdSeqKey::getId).collect(Collectors.toList()));
+        idSeqKeys.forEach(i -> i.setStatus(QueueStatus.PROCESSING));
 
         items.parallelStream().forEach(i -> i.updateStatus(QueueStatus.PROCESSING));
 
@@ -195,7 +197,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         //ANY-> HELD/BLOCKED/ERROR
         List<IdSeqKey> allToNotCompleted = new ArrayList<>();
 
-        List<MBQMessage> existingMsgs = getQueue().get(client.getQueueName(), ids);
+        List<MBQMessage> existingMsgs = getQueueDataStore().get(client.getQueueName(), ids);
 
         ids.forEach(id -> {
             Optional<MBQMessage> optionalMBQMessage = existingMsgs.stream().filter(m -> m.getId().equals(id)).findFirst();
@@ -207,7 +209,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             if (status == QueueStatus.COMPLETED) {
                 allToComplete.add(new IdSeqKey(message.getId(), message.getSeqKey(), message.getStatus(), message.getScheduledAt()));
             } else {
-                allToNotCompleted.add(new IdSeqKey(message.getId(), message.getSeqKey(), message.getStatus(), message.getScheduledAt()));
+                allToNotCompleted.add(new IdSeqKey(message.getId(), message.getSeqKey(), status, message.getScheduledAt()));
             }
         });
 
@@ -215,18 +217,19 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         List<IdSeqKey> allItems = new LinkedList<>(allToComplete);
         allItems.addAll(allToNotCompleted);
 
-        getQueue().updateStatus(client.getQueueName(), allItems.stream().map(IdSeqKey::getId).collect(Collectors.toList()), status);
+        getQueueDataStore().updateStatus(client.getQueueName(), allItems.stream().map(IdSeqKey::getId).collect(Collectors.toList()), status);
 
         PendingQ<IdSeqKey> pendQ = getPendingQueue(client.getQueueName());
         synchronized (pendQ) {
             if (!allToComplete.isEmpty()) {
                 pendQ.removeAll(allToComplete);
+                USED_SEQ.get(client.getQueueName()).removeAll(allToComplete.stream().map(IdSeqKey::getSeqKey).collect(Collectors.toList()));
             }
 
             if (!allToNotCompleted.isEmpty()) {
+                //TODO: Handle case when Item is in the queue and has to be marked HELD/BLOCKED/ERROR..Do not add to the first.
                 pendQ.addAllFirst(allToNotCompleted);
             }
-            CLIENTS_HB.get(client).getMessages().stream().filter(i -> ids.contains(i.getId())).forEach(i -> i.setStatus(status));
         }
         //Remove Client Messages once processing is done. //TODO: Validate against messages in Server
         CLIENTS_HB.get(client).getMessages().clear();
@@ -252,12 +255,13 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         validateClient(client);
 
         PendingQ<IdSeqKey> pendQ = getPendingQueue(queueName);
-        List<MBQMessage> pushedMsgs = getQueue().push(queueName, messages);
+        List<MBQMessage> pushedMsgs = getQueueDataStore().push(queueName, messages);
         List<IdSeqKey> ids = pushedMsgs.stream().map(i -> new IdSeqKey(i.getId(), i.getSeqKey(), i.getStatus(), i.getScheduledAt())).collect(Collectors.toList());
 
         synchronized (pendQ) {
             pendQ.addAll(ids);
             LOGGER.debug("Total No of items in the queue {} is {}", queueName, pendQ.size());
+            USED_SEQ.putIfAbsent(client.getQueueName(), new HashSet<>(20000));
         }
 
         return pushedMsgs;
@@ -286,8 +290,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
      *
      * @return MB Queue
      */
-    protected MBQueue getQueue() {
-        return queue;
+    protected MBQDataStore getQueueDataStore() {
+        return queueDataStore;
     }
 
     protected PendingQ<IdSeqKey> getPendingQueue(String queueName) {
