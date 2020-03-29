@@ -53,7 +53,7 @@ public class MBQueuePublisher implements QueueClient {
         if (transaction.getStatus() != QTransStatus.START) {
             throw new MBQException("Message can not be pushed without transaction");
         }
-        LOGGER.info("Publishing {} messages to Queue", messages.size());
+        LOGGER.debug("Publishing {} messages to Queue", messages.size());
         if (!messagesToPushed.containsKey(queueName)) {
             messagesToPushed.put(queueName, new LinkedList<>());
         }
@@ -133,7 +133,7 @@ public class MBQueuePublisher implements QueueClient {
         validateClient();
 
         if (!processingItems.isEmpty() || !messagesToPushed.isEmpty()) {
-            LOGGER.info("Committing Transaction for client [{}] with processedItems [{}] and message pushed to queues [{}]"
+            LOGGER.debug("Committing Transaction for client [{}] with processedItems [{}] and message pushed to queues [{}]"
                     , getClient(), processingItems.size(), messagesToPushed.size());
 
             Map<QueueStatus, List<String>> processingItemMap = processingItems.stream().reduce(new HashMap<>(), (acc, msg) -> {
