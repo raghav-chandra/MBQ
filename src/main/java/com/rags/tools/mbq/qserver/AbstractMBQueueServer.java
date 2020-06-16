@@ -70,7 +70,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
                 });
             }
-        }, 0, 2000);
+        }, 0, 1000);
     }
 
     void init() {
@@ -180,6 +180,12 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         return true;
     }
 
+    @Override
+    public boolean rollback(Client client, Map<QueueStatus, List<String>> ids) {
+        ids.forEach((status, procIds) -> updateQueueStatus(client, procIds, QueueStatus.PENDING));
+        return true;
+    }
+
     private boolean updateQueueStatus(Client client, List<String> ids, QueueStatus status) {
         if (ids == null || ids.isEmpty()) {
             return false;
@@ -236,12 +242,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         return true;
     }
 
-    @Override
-    public boolean rollback(Client client, Map<QueueStatus, List<String>> ids) {
-        ids.forEach((status, procIds) -> updateQueueStatus(client, procIds, QueueStatus.PENDING));
-        return true;
-    }
-
 
     @Override
     public List<MBQMessage> push(Client client, List<QMessage> messages) {
@@ -280,7 +280,11 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         LOGGER.debug("Received heart beat from client [{}] with Id : {} at {}", client, id, currTime);
 
         String hb = HashingUtil.hashSHA256(id + currTime);
-        CLIENTS_HB.put(client, new ClientInfo(currTime, hb));
+        ClientInfo clientInfo = new ClientInfo(currTime, hb);
+        if (CLIENTS_HB.containsKey(client)) {
+            clientInfo.getMessages().addAll(CLIENTS_HB.get(client).getMessages());
+        }
+        CLIENTS_HB.put(client, clientInfo);
 
         return hb;
     }
