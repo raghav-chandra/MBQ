@@ -1,3 +1,6 @@
 .idea/
 target/
 *.iml
+dist/
+node_modules/
+package-lock.json
