@@ -1,15 +1,17 @@
 package com.rags.tools.mbq.queue.pending;
 
+import com.rags.tools.mbq.queue.IdSeqKey;
+
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-public class InMemoryPendingQ<T> implements PendingQ<T> {
+public class InMemoryPendingQ implements PendingQ<IdSeqKey> {
 
-    private final LinkedList<T> queue = new LinkedList<>();
-
-    public final ReentrantLock LOCK = new ReentrantLock();
+    private final LinkedList<IdSeqKey> queue = new LinkedList<>();
 
     @Override
     public boolean isEmpty() {
@@ -22,42 +24,52 @@ public class InMemoryPendingQ<T> implements PendingQ<T> {
     }
 
     @Override
-    public boolean removeAll(List<T> items) {
+    public boolean removeAll(List<IdSeqKey> items) {
         return queue.removeAll(items);
     }
 
     @Override
-    public T get(int index) {
+    public IdSeqKey get(int index) {
         return queue.get(index);
     }
 
     @Override
-    public void addLast(T item) {
+    public void addLast(IdSeqKey item) {
         this.queue.addLast(item);
     }
 
     @Override
-    public void add(int index, T item) {
+    public void add(int index, IdSeqKey item) {
         this.queue.add(index, item);
     }
 
+    public void addInOrder(IdSeqKey item) {
+        if (queue.isEmpty() || queue.getFirst().getId().compareTo(item.getId()) >= 0) {
+            queue.addFirst(item);
+        } else {
+            int ind = 0;
+            while (queue.get(ind++).getId().compareTo(item.getId()) <= 0) ;
+            queue.add(ind - 1, item);
+        }
+    }
+
     @Override
-    public void add(T item) {
+    public void add(IdSeqKey item) {
         this.queue.add(item);
     }
 
     @Override
-    public void addAll(List<T> items) {
+    public void addAll(List<IdSeqKey> items) {
         queue.addAll(items);
     }
 
     @Override
-    public void addFirst(T item) {
+    public void addFirst(IdSeqKey item) {
         queue.addFirst(item);
     }
 
     @Override
-    public void addAllFirst(List<T> items) {
+    public void addAllFirst(List<IdSeqKey> items) {
         items.forEach(queue::addFirst);
     }
 
@@ -78,7 +90,7 @@ public class InMemoryPendingQ<T> implements PendingQ<T> {
     }
 
     @Override
-    public List<T> find(List<T> items) {
+    public List<IdSeqKey> find(List<IdSeqKey> items) {
         return queue.stream().filter(items::contains).collect(Collectors.toList());
     }
 }
