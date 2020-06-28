@@ -1,5 +1,7 @@
 package com.rags.tools.mbq.queue.pending;
 
+import com.rags.tools.mbq.queue.IdSeqKey;
+
 import java.util.List;
 
 public interface PendingQ<T> {
@@ -48,6 +50,18 @@ public interface PendingQ<T> {
      * @param item  item to be added
      */
     void add(int index, T item);
+
+    /**
+     * Adds items in pushed order. places items at its right position
+     * @param item
+     */
+    void addInOrder(IdSeqKey item);
+
+    /*
+     * Adds items in pushed order. places items at its right position
+     * @param items
+     */
+    void addInOrder(List<IdSeqKey> items);
 
     /**
      * Add an item in the queue

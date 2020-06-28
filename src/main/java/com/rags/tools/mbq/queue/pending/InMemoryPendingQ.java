@@ -43,6 +43,7 @@ public class InMemoryPendingQ implements PendingQ<IdSeqKey> {
         this.queue.add(index, item);
     }
 
+    @Override
     public void addInOrder(IdSeqKey item) {
         if (queue.isEmpty() || queue.getFirst().getId().compareTo(item.getId()) >= 0) {
             queue.addFirst(item);
@@ -51,6 +52,11 @@ public class InMemoryPendingQ implements PendingQ<IdSeqKey> {
             while (queue.get(ind++).getId().compareTo(item.getId()) <= 0) ;
             queue.add(ind - 1, item);
         }
+    }
+
+    @Override
+    public void addInOrder(List<IdSeqKey> items) {
+        items.forEach(this::addInOrder);
     }
 
     @Override
