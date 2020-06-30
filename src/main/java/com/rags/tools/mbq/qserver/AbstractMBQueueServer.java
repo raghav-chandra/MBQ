@@ -41,7 +41,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                 List<Client> allInvalids = new ArrayList<>();
 
                 CLIENTS_HB.forEach((client, hb) -> {
-                    boolean isInValid = (curTime - hb.getTimeStamp()) > PING_INTERVAL;
+                    boolean isInValid = (curTime - hb.getTs()) > PING_INTERVAL;
                     if (isInValid) {
                         LOGGER.warn("Client with ID {} was not active {}, last heart beat received at {}", client.getId(), curTime, hb);
                         allInvalids.add(client);
@@ -49,28 +49,38 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                 });
 
                 allInvalids.forEach(client -> {
-                    ClientInfo clientInfo = CLIENTS_HB.get(client);
-                    //Move Items to the right place if client is not active
-                    if (clientInfo != null && !clientInfo.getMessages().isEmpty()) {
-                        String queueName = client.getQueueName();
-                        PendingQ<IdSeqKey> pendQ = getPendingQueue(queueName);
-                        long curr = 0;
-                        if (LOGGER.isDebugEnabled()) {
-                            curr = System.currentTimeMillis();
-                        }
-                        synchronized (pendQ) {
-                            pendQ.addAllFirst(clientInfo.getMessages());
-                            USED_SEQ.get(queueName).removeAll(clientInfo.getMessages().stream().map(IdSeqKey::getSeqKey).collect(Collectors.toList()));
-                        }
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Total time queue {} was blocked to rollback {} no of messages, is {}", queueName, clientInfo.getMessages(), (System.currentTimeMillis() - curr));
-                        }
-                    }
+                    rollback(client);
                     CLIENTS_HB.remove(client);
-
                 });
             }
         }, 0, 1000);
+    }
+
+    public boolean rollback(Client client) {
+        ClientInfo clientInfo = CLIENTS_HB.get(client);
+        //Move Items to the right place if client is not active
+        if (clientInfo != null) {
+            List<IdSeqKey> messages = clientInfo.getMessages();
+            if (!messages.isEmpty()) {
+                String queueName = client.getQueueName();
+                PendingQ<IdSeqKey> pendQ = getPendingQueue(queueName);
+                long curr = 0;
+                if (LOGGER.isDebugEnabled()) {
+                    curr = System.currentTimeMillis();
+                }
+                messages.forEach(i -> i.setStatus(QueueStatus.PENDING));
+                Collections.reverse(messages);
+
+                synchronized (pendQ) {
+                    pendQ.addAllFirst(messages);
+                    USED_SEQ.get(queueName).removeAll(messages.stream().map(IdSeqKey::getSeqKey).collect(Collectors.toList()));
+                }
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Total time queue {} was blocked to rollback {} no of messages, is {}", queueName, messages, (System.currentTimeMillis() - curr));
+                }
+            }
+        }
+        return true;
     }
 
     void init() {
@@ -111,9 +121,9 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
 
         long curTime = System.currentTimeMillis();
 
-        if ((curTime - CLIENTS_HB.get(client).getTimeStamp()) > PING_INTERVAL) {
+        if ((curTime - CLIENTS_HB.get(client).getTs()) > PING_INTERVAL) {
             ClientInfo hb = CLIENTS_HB.remove(client);
-            LOGGER.error("Client [{}] was not active {}", client, hb.getTimeStamp());
+            LOGGER.error("Client [{}] was not active {}", client, hb.getTs());
             throw new MBQException("Client was existing and was not active");
         }
     }
@@ -180,11 +190,67 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         return true;
     }
 
-    @Override
     public boolean rollback(Client client, Map<QueueStatus, List<String>> ids) {
-        ids.forEach((status, procIds) -> updateQueueStatus(client, procIds, QueueStatus.PENDING));
+        rollback(client);
+//        ids.forEach((status, procIds) -> updateQueueStatus(client, procIds, QueueStatus.PENDING));
         return true;
     }
+
+ //New Commit API dedicated to only clien processing.
+    private void commit(Client client, Map<QueueStatus, List<String>> ids) {
+
+        if (ids == null || ids.isEmpty()) {
+            throw new MBQException("Commit can't be called without any message");
+        }
+
+        if (ids.containsKey(QueueStatus.PROCESSING) || ids.containsKey(QueueStatus.PENDING) || ids.containsKey(QueueStatus.BLOCKED)) {
+            throw new MBQException("Commit can't mark item to PROCESSING/PENDING/BLOCKED");
+        }
+
+        List<String> allIds = ids.values().stream().reduce((a, b) -> {
+            a.addAll(b);
+            return a;
+        }).get();
+
+        validateClient(client);
+
+        List<IdSeqKey> idSeqKeys = CLIENTS_HB.get(client).getMessages();
+        List<String> clientMessages = idSeqKeys.stream().map(IdSeqKey::getId).collect(Collectors.toList());
+        if (!clientMessages.containsAll(allIds) || !allIds.containsAll(clientMessages)) {
+            throw new MBQException("There's a mismatch between messages pulled and commit messages");
+        }
+
+        //COMPLETED/ERROR/HELD
+        ids.forEach((status, msgIds) -> {
+            getQueueDataStore().updateStatus(client.getQueueName(), msgIds, status);
+            if (status != QueueStatus.COMPLETED) {
+            List<IdSeqKey> toBeInserted = idSeqKeys.stream().filter(i -> msgIds.contains(i.getId())).collect(Collectors.toList());
+                PendingQ<IdSeqKey> pendQ = getPendingQueue(client.getQueueName());
+                synchronized (pendQ) {
+                    pendQ.addInOrder(toBeInserted);
+                }
+            }
+        });
+
+        USED_SEQ.get(client.getQueueName()).removeAll(idSeqKeys.stream().map(IdSeqKey::getSeqKey).collect(Collectors.toList()));
+    }
+
+    private void updateItemStatus(Client client, List<String> ids, QueueStatus status) {
+        if (ids == null || ids.isEmpty()) {
+            throw new MBQException("Can't update status for blank message");
+        }
+
+        if (status == QueueStatus.PROCESSING) {
+            throw new MBQException("Can't mark item to Processing");
+        }
+
+        validateClient(client);
+
+        List<MBQMessage> messages = getQueueDataStore().get(client.getQueueName(), ids);
+
+
+    }
+
 
     private boolean updateQueueStatus(Client client, List<String> ids, QueueStatus status) {
         if (ids == null || ids.isEmpty()) {
@@ -303,21 +369,21 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     }
 
     private static class ClientInfo {
-        private long timeStamp;
-        private String heartBeat;
+        private long ts;
+        private String hb;
         private List<IdSeqKey> messages = new ArrayList<>();
 
-        public ClientInfo(long timeStamp, String hb) {
-            this.timeStamp = timeStamp;
-            this.heartBeat = hb;
+        public ClientInfo(long ts, String hb) {
+            this.ts = ts;
+            this.hb = hb;
         }
 
-        public long getTimeStamp() {
-            return timeStamp;
+        public long getTs() {
+            return ts;
         }
 
-        public String getHeartBeat() {
-            return heartBeat;
+        public String getHb() {
+            return hb;
         }
 
         public List<IdSeqKey> getMessages() {

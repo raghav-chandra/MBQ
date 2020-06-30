@@ -40,7 +40,12 @@ public abstract class MBQueueClient extends MBQueuePublisher implements QueueCli
                         }
                     } catch (Throwable t) {
                         LOGGER.error("Exception occurred while processing items ", t);
-                        transaction.rollback();
+                        try {
+                            transaction.rollback();
+                        } catch (Throwable throwable) {
+                            LOGGER.error("Error occurred while rolling back items to the queue");
+                            System.exit(-1);
+                        }
                     }
                 }
             }
