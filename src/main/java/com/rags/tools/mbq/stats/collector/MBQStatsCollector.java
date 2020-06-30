@@ -7,7 +7,9 @@ public interface MBQStatsCollector {
 
     void addConnectedClient(Client client);
 
-    void increment(QueueStatus status, int items);
+    void increment(String queueName, QueueStatus status, int items);
 
     void resetStats();
+
+    void removeConnectedClient(Client client);
 }
