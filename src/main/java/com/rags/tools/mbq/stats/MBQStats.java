@@ -11,42 +11,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class MBQStats {
-    private Map<String, QueueStats> qStats = new ConcurrentHashMap<>();
+    private Map<String, QueueStats> queueStats = new ConcurrentHashMap<>();
 
     private Map<String, ClientStats> clientStats = new ConcurrentHashMap<>();
 
     public Collection<QueueStats> getQStats() {
-        return qStats.values();
+        return queueStats.values();
     }
 
     public Collection<String> getAllQueueNames() {
-        return qStats.keySet();
+        return queueStats.keySet();
     }
 
     public int getNoOfItemsInTheQueue(String queueName) {
-        if (qStats.containsKey(queueName)) {
-            return qStats.get(queueName).getDepth();
+        if (queueStats.containsKey(queueName)) {
+            return queueStats.get(queueName).getDepth();
         }
         return 0;
-    }
-
-    public void addClient(Client client) {
-        clientStats.put(client.getId(), new ClientStats(client.getId()));
-    }
-
-    public void removeClient(Client client) {
-        clientStats.remove(client.getId());
-    }
-
-
-    public void addQueueStats(String queueName, QueueStatus status, int noOfItems) {
-        qStats.putIfAbsent(queueName, new QueueStats(queueName));
-        qStats.get(queueName).addProcessed(status, noOfItems);
-    }
-
-    public void addQueueStats(String queueName, Map<QueueStatus, Integer> processed) {
-        qStats.putIfAbsent(queueName, new QueueStats(queueName));
-        qStats.get(queueName).addProcessed(processed);
     }
 
     public Collection<ClientStats> getClientStats() {
@@ -61,30 +42,50 @@ public class MBQStats {
         return clientStats.entrySet().size();
     }
 
+    public Map<String, QueueStats> getQueueStats() {
+        return queueStats;
+    }
+
     public void reset() {
-        qStats.clear();
+        queueStats.clear();
         clientStats.clear();
     }
 
-    public void addClientProcessingStats(Client client, List<IdSeqKey> idSeqKeys) {
-        List<String> processingIds = idSeqKeys.stream().map(IdSeqKey::getId).collect(Collectors.toList());
-        clientStats.get(client.getId()).addProcessed(QueueStatus.PROCESSING, processingIds);
-        qStats.get(client.getQueueName()).addProcessing(processingIds);
+    public void addClient(Client client) {
+        clientStats.put(client.getId(), new ClientStats(client.getId()));
     }
 
-    public void addClientCompletedStats(Client client, List<IdSeqKey> idSeqKeys) {
+    public void removeClient(Client client) {
+        clientStats.remove(client.getId());
+    }
+
+
+    public synchronized void addPendingItemStats(String queueName, int noOfItems) {
+        queueStats.putIfAbsent(queueName, new QueueStats(queueName));
+        queueStats.get(queueName).addPending(noOfItems);
+    }
+
+    public synchronized void addClientProcessingStats(Client client, List<IdSeqKey> idSeqKeys) {
+        List<String> processingIds = idSeqKeys.stream().map(IdSeqKey::getId).collect(Collectors.toList());
+        clientStats.get(client.getId()).addProcessed(QueueStatus.PROCESSING, processingIds);
+        queueStats.get(client.getQueueName()).addProcessing(processingIds);
+    }
+
+    public synchronized void addClientCompletedStats(Client client, List<IdSeqKey> idSeqKeys) {
         List<String> processingIds = idSeqKeys.stream().map(IdSeqKey::getId).collect(Collectors.toList());
         clientStats.get(client.getId()).addProcessed(QueueStatus.COMPLETED, processingIds);
-        qStats.get(client.getQueueName()).markCompleted(processingIds);
+        queueStats.get(client.getQueueName()).markCompleted(processingIds);
     }
-    public void addClientErrorStats(Client client, List<IdSeqKey> idSeqKeys) {
+
+    public synchronized void addClientErrorStats(Client client, List<IdSeqKey> idSeqKeys) {
         List<String> processingIds = idSeqKeys.stream().map(IdSeqKey::getId).collect(Collectors.toList());
         clientStats.get(client.getId()).addProcessed(QueueStatus.ERROR, processingIds);
-        qStats.get(client.getQueueName()).markError(processingIds);
+        queueStats.get(client.getQueueName()).markError(processingIds);
     }
-    /*public void addClientHeldStats(Client client, List<IdSeqKey> idSeqKeys) {
+
+    public synchronized void addClientRollbackStats(Client client, List<IdSeqKey> idSeqKeys) {
         List<String> processingIds = idSeqKeys.stream().map(IdSeqKey::getId).collect(Collectors.toList());
-        clientStats.get(client.getId()).addProcessed(QueueStatus.HELD, processingIds);
-        qStats.get(client.getQueueName()).markError(processingIds);
-    }*/
+        clientStats.get(client.getId()).removeProcessing(processingIds);
+        queueStats.get(client.getQueueName()).markRolledBack(processingIds);
+    }
 }

@@ -1,22 +1,58 @@
 package com.rags.tools.mbq.stats;
 
-import com.rags.tools.mbq.QueueStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class QueueStats {
-    private final String queueName;
-    private int depth;
 
-    private Map<QueueStatus, Long> processedItems = new ConcurrentHashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(QueueStats.class);
+
+    private int depth;
+    private int pending;
+    private int processed;
+
+    private final String queueName;
+    private final List<String> errors;
     private final List<String> processing;
 
     public QueueStats(String queueName) {
         this.queueName = queueName;
         this.processing = new LinkedList<>();
+        this.errors = new LinkedList<>();
+    }
+
+    public void addPending(int added) {
+        this.pending += added;
+        this.depth += added;
+        LOGGER.debug("Queue Name : {}. Stats -> Depth : {}, Pending : {}, Processing : {}, Completed :{}, Errored :{}", queueName, depth, pending, processing.size(), processed, errors.size());
+    }
+
+    public void addProcessing(List<String> ids) {
+        this.pending -= ids.size();
+        this.processing.addAll(ids);
+        LOGGER.debug("Queue Name : {}. Stats -> Depth : {}, Pending : {}, Processing : {}, Completed :{}, Errored :{}", queueName, depth, pending, processing.size(), processed, errors.size());
+    }
+
+    public void markCompleted(List<String> ids) {
+        this.processed += ids.size();
+        this.processing.removeAll(ids);
+        this.depth -= ids.size();
+        LOGGER.debug("Queue Name : {}. Stats -> Depth : {}, Pending : {}, Processing : {}, Completed :{}, Errored :{}", queueName, depth, pending, processing.size(), processed, errors.size());
+    }
+
+    public void markRolledBack(List<String> processingIds) {
+        this.pending += processingIds.size();
+        this.processing.removeAll(processingIds);
+        LOGGER.debug("Queue Name : {}. Stats -> Depth : {}, Pending : {}, Processing : {}, Completed :{}, Errored :{}", queueName, depth, pending, processing.size(), processed, errors.size());
+    }
+
+    public void markError(List<String> ids) {
+        this.errors.addAll(ids);
+        this.processing.removeAll(ids);
+        LOGGER.debug("Queue Name : {}. Stats -> Depth : {}, Pending : {}, Processing : {}, Completed :{}, Errored :{}", queueName, depth, pending, processing.size(), processed, errors.size());
     }
 
     public String getQueueName() {
@@ -27,50 +63,19 @@ public class QueueStats {
         return depth;
     }
 
+    public int getPending() {
+        return pending;
+    }
+
+    public int getProcessed() {
+        return processed;
+    }
+
+    public List<String> getErrors() {
+        return errors;
+    }
+
     public List<String> getProcessing() {
         return processing;
-    }
-
-    public Map<QueueStatus, Long> getProcessedItems() {
-        return processedItems;
-    }
-
-    public void addProcessed(QueueStatus status, int added) {
-        if (!processedItems.containsKey(status)) {
-            processedItems.put(status, (long) added);
-        } else {
-            //TODO: Fix Procesing/PENDING->COMPLETED counter
-            //Active Message processed
-            if (status == QueueStatus.PROCESSING || status == QueueStatus.COMPLETED) {
-                processedItems.put(QueueStatus.PENDING, processedItems.get(QueueStatus.PENDING) - added);
-            }
-
-            processedItems.put(status, processedItems.get(status) + (long) added);
-        }
-
-        this.depth += status == QueueStatus.COMPLETED ? -added : added;
-    }
-
-    public void addProcessed(Map<QueueStatus, Integer> processed) {
-        processed.forEach(this::addProcessed);
-    }
-
-    public void addProcessing(List<String> ids) {
-        this.processedItems.put(QueueStatus.PENDING, this.processedItems.get(QueueStatus.PENDING) - ids.size());
-        this.processing.addAll(ids);
-    }
-
-    public void markCompleted(List<String> ids) {
-        markItems(ids, QueueStatus.COMPLETED);
-        this.depth -= ids.size();
-    }
-
-    public void markError(List<String> ids) {
-        markItems(ids, QueueStatus.ERROR);
-    }
-
-    private void markItems(List<String> ids, QueueStatus status) {
-        this.processedItems.put(status, this.processedItems.get(status) + ids.size());
-        this.processing.removeAll(ids);
     }
 }

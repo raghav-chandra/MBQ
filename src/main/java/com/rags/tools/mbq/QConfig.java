@@ -1,5 +1,6 @@
 package com.rags.tools.mbq;
 
+import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.queue.QueueType;
 
 public class QConfig {
@@ -20,7 +21,7 @@ public class QConfig {
         return serverConfig;
     }
 
-    public static class Builder {
+    public static class Builder implements Cloneable {
         private String pollingQueue;
         private String workerName;
         private int batch;
@@ -31,6 +32,7 @@ public class QConfig {
         private String dbDriver;
         private int maxxConn;
         private String validationQuery;
+        private String statsCollectorClass;
         private boolean daemon = true;
 
         public Builder setPollingQueue(String pollingQueue) {
@@ -88,15 +90,22 @@ public class QConfig {
             return this;
         }
 
+        public Builder setStatsCollectorClass(String statsCollectorClass) {
+            this.statsCollectorClass = statsCollectorClass;
+            return this;
+        }
+
         public Builder clone() {
-            return new Builder().setBatch(batch).setWorkerName(workerName).setPollingQueue(pollingQueue)
-                    .setDbDriver(dbDriver).setUrl(url).setUser(user).setPassword(password).setQueueType(queueType)
-                    .setValidationQuery(validationQuery).setMaxxConn(maxxConn).setDaemon(daemon);
+            try {
+                return (Builder) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new MBQException("Couldn't clone Builder", e);
+            }
         }
 
         public QConfig create() {
             ClientConfig clientConfig = new ClientConfig(pollingQueue, workerName, batch, daemon);
-            ServerConfig serverConfig = new ServerConfig(queueType, url, user, password, dbDriver, validationQuery, maxxConn, daemon);
+            ServerConfig serverConfig = new ServerConfig(queueType, url, user, password, dbDriver, validationQuery, maxxConn, daemon, statsCollectorClass);
             return new QConfig(clientConfig, serverConfig);
         }
     }
@@ -141,8 +150,9 @@ public class QConfig {
         private final QueueType queueType;
         private final int maxConn;
         private final boolean daemon;
+        private final String statsCollectorClass;
 
-        private ServerConfig(QueueType queueType, String url, String user, String password, String dbDriver, String validationQuery, int maxConn, boolean daemon) {
+        private ServerConfig(QueueType queueType, String url, String user, String password, String dbDriver, String validationQuery, int maxConn, boolean daemon, String statsCollectorClass) {
             this.url = url;
             this.user = user;
             this.password = password;
@@ -151,6 +161,7 @@ public class QConfig {
             this.validationQuery = validationQuery;
             this.maxConn = maxConn <= 0 ? 1 : maxConn;
             this.daemon = daemon;
+            this.statsCollectorClass = statsCollectorClass;
         }
 
         public String getUrl() {
@@ -183,6 +194,10 @@ public class QConfig {
 
         public boolean isDaemon() {
             return daemon;
+        }
+
+        public String getStatsCollectorClass() {
+            return statsCollectorClass;
         }
     }
 }

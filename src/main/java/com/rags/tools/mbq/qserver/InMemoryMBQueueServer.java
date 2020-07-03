@@ -8,13 +8,21 @@ import com.rags.tools.mbq.queue.MBQDataStore;
 import com.rags.tools.mbq.queue.QueueType;
 import com.rags.tools.mbq.queue.pending.InMemoryPendingIdSeqKeyQMap;
 import com.rags.tools.mbq.queue.pending.PendingQMap;
+import com.rags.tools.mbq.stats.collector.MBQStatsCollector;
+import com.rags.tools.mbq.stats.collector.NoOpStatsCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.CompletableFuture;
 
 public class InMemoryMBQueueServer extends AbstractMBQueueServer {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryMBQueueServer.class);
+
     private static MBQueueServer INSTANCE;
 
-    public InMemoryMBQueueServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap) {
-        super(mbqDataStore, pendingQMap);
+    public InMemoryMBQueueServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsCollector statsCollector) {
+        super(mbqDataStore, pendingQMap, statsCollector);
     }
 
     public synchronized static MBQueueServer getInstance(QConfig.ServerConfig config) {
@@ -26,8 +34,22 @@ public class InMemoryMBQueueServer extends AbstractMBQueueServer {
 
     private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new InMemoryMBQueueServer(new InMemoryMBQDataStore(), new InMemoryPendingIdSeqKeyQMap());
+        return new InMemoryMBQueueServer(new InMemoryMBQDataStore(), new InMemoryPendingIdSeqKeyQMap(), getStatsCollector(config.getStatsCollectorClass()));
     }
+
+    private static MBQStatsCollector getStatsCollector(String statsCollectorClass) {
+        MBQStatsCollector statsCollector = new NoOpStatsCollector();
+        try {
+            if (statsCollectorClass != null && !statsCollectorClass.isBlank()) {
+                Class<?> aClass = Class.forName(statsCollectorClass);
+                statsCollector = (MBQStatsCollector) aClass.getConstructor().newInstance();
+            }
+        } catch (Throwable throwable) {
+            LOGGER.warn("Failed while loading class {} for Stats collector. Falling back to NoOpsStatsCollector", statsCollectorClass);
+        }
+        return statsCollector;
+    }
+
 
     private static void validateConfig(QConfig.ServerConfig config) {
         if (config.getQueueType() != QueueType.SINGLE_JVM_INMEMORY) {

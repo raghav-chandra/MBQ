@@ -8,13 +8,19 @@ import com.rags.tools.mbq.queue.MBQDataStore;
 import com.rags.tools.mbq.queue.QueueType;
 import com.rags.tools.mbq.queue.pending.InMemoryPendingIdSeqKeyQMap;
 import com.rags.tools.mbq.queue.pending.PendingQMap;
+import com.rags.tools.mbq.stats.collector.MBQStatsCollector;
+import com.rags.tools.mbq.stats.collector.NoOpStatsCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HazelcastMBQServer extends AbstractMBQueueServer {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HazelcastMBQServer.class);
+
     private static MBQueueServer INSTANCE;
 
-    private HazelcastMBQServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap) {
-        super(mbqDataStore, pendingQMap);
+    private HazelcastMBQServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsCollector statsCollector) {
+        super(mbqDataStore, pendingQMap, statsCollector);
     }
 
     public synchronized static MBQueueServer getInstance(QConfig.ServerConfig config) {
@@ -26,7 +32,24 @@ public class HazelcastMBQServer extends AbstractMBQueueServer {
 
     private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new HazelcastMBQServer(new HazelcastMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap());
+
+        MBQStatsCollector statsCollector = getStatsCollector(config.getStatsCollectorClass());
+
+        return new HazelcastMBQServer(new HazelcastMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap(), statsCollector);
+    }
+
+    private static MBQStatsCollector getStatsCollector(String statsCollectorClass) {
+        MBQStatsCollector statsCollector = new NoOpStatsCollector();
+        try {
+            if (statsCollectorClass != null && !statsCollectorClass.isBlank()) {
+                Class<?> aClass = Class.forName(statsCollectorClass);
+                statsCollector = (MBQStatsCollector) aClass.getConstructor().newInstance();
+
+            }
+        } catch (Throwable throwable) {
+            LOGGER.warn("Failed while loading class {} for Stats collector. Falling back to NoOpsStatsCollector", statsCollectorClass);
+        }
+        return statsCollector;
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {

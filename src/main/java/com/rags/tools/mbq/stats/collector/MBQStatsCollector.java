@@ -1,11 +1,9 @@
 package com.rags.tools.mbq.stats.collector;
 
-import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.queue.IdSeqKey;
 
 import java.util.List;
-import java.util.Map;
 
 public interface MBQStatsCollector {
 
@@ -13,11 +11,15 @@ public interface MBQStatsCollector {
 
     void collectDisconnectedClients(Client client);
 
-    void collectQueueStats(String queueName, QueueStatus status, int noOfItems);
+    void collectPendingStats(String queueName, int noOfItems);
 
-    void collectQueueStats(String queueName, Map<QueueStatus, Integer> processed);
+//    void collectPendingStats(String queueName, Map<QueueStatus, Integer> processed);
 
     void resetStats();
 
     void collectClientProcessingStats(Client client, List<IdSeqKey> idSeqKeys);
+
+    void collectClientProcessedStats(Client client, List<IdSeqKey> idSeqKeys);
+
+    void collectClientRollbackStats(Client client, List<IdSeqKey> idSeqKeys);
 }

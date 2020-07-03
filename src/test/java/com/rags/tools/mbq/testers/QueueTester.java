@@ -46,7 +46,7 @@ public class QueueTester extends MBQueueClient {
                     transaction.commit();
                 });
             }
-        }, 100, 100);
+        }, 100, 1000);
 
         List<QueueTester> allConsumers = new ArrayList<>();
         for (int i = 0; i < consumers; i++) {
@@ -75,8 +75,8 @@ public class QueueTester extends MBQueueClient {
         long timeTaken = System.currentTimeMillis() - startTime;
         float divider = timeTaken / 1000f;
         LOGGER.info("Completed {} no of messages in {} millis. Throughput per Sec : {}", ct, timeTaken, ct / divider);
-        /*try {
-            Thread.sleep(8000);
+       /* try {
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }*/

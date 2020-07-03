@@ -20,12 +20,7 @@ public class NoOpStatsCollector implements MBQStatsCollector{
     }
 
     @Override
-    public void collectQueueStats(String queueName, QueueStatus status, int noOfItems) {
-
-    }
-
-    @Override
-    public void collectQueueStats(String queueName, Map<QueueStatus, Integer> processed) {
+    public void collectPendingStats(String queueName, int noOfItems) {
 
     }
 
@@ -36,6 +31,16 @@ public class NoOpStatsCollector implements MBQStatsCollector{
 
     @Override
     public void collectClientProcessingStats(Client client, List<IdSeqKey> idSeqKeys) {
+
+    }
+
+    @Override
+    public void collectClientProcessedStats(Client client, List<IdSeqKey> idSeqKeys) {
+
+    }
+
+    @Override
+    public void collectClientRollbackStats(Client client, List<IdSeqKey> idSeqKeys) {
 
     }
 }

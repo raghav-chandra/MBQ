@@ -1,12 +1,10 @@
 package com.rags.tools.mbq.stats.collector;
 
-import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.queue.IdSeqKey;
 import com.rags.tools.mbq.stats.MBQStats;
 
 import java.util.List;
-import java.util.Map;
 
 public class InMemoryStatsCollector implements MBQStatsCollector {
 
@@ -23,14 +21,14 @@ public class InMemoryStatsCollector implements MBQStatsCollector {
     }
 
     @Override
-    public void collectQueueStats(String queueName, QueueStatus status, int noOfItems) {
-        this.stats.addQueueStats(queueName, status, noOfItems);
+    public void collectPendingStats(String queueName, int noOfItems) {
+        this.stats.addPendingItemStats(queueName, noOfItems);
     }
 
-    @Override
-    public void collectQueueStats(String queueName, Map<QueueStatus, Integer> processed) {
-        this.stats.addQueueStats(queueName, processed);
-    }
+/*    @Override
+    public void collectPendingStats(String queueName, Map<QueueStatus, Integer> processed) {
+        this.stats.addPendingItemStats(queueName, processed);
+    }*/
 
     @Override
     public void resetStats() {
@@ -40,5 +38,15 @@ public class InMemoryStatsCollector implements MBQStatsCollector {
     @Override
     public void collectClientProcessingStats(Client client, List<IdSeqKey> idSeqKeys) {
         stats.addClientProcessingStats(client, idSeqKeys);
+    }
+
+    @Override
+    public void collectClientProcessedStats(Client client, List<IdSeqKey> idSeqKeys) {
+        stats.addClientCompletedStats(client, idSeqKeys);
+    }
+
+    @Override
+    public void collectClientRollbackStats(Client client, List<IdSeqKey> idSeqKeys) {
+        stats.addClientRollbackStats(client, idSeqKeys);
     }
 }

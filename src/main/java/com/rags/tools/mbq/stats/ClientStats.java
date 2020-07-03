@@ -1,11 +1,16 @@
 package com.rags.tools.mbq.stats;
 
 import com.rags.tools.mbq.QueueStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class ClientStats {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientStats.class);
+
     private final String id;
     private final List<String> processing;
     private long completed;
@@ -39,7 +44,9 @@ public class ClientStats {
 
     public void addProcessed(QueueStatus status, List<String> items) {
         if (status == QueueStatus.COMPLETED) {
-            this.processing.clear();
+            //TODO: Fix me here
+//            this.processing.clear();
+            this.processing.removeAll(items);
             this.completed += items.size();
         } else if (status == QueueStatus.ERROR) {
             this.markedError += items.size();
@@ -48,5 +55,11 @@ public class ClientStats {
         } else if (status == QueueStatus.PROCESSING) {
             this.processing.addAll(items);
         }
+        LOGGER.debug("Client Id : {}. Stats -> Processing : {}, Completed :{}, Errored :{}, Held : {}", id, processing.size(), completed, markedError, markedHeld);
+    }
+
+    public void removeProcessing(List<String> items) {
+        this.processing.removeAll(items);
+        LOGGER.debug("Client Id : {}. Stats -> Processing : {}, Completed :{}, Errored :{}, Held : {}", id, processing.size(), completed, markedError, markedHeld);
     }
 }
