@@ -6,12 +6,12 @@
 
     <groupId>com.github.raghav-chandra</groupId>
     <artifactId>tools-mbq</artifactId>
-    <version>0.5.0</version>
+    <version>0.6.0</version>
     <packaging>jar</packaging>
 
     <name>MBQ</name>
     <description>MBQ is an Intelligent queue that can provide items for processing based on the sequencing attached to
-        each item. 0.5.0 Version has capability to configure DB, InMemory as queue.
+        each item. 0.6.0 Version has capability to configure DB, InMemory as queue.
     </description>
     <url>https://github.com/raghav-chandra/MBQ</url>
 
