@@ -13,13 +13,11 @@ public interface MBQStatsCollector {
 
     void collectPendingStats(String queueName, int noOfItems);
 
-//    void collectPendingStats(String queueName, Map<QueueStatus, Integer> processed);
-
     void resetStats();
 
     void collectClientProcessingStats(Client client, List<IdSeqKey> idSeqKeys);
 
-    void collectClientProcessedStats(Client client, List<IdSeqKey> idSeqKeys);
+    void collectClientCompletedStats(Client client, List<IdSeqKey> idSeqKeys);
 
     void collectClientRollbackStats(Client client, List<IdSeqKey> idSeqKeys);
 }

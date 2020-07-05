@@ -25,11 +25,6 @@ public class InMemoryStatsCollector implements MBQStatsCollector {
         this.stats.addPendingItemStats(queueName, noOfItems);
     }
 
-/*    @Override
-    public void collectPendingStats(String queueName, Map<QueueStatus, Integer> processed) {
-        this.stats.addPendingItemStats(queueName, processed);
-    }*/
-
     @Override
     public void resetStats() {
         this.stats.reset();
@@ -41,7 +36,7 @@ public class InMemoryStatsCollector implements MBQStatsCollector {
     }
 
     @Override
-    public void collectClientProcessedStats(Client client, List<IdSeqKey> idSeqKeys) {
+    public void collectClientCompletedStats(Client client, List<IdSeqKey> idSeqKeys) {
         stats.addClientCompletedStats(client, idSeqKeys);
     }
 

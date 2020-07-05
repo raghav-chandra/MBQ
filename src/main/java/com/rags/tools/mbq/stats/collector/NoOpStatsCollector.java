@@ -35,7 +35,7 @@ public class NoOpStatsCollector implements MBQStatsCollector{
     }
 
     @Override
-    public void collectClientProcessedStats(Client client, List<IdSeqKey> idSeqKeys) {
+    public void collectClientCompletedStats(Client client, List<IdSeqKey> idSeqKeys) {
 
     }
 

@@ -44,8 +44,6 @@ public class ClientStats {
 
     public void addProcessed(QueueStatus status, List<String> items) {
         if (status == QueueStatus.COMPLETED) {
-            //TODO: Fix me here
-//            this.processing.clear();
             this.processing.removeAll(items);
             this.completed += items.size();
         } else if (status == QueueStatus.ERROR) {
