@@ -154,7 +154,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         long currTime = System.currentTimeMillis();
         Set<String> markedBlockedSeq = new HashSet<>();
         synchronized (seqQ) {
-//            long c = System.currentTimeMillis();
             for (int i = 0; i < noOfItem && counter < seqQ.size(); counter++) {
                 IdSeqKey idKey = seqQ.get(counter);
 
@@ -171,7 +170,6 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
                 }
             }
             USED_SEQ.get(queueName).addAll(idSeqKeys.stream().map(IdSeqKey::getSeqKey).collect(Collectors.toList()));
-//            LOGGER.debug("Time Taken to pull {}", (System.currentTimeMillis() - c));
             seqQ.removeAll(idSeqKeys);
         }
 
@@ -182,7 +180,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         List<MBQMessage> items = getQueueDataStore().get(queueName, idSeqKeys.stream().map(IdSeqKey::getId).collect(Collectors.toList()));
         idSeqKeys.forEach(i -> i.setStatus(QueueStatus.PROCESSING));
 
-        items.parallelStream().forEach(i -> i.updateStatus(QueueStatus.PROCESSING));
+        items.sort((a, b) -> a.getId().compareTo(b.getId()) >= 0 ? 1 : -1);
+        items.forEach(i -> i.updateStatus(QueueStatus.PROCESSING));
 
         CLIENTS_HB.get(client).getMessages().addAll(idSeqKeys);
 
