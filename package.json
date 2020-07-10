@@ -10,7 +10,7 @@
     "webpack": "webpack --progress --colors --watch"
   },
   "repository": {
-    "type": "git",
+  "type": "git",
     "url": "git+https://github.com/raghav-chandra/mbq.git"
   },
   "keywords": [
