@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class DBMBQueueDataStore extends AbstractMBQDataStore {
@@ -144,6 +145,24 @@ public class DBMBQueueDataStore extends AbstractMBQDataStore {
                     .addValue("status", status.name())
                     .addValue("updatedTS", new Timestamp(System.currentTimeMillis()));
             jdbcTemplate.update(UPDATE_MBQ_MESSAGE, params);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean updateStatus(String queueName, Map<QueueStatus, List<String>> statusIds) {
+        if (!statusIds.isEmpty()) {
+            SqlParameterSource[] params = new SqlParameterSource[statusIds.size()];
+            AtomicInteger counter = new AtomicInteger(0);
+            statusIds.forEach((status, ids) -> {
+                params[counter.getAndIncrement()] = new MapSqlParameterSource()
+                        .addValue("ids", ids)
+                        .addValue("queue", queueName)
+                        .addValue("status", status.name())
+                        .addValue("updatedTS", new Timestamp(System.currentTimeMillis()));
+            });
+            
+            jdbcTemplate.batchUpdate(UPDATE_MBQ_MESSAGE, params);
         }
         return true;
     }

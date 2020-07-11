@@ -77,6 +77,15 @@ public interface MBQDataStore {
     boolean updateStatus(String queueName, List<String> ids, QueueStatus status);
 
     /**
+     * Updates status of queue messages
+     *
+     * @param queueName Queue Name
+     * @param ids       queue item ids
+     * @return true if update is success
+     */
+    boolean updateStatus(String queueName, Map<QueueStatus, List<String>> ids);
+
+    /**
      * Marks all prev statuc to new Status in the queue
      *
      * @param prevStatus prev status in the queue

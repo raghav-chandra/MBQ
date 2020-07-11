@@ -219,15 +219,13 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             throw new MBQException("Commit can't be called without any message");
         }
 
-        if (ids.containsKey(QueueStatus.PROCESSING) || ids.containsKey(QueueStatus.PENDING) || ids.containsKey(QueueStatus.BLOCKED)) {
+        if (ids.containsKey(QueueStatus.PROCESSING)) {
             throw new MBQException("Commit can't mark item to PROCESSING/PENDING/BLOCKED");
         }
 
-        List<String> allIds = ids.values().stream().reduce((a, b) -> {
-            a.addAll(b);
-            return a;
-        }).get();
+        List<String> allIds = ids.values().stream().flatMap(List::stream).collect(Collectors.toList());
 
+        /*ids.values().stream().reduce((a, b) -> {a.addAll(b);return a;}).get();*/
         validateClient(client);
 
         ClientInfo clientInfo = getClientInfo(client);

@@ -19,7 +19,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(), 
     new HtmlWebpackPlugin({
-	title: 'MBQ Dashboard',
+	title: 'MBQ Management Console',
         template: './console/index.html'
     }),
     new webpack.HotModuleReplacementPlugin()
