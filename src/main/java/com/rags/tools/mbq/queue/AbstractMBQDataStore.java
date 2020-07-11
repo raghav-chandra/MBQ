@@ -6,6 +6,7 @@ import com.rags.tools.mbq.util.HashingUtil;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public abstract class AbstractMBQDataStore implements MBQDataStore {
@@ -17,16 +18,11 @@ public abstract class AbstractMBQDataStore implements MBQDataStore {
         return messages.isEmpty() ? null : messages.get(0);
     }
 
-    protected MBQMessage createMessage(QMessage message, String queueName) {
-        long currTime = System.currentTimeMillis();
-        String id = currTime + HashingUtil.hashSHA256(System.nanoTime() + message.getSeqKey() + currTime);
-        return new MBQMessage(id, queueName, message.getSeqKey(), message.getMessage());
-    }
-
     protected List<MBQMessage> createMessages(List<QMessage> messages, String queueName) {
+        AtomicInteger counter = new AtomicInteger(0);
         return messages.stream().map(message -> {
             long currTime = System.currentTimeMillis();
-            String id = currTime + HashingUtil.hashSHA256(System.nanoTime() + message.getSeqKey() + currTime);
+            String id = currTime+ counter.getAndIncrement() + HashingUtil.hashSHA256(System.nanoTime() + message.getSeqKey() + currTime);
             return new MBQMessage(id, queueName, message.getSeqKey(), message.getMessage());
         }).collect(Collectors.toList());
     }

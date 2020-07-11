@@ -182,7 +182,8 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
         List<MBQMessage> items = getQueueDataStore().get(queueName, idSeqKeys.stream().map(IdSeqKey::getId).collect(Collectors.toList()));
         idSeqKeys.forEach(i -> i.setStatus(QueueStatus.PROCESSING));
 
-        items.parallelStream().forEach(i -> i.updateStatus(QueueStatus.PROCESSING));
+        items.sort((a, b) -> a.getId().compareTo(b.getId()) >= 0 ? 1 : -1);
+        items.forEach(i -> i.updateStatus(QueueStatus.PROCESSING));
 
         ClientInfo clientInfo = getClientInfo(client);
         synchronized (clientInfo) {

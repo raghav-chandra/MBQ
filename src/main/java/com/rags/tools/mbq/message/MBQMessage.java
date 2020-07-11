@@ -123,8 +123,12 @@ public class MBQMessage extends QMessage implements DataSerializable {
             return queueStatus;
         }
 
-        public void markFailed() {
+        public void markError() {
             this.queueStatus = QueueStatus.ERROR;
+        }
+
+        public void markPending() {
+            this.queueStatus = QueueStatus.PENDING;
         }
     }
 }

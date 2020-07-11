@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 module.exports = {
-  entry: './dashboard/main.js',
+  entry: './console/main.js',
   module: {
     rules: [
       {
@@ -20,7 +20,7 @@ module.exports = {
     new CleanWebpackPlugin(), 
     new HtmlWebpackPlugin({
 	title: 'MBQ Dashboard',
-        template: './dashboard/index.html'
+        template: './console/index.html'
     }),
     new webpack.HotModuleReplacementPlugin()
   ],
