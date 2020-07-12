@@ -1,4 +1,4 @@
-package com.rags.tools.mbq.stats.collector;
+package com.rags.tools.mbq.stats.collectors;
 
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.queue.IdSeqKey;
@@ -32,16 +32,34 @@ public class InMemoryStatsCollector implements MBQStatsCollector {
 
     @Override
     public void collectClientProcessingStats(Client client, List<IdSeqKey> idSeqKeys) {
-        stats.addClientProcessingStats(client, idSeqKeys);
+        this.stats.addClientProcessingStats(client, idSeqKeys);
     }
 
     @Override
     public void collectClientCompletedStats(Client client, List<IdSeqKey> idSeqKeys) {
-        stats.addClientCompletedStats(client, idSeqKeys);
+        for (IdSeqKey idSeqKey : idSeqKeys) {
+            switch (idSeqKey.getStatus()) {
+                case PENDING:
+                    this.stats.addClientRollbackStats(client, List.of(idSeqKey));
+                    break;
+                case COMPLETED:
+                    this.stats.addClientCompletedStats(client, List.of(idSeqKey));
+                    break;
+                case ERROR:
+                    this.stats.addClientErrorStats(client, List.of(idSeqKey));
+                    this.stats.addClientRollbackStats(client, List.of(idSeqKey));
+                    break;
+            }
+        }
     }
 
     @Override
     public void collectClientRollbackStats(Client client, List<IdSeqKey> idSeqKeys) {
-        stats.addClientRollbackStats(client, idSeqKeys);
+        this.stats.addClientRollbackStats(client, idSeqKeys);
+    }
+
+    @Override
+    public void markOldest(String queueName, IdSeqKey item) {
+        this.stats.markOldest(queueName, item);
     }
 }

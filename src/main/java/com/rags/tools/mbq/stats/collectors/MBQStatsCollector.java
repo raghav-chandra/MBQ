@@ -1,4 +1,4 @@
-package com.rags.tools.mbq.stats.collector;
+package com.rags.tools.mbq.stats.collectors;
 
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.queue.IdSeqKey;
@@ -20,4 +20,6 @@ public interface MBQStatsCollector {
     void collectClientCompletedStats(Client client, List<IdSeqKey> idSeqKeys);
 
     void collectClientRollbackStats(Client client, List<IdSeqKey> idSeqKeys);
+
+    void markOldest(String queueName, IdSeqKey item);
 }

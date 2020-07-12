@@ -13,7 +13,8 @@ public class InMemoryQueueTester {
                 .setPollingQueue("RAGHAV")
                 .setDaemon(false)
                 .setQueueType(QueueType.SINGLE_JVM_INMEMORY)
-                .setStatsCollectorClass("com.rags.tools.mbq.stats.collector.InMemoryBQStatsCollector");
+//                .setStatsCollectorClass("com.rags.tools.mbq.stats.collector.InMemoryBQStatsCollector");
+                .setStatsCollectorClass("com.rags.tools.mbq.stats.collectors.InMemoryBQStatsCollector");
         execute(400, 30, configBuilder);
     }
 }

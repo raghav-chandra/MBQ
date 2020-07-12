@@ -13,6 +13,6 @@ public class CentralizedQueueTester {
                 .setPollingQueue("RAGHAV")
                 .setQueueType(QueueType.CENTRALIZED)
                 .setUrl("http://localhost:65000/");
-        execute(1, 4, configBuilder);
+        execute(20, 40, configBuilder);
     }
 }

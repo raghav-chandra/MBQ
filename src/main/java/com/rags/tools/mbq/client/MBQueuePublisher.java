@@ -77,7 +77,7 @@ public class MBQueuePublisher implements QueueClient {
         if (timer != null) {
             throw new MBQException("Client is still running, cant start again");
         }
-        this.timer = new Timer(config.getClientConfig().isDaemon());
+        this.timer = new Timer(config.getClientConfig().getWorkerName() + "-HeartBeat", config.getClientConfig().isDaemon());
         this.client = server.registerClient(new Client(config.getClientConfig().getWorkerName(), config.getClientConfig().getPollingQueue(), config.getClientConfig().getBatch()));
         this.timer.schedule(new TimerTask() {
             @Override

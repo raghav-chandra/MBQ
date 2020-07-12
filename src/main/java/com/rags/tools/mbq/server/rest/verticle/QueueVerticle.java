@@ -114,19 +114,21 @@ public class QueueVerticle extends AbstractVerticle {
 
     private QConfig.ServerConfig getServerConfig(JsonObject config) {
         QueueType queueType = QueueType.valueOf(config.getString("queue.type"));
-        QConfig.Builder builder = new QConfig.Builder().setQueueType(queueType);
+        QConfig.Builder builder = new QConfig.Builder()
+                .setQueueType(queueType)
+                .setStatsCollectorClass(config.containsKey("stats.collector") ? config.getString("stats.collector") : "com.rags.tools.mbq.stats.collectors.NoOpStatsCollector");
         switch (queueType) {
             case SINGLE_JVM_INMEMORY:
                 break;
             case SINGLE_JVM_RDB:
             case SINGLE_JVM_HAZELCAST:
             case SINGLE_JVM_MONGO_DB:
-                builder.setUrl(config.getString("url"));
-                builder.setUser(config.getString("username"));
-                builder.setPassword(config.getString("password"));
-                builder.setDbDriver(config.getString("driver"));
-                builder.setValidationQuery(config.getString("validationQuery"));
-                builder.setMaxxConn(config.getInteger("maxxConn") == null ? 1 : config.getInteger("maxxConn"));
+                builder.setUrl(config.getString("url"))
+                        .setUser(config.getString("username"))
+                        .setPassword(config.getString("password"))
+                        .setDbDriver(config.getString("driver"))
+                        .setValidationQuery(config.getString("validationQuery"))
+                        .setMaxxConn(config.getInteger("maxxConn") == null ? 1 : config.getInteger("maxxConn"));
                 break;
             default:
                 throw new MBQException("Queue Type is not supported");

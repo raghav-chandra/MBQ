@@ -49,7 +49,7 @@ public class InMemoryPendingQ implements PendingQ<IdSeqKey> {
             queue.addFirst(item);
         } else {
             int ind = 0;
-            while (queue.get(ind++).getId().compareTo(item.getId()) <= 0) ;
+            while (ind < queue.size() && queue.get(ind++).getId().compareTo(item.getId()) <= 0) ;
             queue.add(ind - 1, item);
         }
     }

@@ -7,7 +7,7 @@ import com.rags.tools.mbq.queue.IdSeqKey;
 import com.rags.tools.mbq.queue.QueueType;
 import com.rags.tools.mbq.queue.pending.InMemoryPendingIdSeqKeyQMap;
 import com.rags.tools.mbq.queue.pending.PendingQMap;
-import com.rags.tools.mbq.stats.collector.MBQStatsService;
+import com.rags.tools.mbq.stats.MBQStatsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

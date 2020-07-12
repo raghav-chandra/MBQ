@@ -1,10 +1,11 @@
 package com.rags.tools.mbq.queue;
 
 import com.rags.tools.mbq.QueueStatus;
+import com.rags.tools.mbq.exception.MBQException;
 
 import java.util.Objects;
 
-public class IdSeqKey {
+public class IdSeqKey implements Cloneable {
     private final String id;
     private final String seqKey;
     private final long scheduledAt;
@@ -47,7 +48,17 @@ public class IdSeqKey {
         return Objects.hash(id, seqKey);
     }
 
-    public void setStatus(QueueStatus status) {
+    public IdSeqKey setStatus(QueueStatus status) {
         this.status = status;
+        return this;
+    }
+
+    @Override
+    public IdSeqKey clone() {
+        try {
+            return (IdSeqKey) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new MBQException("Exception occurred while processing request", e);
+        }
     }
 }

@@ -24,10 +24,13 @@ public class QueueTester extends MBQueueClient {
 
     private static final int DIFF_SEQ = 500;
 
+    private static final int noOfQueues = 1;
+
     static void execute(int publishers, int consumers, QConfig.Builder config) {
         List<MBQueuePublisher> allPublishers = new ArrayList<>();
+        int queues = Math.min(noOfQueues, consumers);
         for (int i = 0; i < publishers; i++) {
-            allPublishers.add(new MBQueuePublisher(config.clone().setWorkerName("publisher-" + i).create()));
+            allPublishers.add(new MBQueuePublisher(config.clone().setWorkerName("publisher-" + i).setPollingQueue(config.create().getClientConfig().getPollingQueue() + (i % queues)).create()));
         }
         allPublishers.forEach(MBQueuePublisher::start);
 
@@ -46,11 +49,11 @@ public class QueueTester extends MBQueueClient {
                     transaction.commit();
                 });
             }
-        }, 100, 1000);
+        }, 100, 200);
 
         List<QueueTester> allConsumers = new ArrayList<>();
         for (int i = 0; i < consumers; i++) {
-            allConsumers.add(new QueueTester(config.clone().setWorkerName("consumer-" + i).create()));
+            allConsumers.add(new QueueTester(config.clone().setWorkerName("consumer-" + i).setPollingQueue(config.create().getClientConfig().getPollingQueue() + (i % queues)).create()));
         }
 
         allConsumers.forEach(client -> new Timer().schedule(new TimerTask() {
@@ -74,8 +77,16 @@ public class QueueTester extends MBQueueClient {
         long timeTaken = System.currentTimeMillis() - startTime;
         float divider = timeTaken / 1000f;
         LOGGER.info("Completed {} no of messages in {} millis. Throughput per Sec : {}", ct, timeTaken, ct / divider);
-        /*try {
-            Thread.sleep(1000);
+
+       /* if(qItems.size()>1) {
+            qItems.get(1).markError();
+            for (int i = 2; i < qItems.size(); i++) {
+                qItems.get(i).markPending();
+            }
+        }
+
+        try {
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }*/

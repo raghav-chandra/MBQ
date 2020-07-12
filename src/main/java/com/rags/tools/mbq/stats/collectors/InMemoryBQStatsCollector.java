@@ -1,32 +1,35 @@
-package com.rags.tools.mbq.stats.collector;
+package com.rags.tools.mbq.stats.collectors;
 
+import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.queue.IdSeqKey;
 import com.rags.tools.mbq.stats.MBQStats;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class InMemoryBQStatsCollector implements MBQStatsCollector {
 
     private static final int QUEUE_SIZE = 100000;
-    private final Queue<StatsItem> statsQueue = new LinkedBlockingQueue<>(QUEUE_SIZE);
+    private final Queue<StatsItem> statsQueue = new ArrayBlockingQueue<>(QUEUE_SIZE);
 
     private final MBQStats stats = new MBQStats();
 
     public InMemoryBQStatsCollector() {
-        new Timer().schedule(new TimerTask() {
+        new Timer("StatsBQConsumer-Main").schedule(new TimerTask() {
             @Override
             public void run() {
                 while (true) {
                     consumeStats(statsQueue.poll());
-                    if (statsQueue.size() >= QUEUE_SIZE / 2) {
-                        new Thread(() -> {
-                            while (statsQueue.size() >= QUEUE_SIZE / 2) {
+                    if (statsQueue.size() >= QUEUE_SIZE / 3) {
+                        Thread thread = new Thread(() -> {
+                            while (statsQueue.size() >= QUEUE_SIZE / 3) {
                                 consumeStats(statsQueue.poll());
                             }
-                        }).start();
+                        });
+                        thread.setName("StatsBQConsumer-Overloaded");
+                        thread.start();
                     }
                 }
             }
@@ -35,7 +38,7 @@ public class InMemoryBQStatsCollector implements MBQStatsCollector {
 
     private void consumeStats(StatsItem item) {
         if (item != null) {
-            switch (Objects.requireNonNull(item).type) {
+            switch (item.type) {
                 case REGISTER_CLIENT:
                     stats.addClient(item.client);
                     break;
@@ -83,18 +86,38 @@ public class InMemoryBQStatsCollector implements MBQStatsCollector {
 
     @Override
     public void collectClientProcessingStats(Client client, List<IdSeqKey> idSeqKeys) {
-        this.statsQueue.add(new StatsItem(StatsType.PROCESSING, client, idSeqKeys));
+        if (!idSeqKeys.isEmpty()) {
+            this.statsQueue.add(new StatsItem(StatsType.PROCESSING, client, idSeqKeys));
+        }
     }
 
     @Override
     public void collectClientCompletedStats(Client client, List<IdSeqKey> idSeqKeys) {
-        System.out.println("Queue Size " + statsQueue.size());
-        this.statsQueue.add(new StatsItem(StatsType.COMPLETED, client, idSeqKeys));
+        if (!idSeqKeys.isEmpty()) {
+            Map<QueueStatus, StatsType> statusMap = Map.of(QueueStatus.PENDING, StatsType.ROLLED_BACK, QueueStatus.COMPLETED, StatsType.COMPLETED, QueueStatus.ERROR, StatsType.ERRORED);
+            Map<StatsType, List<IdSeqKey>> map = Map.of(StatsType.ROLLED_BACK, new ArrayList<>(), StatsType.COMPLETED, new ArrayList<>(), StatsType.ERRORED, new ArrayList<>());
+            for (IdSeqKey idSeqKey : idSeqKeys) {
+                map.get(statusMap.get(idSeqKey.getStatus())).add(idSeqKey);
+                if (idSeqKey.getStatus() == QueueStatus.ERROR) {
+                    map.get(StatsType.ROLLED_BACK).add(idSeqKey);
+                }
+            }
+            List<StatsItem> statItems = new LinkedList<>();
+            map.forEach((statsType, items) -> statItems.add(new StatsItem(statsType, client, items)));
+            this.statsQueue.addAll(statItems);
+        }
     }
 
     @Override
     public void collectClientRollbackStats(Client client, List<IdSeqKey> idSeqKeys) {
-        this.statsQueue.add(new StatsItem(StatsType.ROLLED_BACK, client, idSeqKeys));
+        if (!idSeqKeys.isEmpty()) {
+            this.statsQueue.add(new StatsItem(StatsType.ROLLED_BACK, client, idSeqKeys));
+        }
+    }
+
+    @Override
+    public void markOldest(String queueName, IdSeqKey item) {
+        this.stats.markOldest(queueName, item);
     }
 
     static class StatsItem implements Serializable {

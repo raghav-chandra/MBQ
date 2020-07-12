@@ -1,11 +1,9 @@
-package com.rags.tools.mbq.stats.collector;
+package com.rags.tools.mbq.stats.collectors;
 
-import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.queue.IdSeqKey;
 
 import java.util.List;
-import java.util.Map;
 
 public class NoOpStatsCollector implements MBQStatsCollector{
 
@@ -41,6 +39,11 @@ public class NoOpStatsCollector implements MBQStatsCollector{
 
     @Override
     public void collectClientRollbackStats(Client client, List<IdSeqKey> idSeqKeys) {
+
+    }
+
+    @Override
+    public void markOldest(String queueName, IdSeqKey item) {
 
     }
 }
