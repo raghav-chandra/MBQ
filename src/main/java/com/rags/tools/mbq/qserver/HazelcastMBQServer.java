@@ -31,7 +31,7 @@ public class HazelcastMBQServer extends AbstractMBQueueServer {
 
     private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new HazelcastMBQServer(new HazelcastMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap(), new MBQStatsService(config.getStatsCollectorClass()));
+        return new HazelcastMBQServer(new HazelcastMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(config.getStatsCollectorClass()));
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {

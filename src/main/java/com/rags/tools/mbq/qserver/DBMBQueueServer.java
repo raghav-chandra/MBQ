@@ -30,7 +30,7 @@ public class DBMBQueueServer extends AbstractMBQueueServer {
 
     private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new DBMBQueueServer(new DBMBQueueDataStore(config), new InMemoryPendingIdSeqKeyQMap(), new MBQStatsService(config.getStatsCollectorClass()));
+        return new DBMBQueueServer(new DBMBQueueDataStore(config), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(config.getStatsCollectorClass()));
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {

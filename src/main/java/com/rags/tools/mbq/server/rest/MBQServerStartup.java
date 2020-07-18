@@ -8,8 +8,10 @@ import com.rags.tools.mbq.server.rest.messagecodec.DefMessageCodec;
 import com.rags.tools.mbq.server.rest.messagecodec.EventBusRequest;
 import com.rags.tools.mbq.server.rest.verticle.ClientVerticle;
 import com.rags.tools.mbq.server.rest.verticle.QueueVerticle;
+import com.rags.tools.mbq.server.rest.verticle.WebSocketVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -23,7 +25,7 @@ import java.util.List;
 public class MBQServerStartup extends AbstractVerticle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MBQServerStartup.class);
-    private static final List<Class<? extends AbstractVerticle>> VERTICLES = Arrays.asList(QueueVerticle.class, ClientVerticle.class);
+    private static final List<Class<? extends AbstractVerticle>> VERTICLES = Arrays.asList(WebSocketVerticle.class, QueueVerticle.class, ClientVerticle.class);
 
     @Override
     public void start() {
@@ -60,8 +62,18 @@ public class MBQServerStartup extends AbstractVerticle {
         router.post("/mbq/updateStatus").handler(QueueHandler.updateStatusHandler());
         router.post("/mbq/ping").handler(ClientHandler.heartbeatHandler());
 
+        HttpServer server = vertx.createHttpServer();
+
+        //Websockets for GUI Stats communications
+        server.websocketHandler(ctx -> {
+            ctx.textMessageHandler(msg -> {
+            }).closeHandler(handle -> {
+            }).exceptionHandler(e->{
+            });
+        });
+
         //TODO: Queue GUI Interface
         //router.route().handler(StaticHandler.create(config().getString(WEB_ROOT)));
-        vertx.createHttpServer().requestHandler(router).listen(config.getInteger("web.port"));
+        server.requestHandler(router).listen(config.getInteger("web.port"));
     }
 }

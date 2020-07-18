@@ -12,6 +12,7 @@ import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.queue.QueueType;
 import com.rags.tools.mbq.qserver.MBQServerInstance;
 import com.rags.tools.mbq.qserver.MBQueueServer;
+import com.rags.tools.mbq.stats.MBQStatsService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.core.eventbus.EventBus;
@@ -32,7 +33,9 @@ public class QueueVerticle extends AbstractVerticle {
 
         MBQueueServer server = MBQServerInstance.createOrGet(serverConfig);
 
-        WorkerExecutor workers = getVertx().createSharedWorkerExecutor("QueueWorker", 100);
+        registerStatsRequestConsumer(serverConfig.getStatsCollectorClass()); //Service stats calls
+
+        WorkerExecutor workers = getVertx().createSharedWorkerExecutor("QueueWorker", 5000);
 
         eventBus.<EventBusRequest>consumer(RequestType.PULL_MESSAGES.name(), pullHandler -> {
             Client client = (Client) pullHandler.body().getReqObj();
@@ -110,6 +113,10 @@ public class QueueVerticle extends AbstractVerticle {
                 });
             }
         });
+    }
+
+    private void registerStatsRequestConsumer(String collectorClass) {
+        MBQStatsService statsService = MBQStatsService.getInstance(collectorClass);
     }
 
     private QConfig.ServerConfig getServerConfig(JsonObject config) {

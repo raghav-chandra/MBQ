@@ -15,7 +15,16 @@ public class MBQStatsService {
 
     private MBQStatsCollector statsCollector;
 
-    public MBQStatsService(String statsCollectorClass) {
+    private static MBQStatsService INSTANCE;
+
+    public synchronized static MBQStatsService getInstance(String statsCollectorClass) {
+        if (INSTANCE == null) {
+            INSTANCE = new MBQStatsService(statsCollectorClass);
+        }
+        return INSTANCE;
+    }
+
+    private MBQStatsService(String statsCollectorClass) {
         try {
             if (statsCollectorClass != null && !statsCollectorClass.isBlank()) {
                 Class<?> aClass = Class.forName(statsCollectorClass);
@@ -76,4 +85,6 @@ public class MBQStatsService {
             }
         }
     }
+
+    //All Stats query calls
 }

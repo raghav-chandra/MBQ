@@ -31,7 +31,7 @@ public class InMemoryMBQueueServer extends AbstractMBQueueServer {
 
     private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new InMemoryMBQueueServer(new InMemoryMBQDataStore(), new InMemoryPendingIdSeqKeyQMap(), new MBQStatsService(config.getStatsCollectorClass()));
+        return new InMemoryMBQueueServer(new InMemoryMBQDataStore(), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(config.getStatsCollectorClass()));
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {

@@ -31,7 +31,7 @@ public class MongoMBQServer extends AbstractMBQueueServer {
 
     private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new MongoMBQServer(new MongoMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap(), new MBQStatsService(config.getStatsCollectorClass()));
+        return new MongoMBQServer(new MongoMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(config.getStatsCollectorClass()));
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {
