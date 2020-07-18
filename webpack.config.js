@@ -3,13 +3,17 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 module.exports = {
-  entry: './console/main.js',
+  entry: './dashboard/main.js',
   module: {
     rules: [
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: ['babel-loader']
+      },
+      {
+        test: /\.css$/,
+        loader: 'style-loader!css-loader'
       }
     ]
   },
@@ -20,7 +24,7 @@ module.exports = {
     new CleanWebpackPlugin(), 
     new HtmlWebpackPlugin({
 	title: 'MBQ Management Console',
-        template: './console/index.html'
+        template: './dashboard/index.html'
     }),
     new webpack.HotModuleReplacementPlugin()
   ],
