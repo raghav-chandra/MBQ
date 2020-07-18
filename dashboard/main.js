@@ -16,15 +16,16 @@ class MBQApp extends React.Component {
                         <LinkContainer to="/stats"><NavItem>MBQ</NavItem></LinkContainer>
                     </Navbar.Brand>
 
+                    {/*<Navbar.Collapse id='responsive-navbar-nav'>*/}
                     <Navbar.Collapse id='responsive-navbar-nav'>
                         <Nav>
-                            <LinkContainer to="/stats"><NavItem>Statistics</NavItem></LinkContainer>
-                            <LinkContainer to="/console"><NavItem>Console</NavItem></LinkContainer>
+                            <Nav.Link><LinkContainer to="/stats"><NavItem>Statistics</NavItem></LinkContainer></Nav.Link>
+                            <Nav.Link><LinkContainer to="/console"><NavItem>Console</NavItem></LinkContainer></Nav.Link>
                         </Nav>
                     </Navbar.Collapse>
                 </Navbar>
                 <Routes />
-                </div>);
+        </div>);
     }
 }
 
