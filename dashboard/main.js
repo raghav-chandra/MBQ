@@ -11,7 +11,7 @@ import {Statistics} from './stats/main';
 class MBQApp extends React.Component {
     render() {
         return (<div>
-                <Navbar collapseOnSelect expand='lg' bg='dark' variant='dark'>
+                <Navbar fluid collapseOnSelect expand='lg' bg='dark' variant='dark'>
                     <Navbar.Brand>
                         <LinkContainer to="/stats"><NavItem>MBQ</NavItem></LinkContainer>
                     </Navbar.Brand>
