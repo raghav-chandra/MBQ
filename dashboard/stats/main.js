@@ -1,8 +1,8 @@
 import React from 'react';
 
-import {AggregatedStats} from './aggregated';
-import {QueueStats} from './queue';
-import {ClientStats} from './client';
+import AggregatedStats from './aggregated';
+import { QueueStats } from './queue';
+import { ClientStats } from './client';
 
 export class Statistics extends React.Component {
 
