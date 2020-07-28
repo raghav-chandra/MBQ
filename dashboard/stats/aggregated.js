@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 
 class Aggregated extends React.Component {
     render() {
-        //Overall Depth, Pending , In progress, processed, Throughput, Error Messages, Oldest item, Throughput
+        //Overall Depth, Pending , In progress, processed, Throughput, Error Messages, Oldest item, Throughput, Connected Clients
         let agStats = this.props.stats;
         return (<div> Overall depth, Pending, in Progress, processed, Error messages </div>);
     }

@@ -2,10 +2,11 @@ package com.rags.tools.mbq.stats.collectors;
 
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.queue.IdSeqKey;
+import com.rags.tools.mbq.stats.MBQStats;
 
 import java.util.List;
 
-public class NoOpStatsCollector implements MBQStatsCollector{
+public class NoOpStatsCollector implements MBQStatsCollector {
 
     @Override
     public void collectConnectedClients(Client client) {
@@ -18,7 +19,7 @@ public class NoOpStatsCollector implements MBQStatsCollector{
     }
 
     @Override
-    public void collectPendingStats(String queueName, int noOfItems) {
+    public void collectPendingStats(Client client, String queueName, int noOfItems) {
 
     }
 
@@ -45,5 +46,10 @@ public class NoOpStatsCollector implements MBQStatsCollector{
     @Override
     public void markOldest(String queueName, IdSeqKey item) {
 
+    }
+
+    @Override
+    public MBQStats getCollectedStats() {
+        return new MBQStats();
     }
 }

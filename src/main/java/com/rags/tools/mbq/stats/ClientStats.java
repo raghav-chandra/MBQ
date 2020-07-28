@@ -16,6 +16,7 @@ public class ClientStats {
     private long completed;
     private long markedError;
     private long markedHeld;
+    private long pushed;
 
     public ClientStats(String id) {
         this.id = id;
@@ -54,6 +55,10 @@ public class ClientStats {
             this.processing.addAll(items);
         }
         LOGGER.debug("Client Id : {}. Stats -> Processing : {}, Completed :{}, Errored :{}, Held : {}", id, processing.size(), completed, markedError, markedHeld);
+    }
+
+    public void addPending(int noOfPending) {
+        this.pushed += noOfPending;
     }
 
     public void removeProcessing(List<String> items) {

@@ -21,8 +21,8 @@ public class InMemoryStatsCollector implements MBQStatsCollector {
     }
 
     @Override
-    public void collectPendingStats(String queueName, int noOfItems) {
-        this.stats.addPendingItemStats(queueName, noOfItems);
+    public void collectPendingStats(Client client, String queueName, int noOfItems) {
+        this.stats.addPendingItemStats(client, queueName, noOfItems);
     }
 
     @Override
@@ -61,5 +61,10 @@ public class InMemoryStatsCollector implements MBQStatsCollector {
     @Override
     public void markOldest(String queueName, IdSeqKey item) {
         this.stats.markOldest(queueName, item);
+    }
+
+    @Override
+    public MBQStats getCollectedStats() {
+        return this.stats;
     }
 }

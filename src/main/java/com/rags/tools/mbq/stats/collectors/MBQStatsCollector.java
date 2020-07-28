@@ -2,6 +2,7 @@ package com.rags.tools.mbq.stats.collectors;
 
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.queue.IdSeqKey;
+import com.rags.tools.mbq.stats.MBQStats;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ public interface MBQStatsCollector {
 
     void collectDisconnectedClients(Client client);
 
-    void collectPendingStats(String queueName, int noOfItems);
+    void collectPendingStats(Client client, String queueName, int noOfItems);
 
     void resetStats();
 
@@ -22,4 +23,6 @@ public interface MBQStatsCollector {
     void collectClientRollbackStats(Client client, List<IdSeqKey> idSeqKeys);
 
     void markOldest(String queueName, IdSeqKey item);
+
+    MBQStats getCollectedStats();
 }

@@ -8,10 +8,14 @@ import com.rags.tools.mbq.server.rest.messagecodec.DefMessageCodec;
 import com.rags.tools.mbq.server.rest.messagecodec.EventBusRequest;
 import com.rags.tools.mbq.server.rest.verticle.ClientVerticle;
 import com.rags.tools.mbq.server.rest.verticle.QueueVerticle;
-import com.rags.tools.mbq.server.rest.verticle.WebSocketVerticle;
+import com.rags.tools.mbq.server.rest.websocket.WebSocketRequest;
+import com.rags.tools.mbq.server.rest.websocket.WebSocketRequestType;
+import com.rags.tools.mbq.server.rest.websocket.WebSocketResponse;
+import com.rags.tools.mbq.stats.MBQStatsService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -25,7 +29,9 @@ import java.util.List;
 public class MBQServerStartup extends AbstractVerticle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MBQServerStartup.class);
-    private static final List<Class<? extends AbstractVerticle>> VERTICLES = Arrays.asList(WebSocketVerticle.class, QueueVerticle.class, ClientVerticle.class);
+    private static final List<Class<? extends AbstractVerticle>> VERTICLES = Arrays.asList(QueueVerticle.class, ClientVerticle.class);
+
+    private static final String STATS_COLLECTOR = "stats.collector";
 
     @Override
     public void start() {
@@ -35,9 +41,9 @@ public class MBQServerStartup extends AbstractVerticle {
         //Registering Codecs
         getVertx()
                 .eventBus()
-                .registerCodec(new DefMessageCodec<Client>(Client.class))
-                .registerCodec(new DefMessageCodec<CommitRollbackRequest>(CommitRollbackRequest.class))
-                .registerCodec(new DefMessageCodec<EventBusRequest>(EventBusRequest.class));
+                .registerCodec(new DefMessageCodec<>(Client.class))
+                .registerCodec(new DefMessageCodec<>(CommitRollbackRequest.class))
+                .registerCodec(new DefMessageCodec<>(EventBusRequest.class));
 
         VERTICLES.forEach(verticle ->
                 vertx.deployVerticle(verticle, new DeploymentOptions().setConfig(config), handler -> {
@@ -66,9 +72,21 @@ public class MBQServerStartup extends AbstractVerticle {
 
         //Websockets for GUI Stats communications
         server.websocketHandler(ctx -> {
+            ctx.textHandlerID();
             ctx.textMessageHandler(msg -> {
+                try {
+                    WebSocketRequest request = Json.decodeValue(msg, WebSocketRequest.class);
+                    if (request.getType() == WebSocketRequestType.GET_ALL_STATS) {
+                        MBQStatsService service = MBQStatsService.getInstance(config.getString(STATS_COLLECTOR, "com.rags.tools.mbq.stats.collectors.NoOpStatsCollector"));
+                        ctx.writeTextMessage(Json.encode(new WebSocketResponse<>(WebSocketRequestType.GET_ALL_STATS, service.getCollectedStats())));
+                    } else {
+                        ctx.writeTextMessage("Request is not supported");
+                    }
+                } catch (Exception e) {
+                    ctx.writeTextMessage(JsonUtil.createFailedResponse(msg + " is not in proper Format").encode());
+                }
             }).closeHandler(handle -> {
-            }).exceptionHandler(e->{
+            }).exceptionHandler(e -> {
             });
         });
 

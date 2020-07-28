@@ -21,6 +21,8 @@ public class QueueStats {
     private final List<String> errors;
     private final List<String> processing;
 
+    private int offset;
+
     public QueueStats(String queueName) {
         this.queueName = queueName;
         this.processing = new LinkedList<>();
@@ -28,13 +30,28 @@ public class QueueStats {
     }
 
     public void addPending(int added) {
+        if (this.offset <= 0) {
+            this.offset += added;
+            this.offset = Math.min(this.offset, 0);
+        }
         this.pending += added;
-        this.depth += added;
+        this.pending = Math.max(this.pending, 0);
+        this.depth = calculateDepth();
         LOGGER.debug("Queue Name : {}. Stats -> Depth : {}, Pending : {}, Processing : {}, Completed :{}, Errored :{}, RolledBack : {}", queueName, depth, pending, processing.size(), processed, errors.size(), rolledBack);
     }
 
+    private int calculateDepth() {
+        return pending + errors.size() + processing.size();
+    }
+
     public void addProcessing(List<String> ids) {
-        this.pending -= ids.size();
+        int offset = this.pending - ids.size();
+        if (offset < 0) {
+            this.pending = 0;
+            this.offset += offset;
+        } else {
+            this.pending -= ids.size();
+        }
         this.processing.addAll(ids);
         LOGGER.debug("Queue Name : {}. Stats -> Depth : {}, Pending : {}, Processing : {}, Completed :{}, Errored :{}, RolledBack : {}", queueName, depth, pending, processing.size(), processed, errors.size(), rolledBack);
     }
@@ -42,7 +59,7 @@ public class QueueStats {
     public void markCompleted(List<String> ids) {
         this.processed += ids.size();
         this.processing.removeAll(ids);
-        this.depth -= ids.size();
+        this.depth = calculateDepth();
         LOGGER.debug("Queue Name : {}. Stats -> Depth : {}, Pending : {}, Processing : {}, Completed :{}, Errored :{}, RolledBack : {}", queueName, depth, pending, processing.size(), processed, errors.size(), rolledBack);
     }
 

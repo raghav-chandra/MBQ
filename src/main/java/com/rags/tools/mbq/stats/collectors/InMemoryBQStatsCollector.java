@@ -46,7 +46,7 @@ public class InMemoryBQStatsCollector implements MBQStatsCollector {
                     stats.removeClient(item.client);
                     break;
                 case PENDING:
-                    stats.addPendingItemStats(item.queueName, item.pending);
+                    stats.addPendingItemStats(item.client, item.queueName, item.pending);
                     break;
                 case PROCESSING:
                     stats.addClientProcessingStats(item.client, item.idSeqKeys);
@@ -75,8 +75,8 @@ public class InMemoryBQStatsCollector implements MBQStatsCollector {
     }
 
     @Override
-    public void collectPendingStats(String queueName, int noOfItems) {
-        this.statsQueue.add(new StatsItem(StatsType.PENDING, queueName, noOfItems));
+    public void collectPendingStats(Client client, String queueName, int noOfItems) {
+        this.statsQueue.add(new StatsItem(StatsType.PENDING, client, queueName, noOfItems));
     }
 
     @Override
@@ -120,6 +120,11 @@ public class InMemoryBQStatsCollector implements MBQStatsCollector {
         this.stats.markOldest(queueName, item);
     }
 
+    @Override
+    public MBQStats getCollectedStats() {
+        return this.stats;
+    }
+
     static class StatsItem implements Serializable {
         Client client;
         List<IdSeqKey> idSeqKeys;
@@ -138,8 +143,9 @@ public class InMemoryBQStatsCollector implements MBQStatsCollector {
             this.idSeqKeys = idSeqKeys;
         }
 
-        public StatsItem(StatsType type, String queueName, int pending) {
+        public StatsItem(StatsType type, Client client, String queueName, int pending) {
             this.type = type;
+            this.client = client;
             this.queueName = queueName;
             this.pending = pending;
         }

@@ -386,7 +386,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             USED_SEQ.putIfAbsent(client.getQueueName(), new HashSet<>(20000));
         }
 
-        statsService.collectPendingStats(queueName, messages.size());
+        statsService.collectPendingStats(client, queueName, messages.size());
         statsService.collectOldestItem(queueName, oldestItem);
         return pushedMsgs;
     }

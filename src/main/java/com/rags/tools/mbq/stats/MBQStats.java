@@ -59,10 +59,11 @@ public class MBQStats {
         clientStats.remove(client.getId());
     }
 
-
-    public synchronized void addPendingItemStats(String queueName, int noOfItems) {
+    public synchronized void addPendingItemStats(Client client, String queueName, int noOfItems) {
         queueStats.putIfAbsent(queueName, new QueueStats(queueName));
         queueStats.get(queueName).addPending(noOfItems);
+        clientStats.putIfAbsent(client.getId(), new ClientStats(client.getId()));
+        clientStats.get(client.getId()).addPending(noOfItems);
     }
 
     public synchronized void addClientProcessingStats(Client client, List<IdSeqKey> idSeqKeys) {

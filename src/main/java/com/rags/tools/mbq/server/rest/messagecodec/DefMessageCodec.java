@@ -6,9 +6,9 @@ import io.vertx.core.json.Json;
 
 public class DefMessageCodec<S> implements MessageCodec<S, S> {
 
-    private final Class<?> type;
+    private final Class<S> type;
 
-    public DefMessageCodec(Class<? extends Object> type) {
+    public DefMessageCodec(Class<S> type) {
         this.type = type;
     }
 

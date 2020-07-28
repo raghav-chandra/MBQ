@@ -46,8 +46,8 @@ public class MBQStatsService {
         execute(() -> this.statsCollector.collectDisconnectedClients(client));
     }
 
-    public void collectPendingStats(String queueName, int noOfItems) {
-        execute(() -> this.statsCollector.collectPendingStats(queueName, noOfItems));
+    public void collectPendingStats(Client client, String queueName, int noOfItems) {
+        execute(() -> this.statsCollector.collectPendingStats(client, queueName, noOfItems));
     }
 
     public void resetStats() {
@@ -86,5 +86,7 @@ public class MBQStatsService {
         }
     }
 
-    //All Stats query calls
+    public MBQStats getCollectedStats() {
+        return statsCollector.getCollectedStats();
+    }
 }
