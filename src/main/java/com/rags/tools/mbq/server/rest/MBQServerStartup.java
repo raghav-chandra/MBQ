@@ -19,6 +19,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.StaticHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +33,7 @@ public class MBQServerStartup extends AbstractVerticle {
     private static final List<Class<? extends AbstractVerticle>> VERTICLES = Arrays.asList(QueueVerticle.class, ClientVerticle.class);
 
     private static final String STATS_COLLECTOR = "stats.collector";
+    private static final String WEB_ROOT = "web.root";
 
     @Override
     public void start() {
@@ -91,7 +93,7 @@ public class MBQServerStartup extends AbstractVerticle {
         });
 
         //TODO: Queue GUI Interface
-        //router.route().handler(StaticHandler.create(config().getString(WEB_ROOT)));
+        router.route().handler(StaticHandler.create(config().getString(WEB_ROOT)));
         server.requestHandler(router).listen(config.getInteger("web.port"));
     }
 }

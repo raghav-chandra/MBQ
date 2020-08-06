@@ -11,6 +11,16 @@ const mbqStats = (state = {}, action) => {
   }
 };
 
+const searchItems = (state = {items : [], fetching : false}, action) => {
+    switch (action.type) {
+        case REDUX_ACTIONS.SEARCH_ITEMS :
+        return Object.assign({}, state, {fetching: action.fetching, items: action.items});;
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
-    mbqStats
+    mbqStats,
+    searchItems
 });

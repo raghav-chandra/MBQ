@@ -12,6 +12,7 @@ public class Client {
     private final String name;
     private final String queueName;
     private final int batch;
+    private String ip;
 
     private String heartBeatId;
 

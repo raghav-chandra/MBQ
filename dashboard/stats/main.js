@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
 import AggregatedStats from './aggregated';
 import { QueueStats } from './queue';
@@ -14,3 +15,6 @@ export class Statistics extends React.Component {
         </div>);
     }
 }
+
+
+export default connect(null, null) (Statistics);

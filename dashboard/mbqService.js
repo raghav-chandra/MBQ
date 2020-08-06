@@ -1,4 +1,4 @@
-import { REDUX_ACTIONS, mbqStats } from './redux/actions';
+import { REDUX_ACTIONS, mbqStats, searchItems } from './redux/actions';
 
 const HTTP_GET = 'GET', HTTP_POST = 'POST';
 
@@ -39,7 +39,8 @@ const executePostRequest = (dispatch, url, data, successAction) => executeReques
 const executeGetRequest = (dispatch, url, successAction) => executeRequest(dispatch, url, HTTP_GET, successAction);
 
 const CALL_MAPPER = {
-    [REDUX_ACTIONS.ALL_MBQ_STATS] : dispatch => executeGetRequest(dispatch, 'stats/all', mbqStats)
+    [REDUX_ACTIONS.ALL_MBQ_STATS] : dispatch => executeGetRequest(dispatch, 'mbq/stats/all', mbqStats),
+    [REDUX_ACTIONS.SEARCH_ITEMS] : (dispatch, param, data) => executePostRequest(dispatch, 'mbq/console/search', data, searchItems),
 }
 
 export function execute(action, param, data = null) {

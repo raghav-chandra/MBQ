@@ -12,11 +12,7 @@ class QueueAlert extends React.Component {
         if (this.state.show) {
             return (
                 <Alert variant="danger" onClose={() => this.setState({show: false})} dismissible>
-                    <Alert.Heading>Item for Attention</Alert.Heading>
-                    <p>
-                        list down all the problems with the queue items
-                        That requires attention and may be link attached to that.
-                    </p>
+                    Anything here is an alert
                 </Alert>
             );
         }
@@ -26,7 +22,8 @@ class QueueAlert extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        show : false
+        show : false/*,
+        alerts : stats.alerts.items*/
     }
 }
 

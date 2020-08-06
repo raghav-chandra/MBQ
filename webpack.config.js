@@ -14,6 +14,10 @@ module.exports = {
       {
         test: /\.css$/,
         loader: 'style-loader!css-loader'
+      },
+      {
+        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'file-loader'
       }
     ]
   },
@@ -29,12 +33,12 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin()
   ],
   output: {
-    path: path.resolve(__dirname, '../', 'dist'),
+    path: path.resolve(__dirname, 'target/', 'dist'),
     publicPath: '/',
     filename: 'bundle.js'
   },
   devServer: {
-    contentBase: './dist',
+    contentBase: 'target/dist',
     hot: true
   },
   devtool: 'source-map'

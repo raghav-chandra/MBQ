@@ -22,9 +22,9 @@ public class InMemoryBQStatsCollector implements MBQStatsCollector {
             public void run() {
                 while (true) {
                     consumeStats(statsQueue.poll());
-                    if (statsQueue.size() >= QUEUE_SIZE / 3) {
+                    if (statsQueue.size() >= QUEUE_SIZE / 2) {
                         Thread thread = new Thread(() -> {
-                            while (statsQueue.size() >= QUEUE_SIZE / 3) {
+                            while (statsQueue.size() >= QUEUE_SIZE / 2) {
                                 consumeStats(statsQueue.poll());
                             }
                         });
