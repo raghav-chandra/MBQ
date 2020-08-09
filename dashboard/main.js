@@ -16,9 +16,28 @@ import Alerts from './alerts'
 import MBQReducer from './redux/reducers';
 import { MBQService } from './mbqService';
 
+import { mbqStats } from './redux/actions';
+
 const store = createStore(MBQReducer, applyMiddleware(thunkMiddleware, createLogger()));
-//Get ALl Stats while loading and distribute across all the Components
-//store.dispatch(MBQService.getAllStats());
+
+let interval = 0;
+console.log(window.location.href)
+let websocket = new WebSocket('ws://'+window.location.href.split('/')[2]+'/mbq/ws');
+websocket.onmessage = event => {
+    let data = JSON.parse(event.data);
+    if(data.type === 'ALL_STATS') {
+        let stats = data.response;
+        store.dispatch(mbqStats(stats));
+    }
+};
+websocket.onopen = () => {
+    websocket.send('{"type": "ALL_STATS"}');
+    interval = setInterval(() => websocket.send('{"type": "ALL_STATS"}') , 10000);
+}
+websocket.onclose = event => {
+    clearInterval(interval);
+    alert('Connection to the server is lost. Please refresh.');
+};
 
 class MBQApp extends React.Component {
     render() {

@@ -28,7 +28,7 @@ public class QueueTester extends MBQueueClient {
 
     static void execute(int publishers, int consumers, QConfig.Builder config) {
         List<MBQueuePublisher> allPublishers = new ArrayList<>();
-        int queues = Math.min(noOfQueues, consumers);
+        int queues = Math.min(noOfQueues, consumers == 0 ? 1 : consumers);
         for (int i = 0; i < publishers; i++) {
             allPublishers.add(new MBQueuePublisher(config.clone().setWorkerName("publisher-" + i).setPollingQueue(config.create().getClientConfig().getPollingQueue() + (i % queues)).create()));
         }

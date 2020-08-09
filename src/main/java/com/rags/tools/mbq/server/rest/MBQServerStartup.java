@@ -8,14 +8,9 @@ import com.rags.tools.mbq.server.rest.messagecodec.DefMessageCodec;
 import com.rags.tools.mbq.server.rest.messagecodec.EventBusRequest;
 import com.rags.tools.mbq.server.rest.verticle.ClientVerticle;
 import com.rags.tools.mbq.server.rest.verticle.QueueVerticle;
-import com.rags.tools.mbq.server.rest.websocket.WebSocketRequest;
-import com.rags.tools.mbq.server.rest.websocket.WebSocketRequestType;
-import com.rags.tools.mbq.server.rest.websocket.WebSocketResponse;
-import com.rags.tools.mbq.stats.MBQStatsService;
+import com.rags.tools.mbq.server.rest.websocket.WSHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -34,6 +29,7 @@ public class MBQServerStartup extends AbstractVerticle {
 
     private static final String STATS_COLLECTOR = "stats.collector";
     private static final String WEB_ROOT = "web.root";
+    private static final String WEB_PORT = "web.port";
 
     @Override
     public void start() {
@@ -60,7 +56,7 @@ public class MBQServerStartup extends AbstractVerticle {
 
         router.route().handler(BodyHandler.create());
 
-        router.get("/test").handler(routingContext -> routingContext.response().end("Hello guys."));
+        router.get("/test").handler(routingContext -> routingContext.response().end("MBQ is up and running"));
 
         router.post("/mbq/registerClient").handler(ClientHandler.registerHandler());
         router.post("/mbq/pull").handler(QueueHandler.pullHandler());
@@ -70,30 +66,10 @@ public class MBQServerStartup extends AbstractVerticle {
         router.post("/mbq/updateStatus").handler(QueueHandler.updateStatusHandler());
         router.post("/mbq/ping").handler(ClientHandler.heartbeatHandler());
 
-        HttpServer server = vertx.createHttpServer();
-
-        //Websockets for GUI Stats communications
-        server.websocketHandler(ctx -> {
-            ctx.textHandlerID();
-            ctx.textMessageHandler(msg -> {
-                try {
-                    WebSocketRequest request = Json.decodeValue(msg, WebSocketRequest.class);
-                    if (request.getType() == WebSocketRequestType.GET_ALL_STATS) {
-                        MBQStatsService service = MBQStatsService.getInstance(config.getString(STATS_COLLECTOR, "com.rags.tools.mbq.stats.collectors.NoOpStatsCollector"));
-                        ctx.writeTextMessage(Json.encode(new WebSocketResponse<>(WebSocketRequestType.GET_ALL_STATS, service.getCollectedStats())));
-                    } else {
-                        ctx.writeTextMessage("Request is not supported");
-                    }
-                } catch (Exception e) {
-                    ctx.writeTextMessage(JsonUtil.createFailedResponse(msg + " is not in proper Format").encode());
-                }
-            }).closeHandler(handle -> {
-            }).exceptionHandler(e -> {
-            });
-        });
-
-        //TODO: Queue GUI Interface
+        //Queue GUI Interface for Stats and Console
         router.route().handler(StaticHandler.create(config().getString(WEB_ROOT)));
-        server.requestHandler(router).listen(config.getInteger("web.port"));
+        vertx.createHttpServer()
+                .websocketHandler(new WSHandler(config.getString(STATS_COLLECTOR, "com.rags.tools.mbq.stats.collectors.NoOpStatsCollector")))
+                .requestHandler(router).listen(config.getInteger(WEB_PORT));
     }
 }

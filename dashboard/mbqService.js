@@ -54,5 +54,6 @@ export function execute(action, param, data = null) {
 }
 
 export const MBQService = {
+    init: () => {},
     getAllStats : () => execute (REDUX_ACTIONS.ALL_MBQ_STATS)
 }

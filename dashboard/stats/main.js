@@ -2,19 +2,16 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import AggregatedStats from './aggregated';
-import { QueueStats } from './queue';
-import { ClientStats } from './client';
+import QueueStats from './queue';
+import ClientStats from './client';
 
 export class Statistics extends React.Component {
 
     render () {
-        return (<div>
+        return (<React.Fragment>
             <AggregatedStats />
             <QueueStats />
             <ClientStats />
-        </div>);
+        </React.Fragment>);
     }
 }
-
-
-export default connect(null, null) (Statistics);

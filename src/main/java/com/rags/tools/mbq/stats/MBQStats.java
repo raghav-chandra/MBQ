@@ -4,7 +4,6 @@ import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.queue.IdSeqKey;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,31 +14,8 @@ public class MBQStats {
 
     private Map<String, ClientStats> clientStats = new ConcurrentHashMap<>();
 
-    public Collection<QueueStats> getQStats() {
-        return queueStats.values();
-    }
-
-    public Collection<String> getAllQueueNames() {
-        return queueStats.keySet();
-    }
-
-    public int getNoOfItemsInTheQueue(String queueName) {
-        if (queueStats.containsKey(queueName)) {
-            return queueStats.get(queueName).getDepth();
-        }
-        return 0;
-    }
-
-    public Collection<ClientStats> getClientStats() {
-        return clientStats.values();
-    }
-
-    public int getNoOfClientsConnected() {
-        return clientStats.entrySet().size();
-    }
-
-    public int getConnectedClientIds() {
-        return clientStats.entrySet().size();
+    public Map<String, ClientStats> getClientStats() {
+        return clientStats;
     }
 
     public Map<String, QueueStats> getQueueStats() {
