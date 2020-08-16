@@ -32,7 +32,7 @@ websocket.onmessage = event => {
 };
 websocket.onopen = () => {
     websocket.send('{"type": "ALL_STATS"}');
-    interval = setInterval(() => websocket.send('{"type": "ALL_STATS"}') , 10000);
+    interval = setInterval(() => websocket.send('{"type": "ALL_STATS"}') , 500);
 }
 websocket.onclose = event => {
     clearInterval(interval);

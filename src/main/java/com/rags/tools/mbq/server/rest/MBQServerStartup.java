@@ -2,6 +2,7 @@ package com.rags.tools.mbq.server.rest;
 
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.server.rest.handler.ClientHandler;
+import com.rags.tools.mbq.server.rest.handler.MBQueueDSHandler;
 import com.rags.tools.mbq.server.rest.handler.QueueHandler;
 import com.rags.tools.mbq.server.rest.messagecodec.CommitRollbackRequest;
 import com.rags.tools.mbq.server.rest.messagecodec.DefMessageCodec;
@@ -66,10 +67,14 @@ public class MBQServerStartup extends AbstractVerticle {
         router.post("/mbq/updateStatus").handler(QueueHandler.updateStatusHandler());
         router.post("/mbq/ping").handler(ClientHandler.heartbeatHandler());
 
+        router.post("/mbq/search").handler(MBQueueDSHandler.searchHandler());
+
         //Queue GUI Interface for Stats and Console
         router.route().handler(StaticHandler.create(config().getString(WEB_ROOT)));
         vertx.createHttpServer()
                 .websocketHandler(new WSHandler(config.getString(STATS_COLLECTOR, "com.rags.tools.mbq.stats.collectors.NoOpStatsCollector")))
                 .requestHandler(router).listen(config.getInteger(WEB_PORT));
+
+        LOGGER.info("MBQ started at {} port no", config.getInteger(WEB_PORT));
     }
 }

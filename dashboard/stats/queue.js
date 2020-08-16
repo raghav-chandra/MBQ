@@ -3,7 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import Carousel from 'react-multi-carousel';
-import { Card } from 'react-bootstrap';
+import { Card, Form, Col } from 'react-bootstrap';
 import 'react-multi-carousel/lib/styles.css';
 
 import { RESPONSIVE_SCREEN } from '../constant';
@@ -23,21 +23,31 @@ export class QueueStats extends React.Component {
                 return <React.Fragment> Queue is empty and so the stats. </React.Fragment>
             }
 
-//private int depth;
-//private int pending;
-//private int processed;
-//private int rolledBack;
-//private IdSeqKey oldestItem;
-//
-//private final String queueName;
-//private final List<String> errors;
-//private final List<String> processing;
+//depth;
+//pending;
+//processed;
+//rolledBack;
+
+//oldestItem;
+//List<String> errors;
+//List<String> processing;
 
             let qCards = allQueues.map(qName => (<Card className="bg-dark text-white">
                                 <Card.Body>
                                     <Card.Title>Queue : { qName }</Card.Title>
                                     <Card.Text>
-                                        Some quick example text to build
+                                        <Form>
+                                            <Form.Row>
+                                                <Form.Group as={Col}><Form.Label>Depth</Form.Label></Form.Group>
+                                                <Form.Group as={Col}><Form.Label>Processed</Form.Label></Form.Group>
+                                                <Form.Group as={Col}><Form.Label>Pending</Form.Label></Form.Group>
+                                            </Form.Row>
+                                            <Form.Row>
+                                                <Form.Group as={Col}><Form.Label>{ queueStats[qName].depth }</Form.Label></Form.Group>
+                                                <Form.Group as={Col}><Form.Label>{ queueStats[qName].processed }</Form.Label></Form.Group>
+                                                <Form.Group as={Col}><Form.Label>{ queueStats[qName].pending }</Form.Label></Form.Group>
+                                            </Form.Row>
+                                        </Form>
                                     </Card.Text>
                                 </Card.Body>
                             </Card>));

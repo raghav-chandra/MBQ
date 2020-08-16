@@ -21,7 +21,7 @@ export class ClientStats extends React.Component {
                 return <React.Fragment> No active clients of the queue. </React.Fragment>
             }
 
-            let qCards = allClients.map(qName => (<Card className="bg-dark text-white">
+            let clientCards = allClients.map(qName => (<Card className="bg-dark text-white">
                                 <Card.Body>
                                     <Card.Title>ClientId : { qName }</Card.Title>
                                     <Card.Text>
@@ -38,97 +38,7 @@ export class ClientStats extends React.Component {
                      keyBoardControl={true}
                      transitionDuration={200}
                      containerClass="carousel-container">
-                      <Card className="bg-dark text-white">
-                         <Card.Body>
-
-                           <Card.Title>Card Title 1111</Card.Title>
-                           <Card.Subtitle className="mb-2 text-muted">Card Subtitle</Card.Subtitle>
-                           <Card.Text>
-                             Some quick example text to build
-
-                           </Card.Text>
-
-
-                         </Card.Body>
-                       </Card>
-
-                        <Card className="bg-dark text-white">
-                                               <Card.Body>
-
-                                                 <Card.Title>Card Title 2222</Card.Title>
-                                                 <Card.Subtitle className="mb-2 text-muted">Card Subtitle</Card.Subtitle>
-                                                 <Card.Text>
-                                                   Some quick example text to build
-
-                                                 </Card.Text>
-
-
-                                               </Card.Body>
-                                             </Card>
-                                              <Card className="bg-dark text-white">
-                                                                     <Card.Body>
-
-                                                                       <Card.Title>Card Title 3333</Card.Title>
-                                                                       <Card.Subtitle className="mb-2 text-muted">Card Subtitle</Card.Subtitle>
-                                                                       <Card.Text>
-                                                                         Some quick example text to build
-
-                                                                       </Card.Text>
-                                                                     </Card.Body>
-                                                                   </Card>
-
-                     <Card className="bg-dark text-white">
-                            <Card.Body>
-
-                              <Card.Title>Card Title 1</Card.Title>
-                              <Card.Subtitle className="mb-2 text-muted">Card Subtitle</Card.Subtitle>
-                              <Card.Text>
-                                Some quick example text to build
-
-                              </Card.Text>
-
-
-                            </Card.Body>
-                          </Card>
-                          <Card className="bg-dark text-white">
-                             <Card.Body>
-
-                               <Card.Title>Card Title2</Card.Title>
-                               <Card.Subtitle className="mb-2 text-muted">Card Subtitle</Card.Subtitle>
-                               <Card.Text>
-                                 Some quick example text to build
-
-                               </Card.Text>
-
-
-                             </Card.Body>
-                           </Card>
-                           <Card className="bg-dark text-white">
-                            <Card.Body>
-
-                              <Card.Title>Card Title3</Card.Title>
-                              <Card.Subtitle className="mb-2 text-muted">Card Subtitle</Card.Subtitle>
-                              <Card.Text>
-                                Some quick example text to build
-
-                              </Card.Text>
-
-
-                            </Card.Body>
-                          </Card>
-                     <Card className="bg-dark text-white">
-                            <Card.Body>
-
-                              <Card.Title>Card Title4</Card.Title>
-                              <Card.Subtitle className="mb-2 text-muted">Card Subtitle</Card.Subtitle>
-                              <Card.Text>
-                                Some quick example text to build
-
-                              </Card.Text>
-
-
-                            </Card.Body>
-                          </Card>
+                     {clientCards}
                    </Carousel>;
         }
 }

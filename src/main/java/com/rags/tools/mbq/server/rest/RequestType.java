@@ -13,6 +13,9 @@ public enum RequestType {
     REQUEST_COMMIT,
     REQUEST_ROLLBACK,
 
-    UPDATE_STATUS
+    UPDATE_STATUS,
+
+
+    LOOKUP_ITEMS
 
 }
