@@ -6,6 +6,10 @@ import Result from './result';
 export class ManagementConsole extends React.Component {
 
     render () {
-        return (<div><Search /><Result /></div>);
+        return (
+            <React.Fragment>
+                <Search />
+                <Result />
+            </React.Fragment>);
     }
 }

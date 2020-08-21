@@ -31,7 +31,7 @@ public abstract class AbstractRequestHandler<S, T> implements Handler<RoutingCon
 
         String cookie = request.headers().get(COOKIE_STRING);
         S requestData = getRequestData(request, context.getBody());
-        EventBusRequest reqObject = new EventBusRequest(context.request().remoteAddress().host(), cookie, requestData);
+        EventBusRequest<S> reqObject = new EventBusRequest<>(context.request().remoteAddress().host(), cookie, requestData);
         handleFuture(request, createFuture(requestType, eventBus, reqObject), eventBus, cookie);
     }
 
@@ -53,7 +53,7 @@ public abstract class AbstractRequestHandler<S, T> implements Handler<RoutingCon
         request.response().end(JsonUtil.createFailedResponse(cause.getMessage()).encodePrettily());
     }
 
-    private Future<T> createFuture(RequestType requestType, EventBus eventBus, EventBusRequest reqObject) {
+    private Future<T> createFuture(RequestType requestType, EventBus eventBus, EventBusRequest<?> reqObject) {
         Future<T> future = Future.future();
         eventBus.<T>send(requestType.name(), reqObject, new DeliveryOptions().setCodecName(EventBusRequest.class.getCanonicalName()), reply -> {
             if (reply.succeeded()) {

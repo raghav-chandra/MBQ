@@ -12,4 +12,8 @@ public class SearchRequest {
     public void setIds(List<String> ids) {
         this.ids = ids;
     }
+
+    public boolean isInValid() {
+        return ids == null || ids.isEmpty();
+    }
 }

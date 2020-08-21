@@ -15,6 +15,10 @@ public enum ErrorMessage {
     MESSAGE_COMMIT_FAILED(9007, "Message commit failed"),
     MESSAGE_ROLLBACK_FAILED(9008, "Message rollback failed"),
     MESSAGE_PULL_FAILED(9009, "Message pull failed"),
+
+
+    INVALID_SEARCH_REQUEST(12000, " Invalid Search request"),
+    FAILED_SEARCH_REQUEST(12001, "Search Request failed. "),
     ;
 
     private final int code;

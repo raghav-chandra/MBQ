@@ -5,7 +5,9 @@ import { connect } from 'react-redux';
 class Search extends React.Component {
 
     render () {
-        return <div>SearchContent in Side Pane</div>;
+        return <React.Fragment>
+
+                </React.Fragment>;
     }
 }
 

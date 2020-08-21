@@ -14,16 +14,7 @@ const columns = [
 class Result extends React.Component {
     render () {
         return <React.Fragment>
-                    {/*<ReactDataGrid
-                        columns={columns}
-                        enableCellSelect={false}
-                        enableRowSelect={true}
-                        rowGetter={index => this.props.items[index]}
-                        rowCount={this.props.items.length} />
-                        */}
-                        <p>
-                            This is para Result
-                        </p>
+                    This is Result Content
                </React.Fragment>;
     }
 }
