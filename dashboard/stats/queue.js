@@ -8,7 +8,7 @@ import 'react-multi-carousel/lib/styles.css';
 
 import { RESPONSIVE_SCREEN, screen } from '../constant';
 
-import { Statistics } from '../Statistics';
+import { Card } from '../util/Card';
 
 export class QueueStats extends React.Component {
 
@@ -27,7 +27,7 @@ export class QueueStats extends React.Component {
 
             let cardWidth = 270;
             let qCards = allQueues.map(qName => (
-                            <Statistics height='230px' width={cardWidth+'px'} title={ qName }>
+                            <Card height='230px' width={cardWidth+'px'} title={ qName }>
                                 <Container>
                                     <Row>
                                         <Col>Depth</Col>
@@ -58,7 +58,7 @@ export class QueueStats extends React.Component {
                                         <Col>Item</Col>
                                     </Row>
                                 </Container>
-                             </Statistics>));
+                             </Card>));
 
             let count = parseInt(window.innerWidth/(cardWidth+10));
             return <Carousel

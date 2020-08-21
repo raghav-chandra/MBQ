@@ -1,13 +1,5 @@
-//Contains overall queue Stats
-//Depth, processed, etc
 import React from 'react';
 import { connect } from 'react-redux';
-
-import Carousel from 'react-multi-carousel';
-import { Card } from 'react-bootstrap';
-import 'react-multi-carousel/lib/styles.css';
-
-import { RESPONSIVE_SCREEN } from '../constant';
 
 class Aggregated extends React.Component {
     render() {

@@ -16,7 +16,7 @@ class QueueAlert extends React.Component {
                 </Alert>
             );
         }
-        return  <Alert variant="danger"><Button onClick={() => this.setState({show: true})}>Show Alert</Button></Alert>;
+        return  <Alert variant="danger" show = {false}><Button onClick={() => this.setState({show: false})}>Show Alert</Button></Alert>;
     }
 }
 

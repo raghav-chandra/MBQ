@@ -1,7 +1,7 @@
 import React from 'react';
 import './styles.css';
 
-export class Statistics extends React.Component {
+export class Card extends React.Component {
 
     render() {
         let height = this.props.height || '100%';
