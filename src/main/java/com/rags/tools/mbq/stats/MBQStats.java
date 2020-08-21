@@ -28,7 +28,7 @@ public class MBQStats {
     }
 
     public void addClient(Client client) {
-        clientStats.put(client.getId(), new ClientStats(client.getId()));
+        clientStats.put(client.getId(), new ClientStats(client.getId(), client.getName(), client.getHost()));
     }
 
     public void removeClient(Client client) {
@@ -38,7 +38,7 @@ public class MBQStats {
     public synchronized void addPendingItemStats(Client client, String queueName, int noOfItems) {
         queueStats.putIfAbsent(queueName, new QueueStats(queueName));
         queueStats.get(queueName).addPending(noOfItems);
-        clientStats.putIfAbsent(client.getId(), new ClientStats(client.getId()));
+        clientStats.putIfAbsent(client.getId(), new ClientStats(client.getId(), client.getName(), client.getHost()));
         clientStats.get(client.getId()).addPending(noOfItems);
     }
 
@@ -52,7 +52,7 @@ public class MBQStats {
 
     private void putIfAbsent(Client client) {
         queueStats.putIfAbsent(client.getQueueName(), new QueueStats(client.getQueueName()));
-        clientStats.putIfAbsent(client.getId(), new ClientStats(client.getId()));
+        clientStats.putIfAbsent(client.getId(), new ClientStats(client.getId(), client.getName(), client.getHost()));
     }
 
     public synchronized void addClientCompletedStats(Client client, List<IdSeqKey> idSeqKeys) {

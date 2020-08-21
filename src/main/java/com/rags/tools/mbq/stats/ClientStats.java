@@ -12,19 +12,31 @@ public class ClientStats {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientStats.class);
 
     private final String id;
+    private final String host;
+    private final String name;
     private final List<String> processing;
     private long completed;
     private long markedError;
     private long markedHeld;
     private long pushed;
 
-    public ClientStats(String id) {
+    public ClientStats(String id, String name, String host) {
         this.id = id;
+        this.name = name;
+        this.host = host;
         this.processing = new LinkedList<>();
     }
 
     public String getId() {
         return id;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public List<String> getProcessing() {
@@ -41,6 +53,10 @@ public class ClientStats {
 
     public long getMarkedHeld() {
         return markedHeld;
+    }
+
+    public long getPushed() {
+        return pushed;
     }
 
     public void addProcessed(QueueStatus status, List<String> items) {

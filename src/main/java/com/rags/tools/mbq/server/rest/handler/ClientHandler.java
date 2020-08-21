@@ -31,7 +31,7 @@ public class ClientHandler {
         return new AbstractRequestHandler<Client, Client>(requestType) {
             @Override
             protected Client getRequestData(HttpServerRequest request, Buffer body) {
-                return body != null ? Json.decodeValue(body, Client.class) : new Client(null);
+                return body != null ? Json.decodeValue(body, Client.class) : new Client();
             }
         };
     }

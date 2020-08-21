@@ -12,27 +12,24 @@ public class Client {
     private final String name;
     private final String queueName;
     private final int batch;
-    private String ip;
+    private String host;
 
     private String heartBeatId;
 
     public Client() {
-        this(null, null, null, -1);
-    }
-
-    public Client(String id) {
-        this(id, null, null, 10);
+        this(null, null, 1);
     }
 
     public Client(String name, String queueName, int batch) {
-        this(null, name, queueName, batch);
+        this(null, name, queueName, batch, null);
     }
 
-    public Client(String id, String name, String queueName, int batch) {
+    public Client(String id, String name, String queueName, int batch, String host) {
         this.id = id;
         this.name = name;
         this.queueName = queueName;
         this.batch = batch;
+        this.host = host;
     }
 
     public String getId() {
@@ -53,6 +50,15 @@ public class Client {
 
     public String getHeartBeatId() {
         return heartBeatId;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public Client setHost(String host) {
+        this.host = host;
+        return this;
     }
 
     public void setHeartBeatId(String heartBeatId) {

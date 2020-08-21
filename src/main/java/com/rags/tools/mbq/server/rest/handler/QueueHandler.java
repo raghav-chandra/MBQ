@@ -18,7 +18,7 @@ public class QueueHandler {
         return new AbstractRequestHandler<Client, List<MBQMessage>>(RequestType.PULL_MESSAGES) {
             @Override
             protected Client getRequestData(HttpServerRequest request, Buffer body) {
-                return body != null ? Json.decodeValue(body, Client.class) : new Client(null);
+                return body != null ? Json.decodeValue(body, Client.class) : new Client();
             }
         };
     }

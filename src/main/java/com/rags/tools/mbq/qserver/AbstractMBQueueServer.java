@@ -117,7 +117,7 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
             throw new MBQException("Client is already registered");
         }
 
-        Client clientWithId = new Client(id, client.getName(), client.getQueueName(), client.getBatch());
+        Client clientWithId = new Client(id, client.getName(), client.getQueueName(), client.getBatch(), client.getHost());
         long currTime = System.currentTimeMillis();
 
         clientWithId.setHeartBeatId(HashingUtil.hashSHA256(id + currTime));

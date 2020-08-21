@@ -3,62 +3,71 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import Carousel from 'react-multi-carousel';
-import { Card, Form, Col } from 'react-bootstrap';
+import { Col, Row, Container } from 'react-bootstrap';
 import 'react-multi-carousel/lib/styles.css';
 
-import { RESPONSIVE_SCREEN } from '../constant';
+import { RESPONSIVE_SCREEN, screen } from '../constant';
+
+import { Statistics } from '../Statistics';
 
 export class QueueStats extends React.Component {
+
      render() {
-            //Overall Depth, Pending , In progress, processed, Throughput, Error Messages, Oldest item, Throughput, Connected Clients
-            let agStats = this.props.stats;
-            if(agStats.fetching) {
+            let stats = this.props.stats;
+            if(stats.fetching) {
                 return <React.Fragment> Loading Queue Stats </React.Fragment>
             }
 
-            let queueStats = agStats.queueStats;
+            let queueStats = stats.queueStats;
             let allQueues = Object.keys(queueStats);
 
             if(allQueues.length === 0 ){
                 return <React.Fragment> Queue is empty and so the stats. </React.Fragment>
             }
 
-//depth;
-//pending;
-//processed;
-//rolledBack;
+            let cardWidth = 270;
+            let qCards = allQueues.map(qName => (
+                            <Statistics height='230px' width={cardWidth+'px'} title={ qName }>
+                                <Container>
+                                    <Row>
+                                        <Col>Depth</Col>
+                                        <Col>{ queueStats[qName].depth }</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>Pending</Col>
+                                        <Col>{ queueStats[qName].pending }</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>InProcess</Col>
+                                        <Col>{ queueStats[qName].processing.length }</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>Processed</Col>
+                                        <Col>{ queueStats[qName].processed }</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>Error</Col>
+                                        <Col>{ queueStats[qName].errors.length }</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>RolledBack</Col>
+                                        <Col>{ queueStats[qName].rolledBack }</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col>Oldest</Col>
+                                        <Col>Item</Col>
+                                    </Row>
+                                </Container>
+                             </Statistics>));
 
-//oldestItem;
-//List<String> errors;
-//List<String> processing;
-
-            let qCards = allQueues.map(qName => (<Card className="bg-dark text-white">
-                                <Card.Body>
-                                    <Card.Title>Queue : { qName }</Card.Title>
-                                    <Card.Text>
-                                        <Form>
-                                            <Form.Row>
-                                                <Form.Group as={Col}><Form.Label>Depth</Form.Label></Form.Group>
-                                                <Form.Group as={Col}><Form.Label>Processed</Form.Label></Form.Group>
-                                                <Form.Group as={Col}><Form.Label>Pending</Form.Label></Form.Group>
-                                            </Form.Row>
-                                            <Form.Row>
-                                                <Form.Group as={Col}><Form.Label>{ queueStats[qName].depth }</Form.Label></Form.Group>
-                                                <Form.Group as={Col}><Form.Label>{ queueStats[qName].processed }</Form.Label></Form.Group>
-                                                <Form.Group as={Col}><Form.Label>{ queueStats[qName].pending }</Form.Label></Form.Group>
-                                            </Form.Row>
-                                        </Form>
-                                    </Card.Text>
-                                </Card.Body>
-                            </Card>));
-
+            let count = parseInt(window.innerWidth/(cardWidth+10));
             return <Carousel
                      showDots={true}
-                     responsive={RESPONSIVE_SCREEN}
+                     responsive={screen(count)}
                      infinite={true}
                      autoPlaySpeed={300}
                      keyBoardControl={true}
-                     transitionDuration={200}
+                     transitionDuration={100}
                      containerClass="carousel-container">
                       {qCards}
                    </Carousel>;

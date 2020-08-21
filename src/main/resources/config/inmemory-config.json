@@ -1,7 +1,7 @@
 {
   "web.port": 65000,
   "queue.type": "SINGLE_JVM_INMEMORY",
-  "stats.collector": "com.rags.tools.mbq.stats.collectors.InMemoryBQStatsCollector-as",
+  "stats.collector": "com.rags.tools.mbq.stats.collectors.InMemoryBQStatsCollector",
 
   "web.root" : "target/dist"
 }

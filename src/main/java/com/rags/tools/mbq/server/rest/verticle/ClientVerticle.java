@@ -25,25 +25,25 @@ public class ClientVerticle extends AbstractVerticle {
 
         WorkerExecutor workers = getVertx().createSharedWorkerExecutor("ClientWorker", 100);
 
-        eventBus.<EventBusRequest>consumer(RequestType.REGISTER_CLIENT.name(), regClientHandler -> {
-            Client client = (Client) regClientHandler.body().getReqObj();
+        eventBus.<EventBusRequest>consumer(RequestType.REGISTER_CLIENT.name(), handler -> {
+            Client client = ((Client) handler.body().getReqObj()).setHost(handler.body().getRemoteHost());
             if (client.isInValidForRegistration()) {
-                regClientHandler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
+                handler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
             } else {
                 workers.executeBlocking(wHandler -> {
                     Client c = mbQueueServer.registerClient(client);
                     wHandler.complete(JsonObject.mapFrom(c));
-                }, resHandler -> handleResult(regClientHandler, resHandler, ErrorMessage.CLIENT_REGISTER_FAILED));
+                }, resHandler -> handleResult(handler, resHandler, ErrorMessage.CLIENT_REGISTER_FAILED));
             }
         });
 
-        eventBus.<EventBusRequest>consumer(RequestType.REGISTER_HEARTBEAT.name(), regClientHandler -> {
-            Client client = (Client) regClientHandler.body().getReqObj();
+        eventBus.<EventBusRequest>consumer(RequestType.REGISTER_HEARTBEAT.name(), handler -> {
+            Client client = ((Client) handler.body().getReqObj()).setHost(handler.body().getRemoteHost());
             if (client == null || client.isInValid()) {
-                regClientHandler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
+                handler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> workerHandler.complete(mbQueueServer.ping(client))
-                        , resHandler -> handleResult(regClientHandler, resHandler, ErrorMessage.PING_REGISTER_FAILED));
+                        , resHandler -> handleResult(handler, resHandler, ErrorMessage.PING_REGISTER_FAILED));
             }
         });
     }

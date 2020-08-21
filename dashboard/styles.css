@@ -1,0 +1,18 @@
+.stats {
+  border: 2px solid black;
+  background-color: #343a40;
+  color: white;
+  border-radius: 5px;
+  margin: 5px;
+}
+
+.stats-body {
+  color: white;
+  padding: 10px;
+}
+
+.stats-title {
+  background-color: black;
+  color: white;
+  text-align: center;
+}
