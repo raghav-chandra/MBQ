@@ -67,7 +67,7 @@ public class MBQServerStartup extends AbstractVerticle {
         router.post("/mbq/updateStatus").handler(QueueHandler.updateStatusHandler());
         router.post("/mbq/ping").handler(ClientHandler.heartbeatHandler());
 
-        router.post("/mbq/search").handler(MBQueueDSHandler.searchHandler());
+        router.post("/mbq/console/search").handler(MBQueueDSHandler.searchHandler());
 
         //Queue GUI Interface for Stats and Console
         router.route().handler(StaticHandler.create(config().getString(WEB_ROOT)));

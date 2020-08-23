@@ -39,14 +39,13 @@ const executePostRequest = (dispatch, url, data, successAction) => executeReques
 const executeGetRequest = (dispatch, url, successAction) => executeRequest(dispatch, url, HTTP_GET, successAction);
 
 const CALL_MAPPER = {
-    [REDUX_ACTIONS.ALL_MBQ_STATS] : dispatch => executeGetRequest(dispatch, 'mbq/stats/all', mbqStats),
-    [REDUX_ACTIONS.SEARCH_ITEMS] : (dispatch, param, data) => executePostRequest(dispatch, 'mbq/console/search', data, searchItems),
+    [REDUX_ACTIONS.SEARCH_ITEMS] : (dispatch, data) => executePostRequest(dispatch, 'mbq/console/search', data, searchItems)
 }
 
-export function execute(action, param, data = null) {
+export function execute(action, data = null) {
     return function (dispatch) {
         try {
-            return CALL_MAPPER[action](dispatch, param, data);
+            return CALL_MAPPER[action](dispatch, data);
         } catch (e) {
             alert ('Failed while executing ' + action + '. Please retry' +  e);
         }
@@ -55,5 +54,5 @@ export function execute(action, param, data = null) {
 
 export const MBQService = {
     init: () => {},
-    getAllStats : () => execute (REDUX_ACTIONS.ALL_MBQ_STATS)
+    searchItems : request => execute (REDUX_ACTIONS.SEARCH_ITEMS, request)
 }

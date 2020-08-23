@@ -49,10 +49,6 @@ export class ClientStats extends React.Component {
                                             <Col>Held</Col>
                                             <Col>{ clientStats[id].markedHeld }</Col>
                                         </Row>
-                                        <Row>
-                                            <Col>Oldest</Col>
-                                            <Col>Item</Col>
-                                        </Row>
                                     </Container>
                                  </Card>));
 
