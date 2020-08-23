@@ -1,7 +1,6 @@
 package com.rags.tools.mbq;
 
 import com.rags.tools.mbq.exception.MBQException;
-import com.rags.tools.mbq.queue.QueueType;
 
 public class QConfig {
     private ClientConfig clientConfig;

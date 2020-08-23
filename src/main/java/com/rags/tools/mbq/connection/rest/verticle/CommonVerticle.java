@@ -2,7 +2,7 @@ package com.rags.tools.mbq.connection.rest.verticle;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.exception.MBQException;
-import com.rags.tools.mbq.queue.QueueType;
+import com.rags.tools.mbq.QueueType;
 import com.rags.tools.mbq.connection.rest.ErrorMessage;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;

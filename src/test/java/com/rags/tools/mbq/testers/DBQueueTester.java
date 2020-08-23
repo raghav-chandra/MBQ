@@ -1,7 +1,7 @@
 package com.rags.tools.mbq.testers;
 
 import com.rags.tools.mbq.QConfig;
-import com.rags.tools.mbq.queue.QueueType;
+import com.rags.tools.mbq.QueueType;
 
 import static com.rags.tools.mbq.testers.QueueTester.execute;
 

@@ -4,7 +4,7 @@ import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.queue.store.DBMBQueueDataStore;
 import com.rags.tools.mbq.queue.IdSeqKey;
-import com.rags.tools.mbq.queue.QueueType;
+import com.rags.tools.mbq.QueueType;
 import com.rags.tools.mbq.queue.pending.InMemoryPendingIdSeqKeyQMap;
 import com.rags.tools.mbq.queue.pending.PendingQMap;
 import com.rags.tools.mbq.stats.MBQStatsService;
