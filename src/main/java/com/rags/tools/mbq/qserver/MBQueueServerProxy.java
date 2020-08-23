@@ -8,8 +8,8 @@ import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
-import com.rags.tools.mbq.server.rest.messagecodec.CommitRollbackRequest;
-import com.rags.tools.mbq.server.rest.messagecodec.PushRequest;
+import com.rags.tools.mbq.connection.rest.messagecodec.CommitRollbackRequest;
+import com.rags.tools.mbq.connection.rest.messagecodec.PushRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

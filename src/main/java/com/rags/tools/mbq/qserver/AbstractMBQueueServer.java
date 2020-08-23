@@ -6,7 +6,7 @@ import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 import com.rags.tools.mbq.queue.IdSeqKey;
-import com.rags.tools.mbq.queue.MBQDataStore;
+import com.rags.tools.mbq.queue.store.MBQDataStore;
 import com.rags.tools.mbq.queue.pending.PendingQ;
 import com.rags.tools.mbq.queue.pending.PendingQMap;
 import com.rags.tools.mbq.stats.MBQStatsService;

@@ -2,9 +2,9 @@ package com.rags.tools.mbq.qserver;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.exception.MBQException;
-import com.rags.tools.mbq.queue.HazelcastMBQDataStore;
+import com.rags.tools.mbq.queue.store.HazelcastMBQDataStore;
 import com.rags.tools.mbq.queue.IdSeqKey;
-import com.rags.tools.mbq.queue.MBQDataStore;
+import com.rags.tools.mbq.queue.store.MBQDataStore;
 import com.rags.tools.mbq.queue.QueueType;
 import com.rags.tools.mbq.queue.pending.InMemoryPendingIdSeqKeyQMap;
 import com.rags.tools.mbq.queue.pending.PendingQMap;
