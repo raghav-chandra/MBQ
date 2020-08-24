@@ -2,7 +2,7 @@ package com.rags.tools.mbq.connection.rest.verticle;
 
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.qserver.MBQServerInstance;
-import com.rags.tools.mbq.qserver.MBQueueServer;
+import com.rags.tools.mbq.qserver.QueueServer;
 import com.rags.tools.mbq.connection.rest.ErrorMessage;
 import com.rags.tools.mbq.connection.rest.RequestType;
 import com.rags.tools.mbq.connection.rest.messagecodec.EventBusRequest;
@@ -16,7 +16,7 @@ public class ClientVerticle extends CommonVerticle {
 
         EventBus eventBus = getVertx().eventBus();
 
-        MBQueueServer mbQueueServer = MBQServerInstance.createOrGet(getServerConfig(config()));
+        QueueServer queueServer = MBQServerInstance.createOrGet(getServerConfig(config()));
 
         WorkerExecutor workers = getVertx().createSharedWorkerExecutor("ClientWorker", 100);
 
@@ -26,7 +26,7 @@ public class ClientVerticle extends CommonVerticle {
                 handler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
             } else {
                 workers.executeBlocking(wHandler -> {
-                    Client c = mbQueueServer.registerClient(client);
+                    Client c = queueServer.registerClient(client);
                     wHandler.complete(JsonObject.mapFrom(c));
                 }, resHandler(handler, ErrorMessage.CLIENT_REGISTER_FAILED));
             }
@@ -37,7 +37,7 @@ public class ClientVerticle extends CommonVerticle {
             if (client == null || client.isInValid()) {
                 handler.fail(ErrorMessage.CLIENT_INVALID.getCode(), ErrorMessage.CLIENT_INVALID.getMessage());
             } else {
-                workers.executeBlocking(workerHandler -> workerHandler.complete(mbQueueServer.ping(client))
+                workers.executeBlocking(workerHandler -> workerHandler.complete(queueServer.ping(client))
                         , resHandler(handler, ErrorMessage.PING_REGISTER_FAILED));
             }
         });

@@ -1,5 +1,6 @@
 package com.rags.tools.mbq.queue.store;
 
+import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
@@ -12,9 +13,16 @@ import java.util.stream.Collectors;
 
 public class InMemoryMBQDataStore extends AbstractMBQDataStore {
 
+    private static InMemoryMBQDataStore INSTANCE;
+
     private final Map<String, Map<String, MBQMessage>> QUEUE_DS = new ConcurrentHashMap<>();
 
-
+    public static synchronized InMemoryMBQDataStore getInstance(QConfig.ServerConfig config) {
+        if (INSTANCE == null) {
+            INSTANCE = new InMemoryMBQDataStore();
+        }
+        return INSTANCE;
+    }
 
     @Override
     public List<MBQMessage> get(String queueName, List<String> ids) {

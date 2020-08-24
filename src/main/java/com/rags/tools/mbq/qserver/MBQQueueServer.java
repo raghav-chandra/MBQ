@@ -18,9 +18,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public abstract class AbstractMBQueueServer implements MBQueueServer {
+public class MBQQueueServer implements QueueServer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMBQueueServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MBQQueueServer.class);
+
+    private static MBQQueueServer INSTANCE = null;
 
     private static final Map<Client, ClientInfo> CLIENTS_HB = new ConcurrentHashMap<>(2048, .9f, 512);
     private static final Map<String, Set<String>> USED_SEQ = new ConcurrentHashMap<>(256, .75f, 64);
@@ -28,12 +30,17 @@ public abstract class AbstractMBQueueServer implements MBQueueServer {
     private static final int PING_INTERVAL = 5000;
 
     private final PendingQMap<IdSeqKey> pendingQMap;
-
     private final MBQDataStore queueDataStore;
-
     private final MBQStatsService statsService;
 
-    public AbstractMBQueueServer(MBQDataStore MBQDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
+    public synchronized static MBQQueueServer getInstance(MBQDataStore dataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
+        if (INSTANCE == null) {
+            INSTANCE = new MBQQueueServer(dataStore, pendingQMap, statsService);
+        }
+        return INSTANCE;
+    }
+
+    public MBQQueueServer(MBQDataStore MBQDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
         this.queueDataStore = MBQDataStore;
         this.pendingQMap = pendingQMap;
         this.statsService = statsService;

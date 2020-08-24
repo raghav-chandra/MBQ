@@ -32,6 +32,8 @@ public class DBMBQueueDataStore extends AbstractMBQDataStore {
 
     private static final String UPDATE_QUEUE_STATUS_TO_NEW = "update MBQueueMessage set Status=:newStatus where Status=:prevStatus";
 
+    private static DBMBQueueDataStore INSTANCE;
+
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     public DBMBQueueDataStore(QConfig.ServerConfig config) {
@@ -42,6 +44,14 @@ public class DBMBQueueDataStore extends AbstractMBQDataStore {
             throw new MBQException("Error in configuring connection pool with RDB", e);
         }
     }
+
+    public static synchronized DBMBQueueDataStore getInstance(QConfig.ServerConfig config) {
+        if (INSTANCE == null) {
+            INSTANCE = new DBMBQueueDataStore(config);
+        }
+        return INSTANCE;
+    }
+
 
     private DataSource createDS(QConfig.ServerConfig config) {
         BasicDataSource ds = new BasicDataSource();
@@ -162,7 +172,7 @@ public class DBMBQueueDataStore extends AbstractMBQDataStore {
                         .addValue("status", status.name())
                         .addValue("updatedTS", new Timestamp(System.currentTimeMillis()));
             });
-            
+
             jdbcTemplate.batchUpdate(UPDATE_MBQ_MESSAGE, params);
         }
         return true;

@@ -11,26 +11,26 @@ import com.rags.tools.mbq.stats.MBQStatsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DBMBQueueServer extends AbstractMBQueueServer {
+public class RDBQueueServer extends MBQQueueServer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DBMBQueueServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RDBQueueServer.class);
 
-    private static MBQueueServer INSTANCE = null;
+    private static QueueServer INSTANCE = null;
 
-    private DBMBQueueServer(DBMBQueueDataStore dbmbQueueDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsCollector) {
+    private RDBQueueServer(DBMBQueueDataStore dbmbQueueDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsCollector) {
         super(dbmbQueueDataStore, pendingQMap, statsCollector);
     }
 
-    public synchronized static MBQueueServer getInstance(QConfig.ServerConfig config) {
+    public synchronized static QueueServer getInstance(QConfig.ServerConfig config) {
         if (INSTANCE == null) {
             INSTANCE = createAndInitialize(config);
         }
         return INSTANCE;
     }
 
-    private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
+    private static QueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new DBMBQueueServer(new DBMBQueueDataStore(config), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(config.getStatsCollectorClass()));
+        return new RDBQueueServer(new DBMBQueueDataStore(config), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(config.getStatsCollectorClass()));
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {

@@ -12,7 +12,7 @@ import java.util.Map;
  * @author ragha
  * @since 29-12-2019
  */
-public interface MBQueueServer {
+public interface QueueServer {
 
     /**
      * Registers client with the queue for any communication

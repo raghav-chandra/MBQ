@@ -24,15 +24,15 @@ import java.util.*;
  * @author ragha
  * @since 29-12-2019
  */
-public class MBQueueServerProxy implements MBQueueServer {
+public class QueueServerProxy implements QueueServer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MBQueueServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(QueueServer.class);
 
     private final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
 
     private final String baseUrl;
 
-    public MBQueueServerProxy(QConfig.ServerConfig config) {
+    public QueueServerProxy(QConfig.ServerConfig config) {
         this.baseUrl = config.getUrl();
     }
 

@@ -6,7 +6,7 @@ import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 import com.rags.tools.mbq.qserver.MBQServerInstance;
-import com.rags.tools.mbq.qserver.MBQueueServer;
+import com.rags.tools.mbq.qserver.QueueServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +17,7 @@ public class MBQueuePublisher implements QueueClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MBQueuePublisher.class);
 
-    private final MBQueueServer server;
+    private final QueueServer server;
     private final QConfig config;
 
     private Client client;
@@ -32,6 +32,13 @@ public class MBQueuePublisher implements QueueClient {
         this.server = MBQServerInstance.createOrGet(config.getServerConfig());
         this.config = config;
         this.transaction = new Transaction();
+
+        /*QConfig.ServerConfig serverConfig = config.getServerConfig();
+        if (QueueType.CENTRALIZED == serverConfig.getQueueType()) {
+            this.server = new QueueServerProxy(serverConfig);
+        } else {
+            this.server = new MBQQueueServer(MBQDataStoreInstance.createOrGet(serverConfig), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(serverConfig.getStatsCollectorClass()));
+        }*/
     }
 
     public QConfig getConfig() {
@@ -163,7 +170,7 @@ public class MBQueuePublisher implements QueueClient {
         return client;
     }
 
-    protected MBQueueServer getServer() {
+    protected QueueServer getServer() {
         return server;
     }
 

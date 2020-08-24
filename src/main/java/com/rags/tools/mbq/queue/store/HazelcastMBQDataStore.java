@@ -23,12 +23,22 @@ import java.util.stream.Collectors;
  */
 public class HazelcastMBQDataStore extends AbstractMBQDataStore {
 
+    private static HazelcastMBQDataStore INSTANCE;
+
     private final HazelcastInstance instance;
 
     //TODO: Use Entry Processor for Atomicity of operations
     public HazelcastMBQDataStore(QConfig.ServerConfig serverConfig) {
+        //TODO: use url, user password to connect to the instance
         Config config = new Config();
         this.instance = Hazelcast.newHazelcastInstance(config);
+    }
+
+    public static synchronized HazelcastMBQDataStore getInstance(QConfig.ServerConfig config) {
+        if (INSTANCE == null) {
+            INSTANCE = new HazelcastMBQDataStore(config);
+        }
+        return INSTANCE;
     }
 
     @Override

@@ -12,8 +12,17 @@ import java.util.Map;
 
 public class MongoMBQDataStore extends AbstractMBQDataStore {
 
+    private static MongoMBQDataStore INSTANCE;
+
     public MongoMBQDataStore(QConfig.ServerConfig config) {
 
+    }
+
+    public static synchronized MongoMBQDataStore getInstance(QConfig.ServerConfig config) {
+        if (INSTANCE == null) {
+            INSTANCE = new MongoMBQDataStore(config);
+        }
+        return INSTANCE;
     }
 
     @Override

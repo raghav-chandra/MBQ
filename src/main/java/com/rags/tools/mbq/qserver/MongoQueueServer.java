@@ -12,26 +12,26 @@ import com.rags.tools.mbq.stats.MBQStatsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MongoMBQServer extends AbstractMBQueueServer {
+public class MongoQueueServer extends MBQQueueServer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MongoMBQServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MongoQueueServer.class);
 
-    private static MBQueueServer INSTANCE = null;
+    private static QueueServer INSTANCE = null;
 
-    public MongoMBQServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
+    public MongoQueueServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
         super(mbqDataStore, pendingQMap, statsService);
     }
 
-    public synchronized static MBQueueServer getInstance(QConfig.ServerConfig config) {
+    public synchronized static QueueServer getInstance(QConfig.ServerConfig config) {
         if (INSTANCE == null) {
             INSTANCE = createAndInitialize(config);
         }
         return INSTANCE;
     }
 
-    private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
+    private static QueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new MongoMBQServer(new MongoMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(config.getStatsCollectorClass()));
+        return new MongoQueueServer(new MongoMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(config.getStatsCollectorClass()));
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {

@@ -4,7 +4,7 @@ import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.qserver.MBQServerInstance;
-import com.rags.tools.mbq.qserver.MBQueueServer;
+import com.rags.tools.mbq.qserver.QueueServer;
 import com.rags.tools.mbq.connection.rest.ErrorMessage;
 import com.rags.tools.mbq.connection.rest.RequestType;
 import com.rags.tools.mbq.connection.rest.messagecodec.CommitRollbackRequest;
@@ -26,7 +26,7 @@ public class QueueVerticle extends CommonVerticle {
         JsonObject config = config();
 
         QConfig.ServerConfig serverConfig = getServerConfig(config);
-        MBQueueServer server = MBQServerInstance.createOrGet(serverConfig);
+        QueueServer server = MBQServerInstance.createOrGet(serverConfig);
 
         WorkerExecutor workers = getVertx().createSharedWorkerExecutor("QueueWorker", 5000);
 

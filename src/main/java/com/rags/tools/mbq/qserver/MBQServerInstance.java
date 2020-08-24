@@ -5,18 +5,18 @@ import com.rags.tools.mbq.exception.MBQException;
 
 public class MBQServerInstance {
 
-    public static MBQueueServer createOrGet(QConfig.ServerConfig config) {
+    public static QueueServer createOrGet(QConfig.ServerConfig config) {
         switch (config.getQueueType()) {
             case SINGLE_JVM_INMEMORY:
-                return InMemoryMBQueueServer.getInstance(config);
+                return InMemoryQueueServer.getInstance(config);
             case SINGLE_JVM_RDB:
-                return DBMBQueueServer.getInstance(config);
+                return RDBQueueServer.getInstance(config);
             case SINGLE_JVM_MONGO_DB:
-                return MongoMBQServer.getInstance(config);
+                return MongoQueueServer.getInstance(config);
             case SINGLE_JVM_HAZELCAST:
-                return HazelcastMBQServer.getInstance(config);
+                return HazelcastQueueServer.getInstance(config);
             case CENTRALIZED:
-                return new MBQueueServerProxy(config);
+                return new QueueServerProxy(config);
             default:
                 throw new MBQException("QueueType is not configured");
         }

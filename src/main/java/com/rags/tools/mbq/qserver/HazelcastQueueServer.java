@@ -12,26 +12,26 @@ import com.rags.tools.mbq.stats.MBQStatsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HazelcastMBQServer extends AbstractMBQueueServer {
+public class HazelcastQueueServer extends MBQQueueServer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HazelcastMBQServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HazelcastQueueServer.class);
 
-    private static MBQueueServer INSTANCE;
+    private static QueueServer INSTANCE;
 
-    private HazelcastMBQServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
+    private HazelcastQueueServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
         super(mbqDataStore, pendingQMap, statsService);
     }
 
-    public synchronized static MBQueueServer getInstance(QConfig.ServerConfig config) {
+    public synchronized static QueueServer getInstance(QConfig.ServerConfig config) {
         if (INSTANCE == null) {
             INSTANCE = createAndInitialize(config);
         }
         return INSTANCE;
     }
 
-    private static MBQueueServer createAndInitialize(QConfig.ServerConfig config) {
+    private static QueueServer createAndInitialize(QConfig.ServerConfig config) {
         validateConfig(config);
-        return new HazelcastMBQServer(new HazelcastMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(config.getStatsCollectorClass()));
+        return new HazelcastQueueServer(new HazelcastMBQDataStore(config), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(config.getStatsCollectorClass()));
     }
 
     private static void validateConfig(QConfig.ServerConfig config) {
