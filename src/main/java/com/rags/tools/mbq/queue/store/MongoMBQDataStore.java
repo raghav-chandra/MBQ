@@ -2,10 +2,10 @@ package com.rags.tools.mbq.queue.store;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
+import com.rags.tools.mbq.connection.rest.messagecodec.SearchRequest;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 import com.rags.tools.mbq.queue.IdSeqKey;
-import com.rags.tools.mbq.queue.store.AbstractMBQDataStore;
 
 import java.util.List;
 import java.util.Map;
@@ -31,17 +31,7 @@ public class MongoMBQDataStore extends AbstractMBQDataStore {
     }
 
     @Override
-    public List<MBQMessage> get(String queueName, String seqKey, List<QueueStatus> status) {
-        return null;
-    }
-
-    @Override
     public Map<String, List<IdSeqKey>> getAllPendingIds() {
-        return null;
-    }
-
-    @Override
-    public List<MBQMessage> pull(String queueName, List<String> ids) {
         return null;
     }
 
@@ -58,5 +48,10 @@ public class MongoMBQDataStore extends AbstractMBQDataStore {
     @Override
     public void updateStatus(QueueStatus prevStatus, QueueStatus newStatus) {
 
+    }
+
+    @Override
+    public List<MBQMessage> search(SearchRequest searchRequest) {
+        return null;
     }
 }

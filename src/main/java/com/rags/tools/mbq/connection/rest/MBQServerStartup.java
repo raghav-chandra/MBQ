@@ -1,13 +1,12 @@
 package com.rags.tools.mbq.connection.rest;
 
-import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.connection.rest.handler.ClientHandler;
 import com.rags.tools.mbq.connection.rest.handler.MBQueueDSHandler;
 import com.rags.tools.mbq.connection.rest.handler.QueueHandler;
-import com.rags.tools.mbq.connection.rest.messagecodec.CommitRollbackRequest;
 import com.rags.tools.mbq.connection.rest.messagecodec.DefMessageCodec;
 import com.rags.tools.mbq.connection.rest.messagecodec.EventBusRequest;
 import com.rags.tools.mbq.connection.rest.verticle.ClientVerticle;
+import com.rags.tools.mbq.connection.rest.verticle.DataStoreVerticle;
 import com.rags.tools.mbq.connection.rest.verticle.QueueVerticle;
 import com.rags.tools.mbq.connection.rest.websocket.WSHandler;
 import io.vertx.core.AbstractVerticle;
@@ -26,7 +25,7 @@ import java.util.List;
 public class MBQServerStartup extends AbstractVerticle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MBQServerStartup.class);
-    private static final List<Class<? extends AbstractVerticle>> VERTICLES = Arrays.asList(QueueVerticle.class, ClientVerticle.class);
+    private static final List<Class<? extends AbstractVerticle>> VERTICLES = Arrays.asList(QueueVerticle.class, ClientVerticle.class, DataStoreVerticle.class);
 
     private static final String STATS_COLLECTOR = "stats.collector";
     private static final String WEB_ROOT = "web.root";
@@ -38,12 +37,9 @@ public class MBQServerStartup extends AbstractVerticle {
         Router router = Router.router(vertx);
 
         //Registering Codecs
-        getVertx()
-                .eventBus()
-                .registerCodec(new DefMessageCodec<>(Client.class))
-                .registerCodec(new DefMessageCodec<>(CommitRollbackRequest.class))
-                .registerCodec(new DefMessageCodec<>(EventBusRequest.class));
+        getVertx().eventBus().registerCodec(new DefMessageCodec<>(EventBusRequest.class));
 
+        //Registering Workers
         VERTICLES.forEach(verticle ->
                 vertx.deployVerticle(verticle, new DeploymentOptions().setConfig(config), handler -> {
                     if (handler.succeeded()) {
@@ -71,6 +67,8 @@ public class MBQServerStartup extends AbstractVerticle {
 
         //Queue GUI Interface for Stats and Console
         router.route().handler(StaticHandler.create(config().getString(WEB_ROOT)));
+
+        //Staring Http Server and WS server
         vertx.createHttpServer()
                 .websocketHandler(new WSHandler(config.getString(STATS_COLLECTOR, "com.rags.tools.mbq.stats.collectors.NoOpStatsCollector")))
                 .requestHandler(router).listen(config.getInteger(WEB_PORT));

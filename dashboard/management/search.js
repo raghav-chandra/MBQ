@@ -39,10 +39,10 @@ class Search extends React.Component {
             req.status = state.status;
         }
 
-        if(state.sequence && sequence.length) {
+        if(state.sequence && state.sequence.trim().length) {
             req.sequence = state.sequence;
         }
-        console.log(req);
+
         if(Object.keys(req).length) {
             this.props.searchItems(req);
         } else {
@@ -63,7 +63,7 @@ class Search extends React.Component {
                                         </Form.Group>
                                         <Form.Group as={Row}>
                                             <Col sm='2'>
-                                                <Form.Control as='select' name='status'>
+                                                <Form.Control as='select' name='status' onChange = {this.handleChange}>
                                                     <option value=''>Select Status</option>
                                                     <option value='PENDING'>PENDING</option>
                                                     <option value='ERROR'>ERROR</option>

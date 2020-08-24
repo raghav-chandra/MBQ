@@ -2,6 +2,7 @@ package com.rags.tools.mbq.queue.store;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
+import com.rags.tools.mbq.connection.rest.messagecodec.SearchRequest;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
@@ -20,11 +21,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-public class DBMBQueueDataStore extends AbstractMBQDataStore {
+public class RDBMBQDataStore extends AbstractMBQDataStore {
 
-    private static final String GET_BY_QUEUE_AND_ID = "select * from MBQueueMessage where Id in (:ids)";
+    private static final String GET_BY_IDS = "select * from MBQueueMessage where Id in (:ids)";
     private static final String GET_BY_QUEUE_SEQ_AND_STATUS = "select * from MBQueueMessage where QueueName=:queue and Sequence=:seq and Status in (:status)";
-    private static final String GET_BY_QUEUE_AND_IDS = "select * from MBQueueMessage where QueueName=:queue Id in (:ids)";
     private static final String GET_PENDING_IDS = "select Id, Sequence, QueueName, Status, ScheduledAt from MBQueueMessage where Status!='COMPLETED' order by CreatedTime asc";
 
     private static final String INSERT_MBQ_MESSAGE = "insert into MBQueueMessage (Id, QueueName, Sequence, Status, Data, ScheduledAt, CreatedTime, UpdatedTime) values (:id,:queue,:seq,:status,:data,:scheduledAt, :createTS,:updatedTS)";
@@ -32,11 +32,18 @@ public class DBMBQueueDataStore extends AbstractMBQDataStore {
 
     private static final String UPDATE_QUEUE_STATUS_TO_NEW = "update MBQueueMessage set Status=:newStatus where Status=:prevStatus";
 
-    private static DBMBQueueDataStore INSTANCE;
+
+    private static final String SELECT_REQUEST = "select Id, QueueName, Sequence, Status, ScheduledAt, BlockerKey, CreatedTime, UpdatedTime from MBQueueMessage where ";
+    private static final String WHERE_IDS = " Id in (:ids) ";
+    private static final String WHERE_QUEUE_NAME = " QueueName in (:queue) ";
+    private static final String WHERE_SEQUENCE = " Sequence in (:seq) ";
+    private static final String WHERE_STATUS = " Status in (:status) ";
+
+    private static RDBMBQDataStore INSTANCE;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public DBMBQueueDataStore(QConfig.ServerConfig config) {
+    public RDBMBQDataStore(QConfig.ServerConfig config) {
         try {
             DataSource ds = createDS(config);
             jdbcTemplate = new NamedParameterJdbcTemplate(ds);
@@ -45,9 +52,9 @@ public class DBMBQueueDataStore extends AbstractMBQDataStore {
         }
     }
 
-    public static synchronized DBMBQueueDataStore getInstance(QConfig.ServerConfig config) {
+    public static synchronized RDBMBQDataStore getInstance(QConfig.ServerConfig config) {
         if (INSTANCE == null) {
-            INSTANCE = new DBMBQueueDataStore(config);
+            INSTANCE = new RDBMBQDataStore(config);
         }
         return INSTANCE;
     }
@@ -74,21 +81,7 @@ public class DBMBQueueDataStore extends AbstractMBQDataStore {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("queue", queueName)
                 .addValue("ids", ids);
-        return jdbcTemplate.query(GET_BY_QUEUE_AND_ID, param, new MessageRowMapper());
-    }
-
-    @Override
-    public List<MBQMessage> get(String queueName, String seqKey, List<QueueStatus> status) {
-        if (status.isEmpty()) {
-            return new LinkedList<>();
-        }
-
-        List<String> qStatus = status.stream().map(Enum::name).collect(Collectors.toList());
-        MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("queue", queueName)
-                .addValue("seq", seqKey)
-                .addValue("status", qStatus);
-        return jdbcTemplate.query(GET_BY_QUEUE_SEQ_AND_STATUS, param, new MessageRowMapper());
+        return jdbcTemplate.query(GET_BY_IDS, param, new MessageRowMapper());
     }
 
     @Override
@@ -108,17 +101,6 @@ public class DBMBQueueDataStore extends AbstractMBQDataStore {
             }
             return queueMap;
         });
-    }
-
-    @Override
-    public List<MBQMessage> pull(String queueName, List<String> ids) {
-        if (ids.isEmpty()) {
-            return new LinkedList<>();
-        }
-        MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("queue", queueName)
-                .addValue("ids", ids);
-        return jdbcTemplate.query(GET_BY_QUEUE_AND_IDS, param, new MessageRowMapper());
     }
 
     @Override
@@ -165,13 +147,11 @@ public class DBMBQueueDataStore extends AbstractMBQDataStore {
         if (!statusIds.isEmpty()) {
             SqlParameterSource[] params = new SqlParameterSource[statusIds.size()];
             AtomicInteger counter = new AtomicInteger(0);
-            statusIds.forEach((status, ids) -> {
-                params[counter.getAndIncrement()] = new MapSqlParameterSource()
-                        .addValue("ids", ids)
-                        .addValue("queue", queueName)
-                        .addValue("status", status.name())
-                        .addValue("updatedTS", new Timestamp(System.currentTimeMillis()));
-            });
+            statusIds.forEach((status, ids) -> params[counter.getAndIncrement()] = new MapSqlParameterSource()
+                    .addValue("ids", ids)
+                    .addValue("queue", queueName)
+                    .addValue("status", status.name())
+                    .addValue("updatedTS", new Timestamp(System.currentTimeMillis())));
 
             jdbcTemplate.batchUpdate(UPDATE_MBQ_MESSAGE, params);
         }
@@ -187,16 +167,62 @@ public class DBMBQueueDataStore extends AbstractMBQDataStore {
     }
 
     private static class MessageRowMapper implements RowMapper<MBQMessage> {
+
+        private final boolean withMessage;
+
+        public MessageRowMapper() {
+            this.withMessage = true;
+        }
+
+        public MessageRowMapper(boolean withMessage) {
+            this.withMessage = withMessage;
+        }
+
         @Override
         public MBQMessage mapRow(ResultSet rs, int i) throws SQLException {
             String id = rs.getString("Id");
             String queue = rs.getString("QueueName");
             String seq = rs.getString("Sequence");
             String status = rs.getString("Status");
-            String data = rs.getString("Data");
+
+            String data = null;
+            if (withMessage) {
+                data = rs.getString("Data");
+            }
             long createTS = rs.getTimestamp("CreatedTime").getTime();
             long updatedTS = rs.getTimestamp("UpdatedTime") == null ? 0 : rs.getTimestamp("UpdatedTime").getTime();
-            return new MBQMessage(id, queue, seq, QueueStatus.valueOf(status), data.getBytes(), createTS, updatedTS, 0);
+            return new MBQMessage(id, queue, seq, QueueStatus.valueOf(status), data == null ? null : data.getBytes(), createTS, updatedTS, 0);
         }
+    }
+
+    @Override
+    public List<MBQMessage> search(SearchRequest req) {
+        if (req.isInValid()) {
+            return Collections.emptyList();
+        }
+
+        String sql = SELECT_REQUEST;
+        MapSqlParameterSource param = new MapSqlParameterSource();
+        if (req.getIds() != null && !req.getIds().isEmpty()) {
+            sql += WHERE_IDS;
+            param.addValue("ids", req.getIds());
+        }
+
+        if (req.getQueues() != null && !req.getQueues().isEmpty()) {
+            sql += WHERE_QUEUE_NAME;
+            param.addValue("queue", req.getQueues());
+        }
+
+        if (req.getStatus() != null) {
+            sql += WHERE_STATUS;
+            param.addValue("status", req.getStatus().name());
+        }
+
+        if (req.getSequence() != null && !req.getSequence().trim().isEmpty()) {
+            sql += WHERE_SEQUENCE;
+            param.addValue("seq", req.getSequence().trim());
+        }
+
+        return jdbcTemplate.query(sql, param, new MessageRowMapper(false));
     }
 }

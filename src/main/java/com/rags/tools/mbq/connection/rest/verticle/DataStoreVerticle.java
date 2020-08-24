@@ -15,14 +15,14 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MBQueueDSVerticle extends CommonVerticle {
+public class DataStoreVerticle extends CommonVerticle {
     @Override
     public void start() {
 
         EventBus eventBus = getVertx().eventBus();
         MBQDataStore dataStore = MBQDataStoreInstance.createOrGet(getServerConfig(config()));
 
-        WorkerExecutor workers = getVertx().createSharedWorkerExecutor("DataStoreWorker", 10);
+        WorkerExecutor workers = getVertx().createSharedWorkerExecutor("DataStoreWorker", 5);
 
         eventBus.<EventBusRequest<SearchRequest>>consumer(RequestType.LOOKUP_ITEMS.name(), pullHandler -> {
             SearchRequest request = pullHandler.body().getReqObj();
@@ -30,8 +30,8 @@ public class MBQueueDSVerticle extends CommonVerticle {
                 pullHandler.fail(ErrorMessage.INVALID_SEARCH_REQUEST.getCode(), ErrorMessage.INVALID_SEARCH_REQUEST.getMessage());
             } else {
                 workers.executeBlocking(workerHandler -> {
-                    List<MBQMessage> messages = null;
-                    workerHandler.complete(new JsonArray(messages.parallelStream().map(JsonObject::mapFrom).collect(Collectors.toList())));
+                    List<MBQMessage> messages = dataStore.search(request);
+                    workerHandler.complete(new JsonArray(messages.stream().map(JsonObject::mapFrom).collect(Collectors.toList())));
                 }, resHandler(pullHandler, ErrorMessage.FAILED_SEARCH_REQUEST));
             }
         });

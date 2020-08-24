@@ -2,6 +2,7 @@ package com.rags.tools.mbq.queue.store;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
+import com.rags.tools.mbq.connection.rest.messagecodec.SearchRequest;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
@@ -33,28 +34,8 @@ public class InMemoryMBQDataStore extends AbstractMBQDataStore {
     }
 
     @Override
-    public List<MBQMessage> get(String queueName, String seqKey, List<QueueStatus> status) {
-        if (QUEUE_DS.containsKey(queueName)) {
-            Map<String, MBQMessage> queue = QUEUE_DS.get(queueName);
-            return queue.values().parallelStream().filter(item -> status.contains(item.getStatus()) && item.getSeqKey().equals(seqKey)).collect(Collectors.toList());
-        }
-        return Collections.emptyList();
-    }
-
-    @Override
     public Map<String, List<IdSeqKey>> getAllPendingIds() {
         return new HashMap<>();
-    }
-
-    @Override
-    public List<MBQMessage> pull(String queueName, List<String> ids) {
-        if (ids == null || ids.isEmpty()) {
-            return Collections.emptyList();
-        }
-        if (QUEUE_DS.containsKey(queueName)) {
-            return ids.parallelStream().map(QUEUE_DS.get(queueName)::get).collect(Collectors.toList());
-        }
-        return Collections.emptyList();
     }
 
     @Override
@@ -94,5 +75,40 @@ public class InMemoryMBQDataStore extends AbstractMBQDataStore {
     @Override
     public void updateStatus(QueueStatus prevStatus, QueueStatus newStatus) {
 
+    }
+
+    @Override
+    public List<MBQMessage> search(SearchRequest searchRequest) {
+        List<MBQMessage> messages = new LinkedList<>();
+        if (searchRequest.getQueues() != null && !searchRequest.getQueues().isEmpty()) {
+            searchRequest.getQueues().forEach(q -> {
+                if (QUEUE_DS.containsKey(q)) {
+                    Map<String, MBQMessage> allMessages = QUEUE_DS.get(q);
+                    messages.addAll(filterMessages(new LinkedList<>(allMessages.values()), searchRequest));
+                }
+            });
+        } else {
+            List<MBQMessage> allMessages = new LinkedList<>(QUEUE_DS.values()).parallelStream().flatMap(m -> m.values().stream()).collect(Collectors.toList());
+            messages.addAll(filterMessages(allMessages, searchRequest));
+        }
+        return messages.stream().map(m -> new MBQMessage(m.getId(), m.getQueue(), m.getSeqKey(), m.getStatus(), null, m.getCreatedTimeStamp(), m.getUpdatedTimeStamp(), m.getScheduledAt())).collect(Collectors.toList());
+    }
+
+    private List<MBQMessage> filterMessages(List<MBQMessage> allMessages, SearchRequest searchRequest) {
+        return allMessages.parallelStream().filter(msg -> {
+            boolean matching = true;
+            if (searchRequest.getSequence() != null) {
+                matching = searchRequest.getSequence().equals(msg.getSeqKey());
+            }
+
+            if (searchRequest.getStatus() != null) {
+                matching = matching && searchRequest.getStatus() == msg.getStatus();
+            }
+
+            if (searchRequest.getIds() != null) {
+                matching = matching && searchRequest.getIds().contains(msg.getId());
+            }
+            return matching;
+        }).collect(Collectors.toList());
     }
 }

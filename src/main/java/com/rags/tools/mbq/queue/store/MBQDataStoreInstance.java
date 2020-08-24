@@ -9,7 +9,7 @@ public class MBQDataStoreInstance {
             case SINGLE_JVM_INMEMORY:
                 return InMemoryMBQDataStore.getInstance(config);
             case SINGLE_JVM_RDB:
-                return DBMBQueueDataStore.getInstance(config);
+                return RDBMBQDataStore.getInstance(config);
             case SINGLE_JVM_MONGO_DB:
                 return MongoMBQDataStore.getInstance(config);
             case SINGLE_JVM_HAZELCAST:

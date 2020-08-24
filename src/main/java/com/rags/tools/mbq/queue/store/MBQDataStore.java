@@ -1,6 +1,7 @@
 package com.rags.tools.mbq.queue.store;
 
 import com.rags.tools.mbq.QueueStatus;
+import com.rags.tools.mbq.connection.rest.messagecodec.SearchRequest;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 import com.rags.tools.mbq.queue.IdSeqKey;
@@ -33,30 +34,11 @@ public interface MBQDataStore {
     List<MBQMessage> get(String queueName, List<String> ids);
 
     /**
-     * Retrieves items from the queue based on the SeqKey and Status
-     *
-     * @param queueName Queue Name
-     * @param seqKey    sequence key
-     * @param status    Item Status
-     * @return MBQ Message
-     */
-    List<MBQMessage> get(String queueName, String seqKey, List<QueueStatus> status);
-
-    /**
      * Retrieves all Pending Item IDS on Startup
      *
      * @return MBQ pending messages ID and QueueName
      */
     Map<String, List<IdSeqKey>> getAllPendingIds();
-
-    /**
-     * Pulls messages for processing
-     *
-     * @param queueName Queue name
-     * @param ids       message Ids
-     * @return LIst of messages to be processed
-     */
-    List<MBQMessage> pull(String queueName, List<String> ids);
 
     /**
      * Pushes messages to the queue
@@ -93,4 +75,11 @@ public interface MBQDataStore {
      * @param newStatus  new status in the queue
      */
     void updateStatus(QueueStatus prevStatus, QueueStatus newStatus);
+
+    /**
+     * Searches Items from the queue data store.
+     *
+     * @param searchRequest request object
+     */
+    List<MBQMessage> search(SearchRequest searchRequest);
 }
