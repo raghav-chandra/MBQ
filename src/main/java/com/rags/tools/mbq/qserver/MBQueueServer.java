@@ -1,14 +1,17 @@
 package com.rags.tools.mbq.qserver;
 
+import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
 import com.rags.tools.mbq.queue.IdSeqKey;
+import com.rags.tools.mbq.queue.pending.InMemoryPendingIdSeqKeyQMap;
 import com.rags.tools.mbq.queue.store.MBQDataStore;
 import com.rags.tools.mbq.queue.pending.PendingQ;
 import com.rags.tools.mbq.queue.pending.PendingQMap;
+import com.rags.tools.mbq.queue.store.MBQDataStoreInstance;
 import com.rags.tools.mbq.stats.MBQStatsService;
 import com.rags.tools.mbq.util.HashingUtil;
 import org.slf4j.Logger;
@@ -38,6 +41,10 @@ public class MBQueueServer implements QueueServer {
             INSTANCE = new MBQueueServer(dataStore, pendingQMap, statsService);
         }
         return INSTANCE;
+    }
+
+    public static MBQueueServer getInstance(QConfig.ServerConfig serverConfig) {
+        return getInstance(MBQDataStoreInstance.createOrGet(serverConfig), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(serverConfig.getStatsCollectorClass()));
     }
 
     public MBQueueServer(MBQDataStore MBQDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {

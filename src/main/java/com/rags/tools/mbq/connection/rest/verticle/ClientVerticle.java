@@ -1,11 +1,11 @@
 package com.rags.tools.mbq.connection.rest.verticle;
 
 import com.rags.tools.mbq.client.Client;
-import com.rags.tools.mbq.qserver.MBQServerInstance;
-import com.rags.tools.mbq.qserver.QueueServer;
 import com.rags.tools.mbq.connection.rest.ErrorMessage;
 import com.rags.tools.mbq.connection.rest.RequestType;
 import com.rags.tools.mbq.connection.rest.messagecodec.EventBusRequest;
+import com.rags.tools.mbq.qserver.MBQueueServer;
+import com.rags.tools.mbq.qserver.QueueServer;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
@@ -16,7 +16,7 @@ public class ClientVerticle extends CommonVerticle {
 
         EventBus eventBus = getVertx().eventBus();
 
-        QueueServer queueServer = MBQServerInstance.createOrGet(getServerConfig(config()));
+        QueueServer queueServer = MBQueueServer.getInstance(getServerConfig(config()));
 
         WorkerExecutor workers = getVertx().createSharedWorkerExecutor("ClientWorker", 100);
 

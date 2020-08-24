@@ -1,15 +1,14 @@
 package com.rags.tools.mbq.connection.rest.verticle;
 
-import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.client.Client;
-import com.rags.tools.mbq.message.MBQMessage;
-import com.rags.tools.mbq.qserver.MBQServerInstance;
-import com.rags.tools.mbq.qserver.QueueServer;
 import com.rags.tools.mbq.connection.rest.ErrorMessage;
 import com.rags.tools.mbq.connection.rest.RequestType;
 import com.rags.tools.mbq.connection.rest.messagecodec.CommitRollbackRequest;
 import com.rags.tools.mbq.connection.rest.messagecodec.EventBusRequest;
 import com.rags.tools.mbq.connection.rest.messagecodec.PushRequest;
+import com.rags.tools.mbq.message.MBQMessage;
+import com.rags.tools.mbq.qserver.MBQueueServer;
+import com.rags.tools.mbq.qserver.QueueServer;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
@@ -24,7 +23,7 @@ public class QueueVerticle extends CommonVerticle {
 
         EventBus eventBus = getVertx().eventBus();
 
-        QueueServer server = MBQServerInstance.createOrGet(getServerConfig(config()));
+        QueueServer server = MBQueueServer.getInstance(getServerConfig(config()));
 
         WorkerExecutor workers = getVertx().createSharedWorkerExecutor("QueueWorker", 5000);
 
