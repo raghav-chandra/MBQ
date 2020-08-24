@@ -12,7 +12,7 @@ import com.rags.tools.mbq.stats.MBQStatsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InMemoryQueueServer extends MBQQueueServer {
+public class InMemoryQueueServer extends MBQueueServer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryQueueServer.class);
 

@@ -18,11 +18,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class MBQQueueServer implements QueueServer {
+public class MBQueueServer implements QueueServer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MBQQueueServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MBQueueServer.class);
 
-    private static MBQQueueServer INSTANCE = null;
+    private static MBQueueServer INSTANCE = null;
 
     private static final Map<Client, ClientInfo> CLIENTS_HB = new ConcurrentHashMap<>(2048, .9f, 512);
     private static final Map<String, Set<String>> USED_SEQ = new ConcurrentHashMap<>(256, .75f, 64);
@@ -33,14 +33,14 @@ public class MBQQueueServer implements QueueServer {
     private final MBQDataStore queueDataStore;
     private final MBQStatsService statsService;
 
-    public synchronized static MBQQueueServer getInstance(MBQDataStore dataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
+    public synchronized static MBQueueServer getInstance(MBQDataStore dataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
         if (INSTANCE == null) {
-            INSTANCE = new MBQQueueServer(dataStore, pendingQMap, statsService);
+            INSTANCE = new MBQueueServer(dataStore, pendingQMap, statsService);
         }
         return INSTANCE;
     }
 
-    public MBQQueueServer(MBQDataStore MBQDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
+    public MBQueueServer(MBQDataStore MBQDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
         this.queueDataStore = MBQDataStore;
         this.pendingQMap = pendingQMap;
         this.statsService = statsService;

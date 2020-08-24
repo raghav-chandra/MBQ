@@ -12,7 +12,7 @@ import com.rags.tools.mbq.stats.MBQStatsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HazelcastQueueServer extends MBQQueueServer {
+public class HazelcastQueueServer extends MBQueueServer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HazelcastQueueServer.class);
 

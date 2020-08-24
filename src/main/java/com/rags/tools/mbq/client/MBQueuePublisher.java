@@ -2,11 +2,16 @@ package com.rags.tools.mbq.client;
 
 import com.rags.tools.mbq.QConfig;
 import com.rags.tools.mbq.QueueStatus;
+import com.rags.tools.mbq.QueueType;
 import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.message.MBQMessage;
 import com.rags.tools.mbq.message.QMessage;
-import com.rags.tools.mbq.qserver.MBQServerInstance;
+import com.rags.tools.mbq.qserver.MBQueueServer;
 import com.rags.tools.mbq.qserver.QueueServer;
+import com.rags.tools.mbq.qserver.QueueServerProxy;
+import com.rags.tools.mbq.queue.pending.InMemoryPendingIdSeqKeyQMap;
+import com.rags.tools.mbq.queue.store.MBQDataStoreInstance;
+import com.rags.tools.mbq.stats.MBQStatsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,16 +34,15 @@ public class MBQueuePublisher implements QueueClient {
     private final Transaction transaction;
 
     public MBQueuePublisher(QConfig config) {
-        this.server = MBQServerInstance.createOrGet(config.getServerConfig());
         this.config = config;
         this.transaction = new Transaction();
 
-        /*QConfig.ServerConfig serverConfig = config.getServerConfig();
+        QConfig.ServerConfig serverConfig = config.getServerConfig();
         if (QueueType.CENTRALIZED == serverConfig.getQueueType()) {
             this.server = new QueueServerProxy(serverConfig);
         } else {
-            this.server = new MBQQueueServer(MBQDataStoreInstance.createOrGet(serverConfig), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(serverConfig.getStatsCollectorClass()));
-        }*/
+            this.server = new MBQueueServer(MBQDataStoreInstance.createOrGet(serverConfig), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(serverConfig.getStatsCollectorClass()));
+        }
     }
 
     public QConfig getConfig() {

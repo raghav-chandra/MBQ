@@ -23,10 +23,8 @@ public class QueueVerticle extends CommonVerticle {
     public void start() {
 
         EventBus eventBus = getVertx().eventBus();
-        JsonObject config = config();
 
-        QConfig.ServerConfig serverConfig = getServerConfig(config);
-        QueueServer server = MBQServerInstance.createOrGet(serverConfig);
+        QueueServer server = MBQServerInstance.createOrGet(getServerConfig(config()));
 
         WorkerExecutor workers = getVertx().createSharedWorkerExecutor("QueueWorker", 5000);
 

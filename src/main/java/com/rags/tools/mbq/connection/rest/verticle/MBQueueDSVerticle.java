@@ -1,13 +1,12 @@
 package com.rags.tools.mbq.connection.rest.verticle;
 
-import com.rags.tools.mbq.message.MBQMessage;
-import com.rags.tools.mbq.qserver.MBQServerInstance;
-import com.rags.tools.mbq.qserver.QueueServer;
-import com.rags.tools.mbq.queue.store.MBQDataStore;
 import com.rags.tools.mbq.connection.rest.ErrorMessage;
 import com.rags.tools.mbq.connection.rest.RequestType;
 import com.rags.tools.mbq.connection.rest.messagecodec.EventBusRequest;
 import com.rags.tools.mbq.connection.rest.messagecodec.SearchRequest;
+import com.rags.tools.mbq.message.MBQMessage;
+import com.rags.tools.mbq.queue.store.MBQDataStore;
+import com.rags.tools.mbq.queue.store.MBQDataStoreInstance;
 import io.vertx.core.WorkerExecutor;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
@@ -21,8 +20,7 @@ public class MBQueueDSVerticle extends CommonVerticle {
     public void start() {
 
         EventBus eventBus = getVertx().eventBus();
-        QueueServer server = MBQServerInstance.createOrGet(getServerConfig(config()));
-        MBQDataStore store = null;
+        MBQDataStore dataStore = MBQDataStoreInstance.createOrGet(getServerConfig(config()));
 
         WorkerExecutor workers = getVertx().createSharedWorkerExecutor("DataStoreWorker", 10);
 

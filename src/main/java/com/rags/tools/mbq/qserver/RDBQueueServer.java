@@ -11,7 +11,7 @@ import com.rags.tools.mbq.stats.MBQStatsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RDBQueueServer extends MBQQueueServer {
+public class RDBQueueServer extends MBQueueServer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RDBQueueServer.class);
 
