@@ -123,17 +123,35 @@ public class HazelcastMBQDataStore extends AbstractMBQDataStore {
 
     @Override
     public List<MBQMessage> search(SearchRequest searchRequest) {
-        List<MBQMessage> messages = new LinkedList<>();
-        /*Map<String, MapConfig> mapList = instance.getConfig().getMapConfigs();
-        mapList.keySet().parallelStream().forEach(qName -> {
-            IMap<String, MBQMessage> iMap = this.instance.getMap(qName);
-            if (iMap != null) {
-                List<MBQMessage> allMessages = new LinkedList<>(iMap.values(Predicates.equal("status", QueueStatus.PENDING)));
-                allMessages.sort((m1, m2) -> Math.toIntExact(m1.getCreatedTimeStamp() - m2.getCreatedTimeStamp()));
-                map.put(qName, allMessages.stream().map(i -> new IdSeqKey(i.getId(), i.getSeqKey(), i.getStatus(), i.getScheduledAt())).collect(Collectors.toList()));
-            }
-        });*/
+        Map<String, MapConfig> mapList = instance.getConfig().getMapConfigs();
+        List<String> ids = searchRequest.getIds();
+        List<String> queue = searchRequest.getQueues();
+        QueueStatus status = searchRequest.getStatus();
+        String seq = searchRequest.getSequence();
 
-        return messages;
+        return mapList.keySet().parallelStream()
+                .filter(q -> !queue.isEmpty() && queue.contains(q))
+                .flatMap(qName -> {
+                    IMap<String, MBQMessage> iMap = this.instance.getMap(qName);
+                    List<MBQMessage> messages = new LinkedList<>();
+                    if (iMap != null) {
+                        List<Predicate<?,?>> queries = new ArrayList<>();
+                        if (ids != null && !ids.isEmpty()) {
+                            queries.add(Predicates.in("id", ids.toArray(new String[0])));
+                        }
+
+                        if (status != null) {
+                            queries.add(Predicates.equal("status", status));
+                        }
+
+                        if (seq != null) {
+                            queries.add(Predicates.in("seqKey", seq));
+                        }
+
+                        messages.addAll(iMap.values(Predicates.and(queries.toArray(new Predicate[0]))));
+                    }
+
+                    return messages.stream();
+                }).collect(Collectors.toList());
     }
 }
