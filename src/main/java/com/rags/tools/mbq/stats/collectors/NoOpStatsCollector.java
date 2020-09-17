@@ -52,4 +52,9 @@ public class NoOpStatsCollector implements MBQStatsCollector {
     public MBQStats getCollectedStats() {
         return new MBQStats();
     }
+
+    @Override
+    public void collectInit(String queue, List<IdSeqKey> allItems) {
+
+    }
 }

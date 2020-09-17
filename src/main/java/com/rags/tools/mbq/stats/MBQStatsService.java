@@ -76,6 +76,12 @@ public class MBQStatsService {
         execute(() -> this.statsCollector.markOldest(queueName, item));
     }
 
+    public void collectInit(String queue, List<IdSeqKey> allItems) {
+        if (!allItems.isEmpty()) {
+            execute(() -> this.statsCollector.collectInit(queue, allItems));
+        }
+    }
+
     private void execute(Runnable runnable) {
         if (!(this.statsCollector instanceof NoOpStatsCollector)) {
             try {

@@ -115,10 +115,11 @@ public class MBQueueServer implements QueueServer {
 
     void init() {
         getQueueDataStore().updateStatus(QueueStatus.PROCESSING, QueueStatus.PENDING);
-        getQueueDataStore().getAllPendingIds().forEach((queueName, val) -> {
+        getQueueDataStore().getAllPendingItems().forEach((queueName, items) -> {
             USED_SEQ.putIfAbsent(queueName, new HashSet<>(20000));
-            USED_SEQ.get(queueName).addAll(val.stream().map(IdSeqKey::getSeqKey).collect(Collectors.toSet()));
-            getPendingQueue(queueName).addAll(val);
+            USED_SEQ.get(queueName).addAll(items.stream().map(IdSeqKey::getSeqKey).collect(Collectors.toSet()));
+            getPendingQueue(queueName).addAll(items);
+            statsService.collectInit(queueName, items);
         });
     }
 

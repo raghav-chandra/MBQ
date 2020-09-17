@@ -59,6 +59,13 @@ public class InMemoryStatsCollector implements MBQStatsCollector {
     }
 
     @Override
+    public void collectInit(String queue, List<IdSeqKey> allItems) {
+        if (!allItems.isEmpty()) {
+            stats.initStats(queue, allItems);
+        }
+    }
+
+    @Override
     public void markOldest(String queueName, IdSeqKey item) {
         this.stats.markOldest(queueName, item);
     }

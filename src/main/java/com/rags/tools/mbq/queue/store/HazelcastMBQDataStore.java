@@ -56,7 +56,7 @@ public class HazelcastMBQDataStore extends AbstractMBQDataStore {
     }
 
     @Override
-    public Map<String, List<IdSeqKey>> getAllPendingIds() {
+    public Map<String, List<IdSeqKey>> getAllPendingItems() {
         Map<String, MapConfig> mapList = instance.getConfig().getMapConfigs();
 
         Map<String, List<IdSeqKey>> map = new ConcurrentHashMap<>();

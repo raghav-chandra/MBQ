@@ -31,7 +31,7 @@ public class MongoMBQDataStore extends AbstractMBQDataStore {
     }
 
     @Override
-    public Map<String, List<IdSeqKey>> getAllPendingIds() {
+    public Map<String, List<IdSeqKey>> getAllPendingItems() {
         return null;
     }
 

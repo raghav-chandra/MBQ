@@ -2,8 +2,11 @@ package com.rags.tools.mbq.stats;
 
 import com.rags.tools.mbq.QueueStatus;
 import com.rags.tools.mbq.client.Client;
+import com.rags.tools.mbq.exception.MBQException;
 import com.rags.tools.mbq.queue.IdSeqKey;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,5 +82,31 @@ public class MBQStats {
     public synchronized void markOldest(String queueName, IdSeqKey item) {
         queueStats.putIfAbsent(queueName, new QueueStats(queueName));
         queueStats.get(queueName).markOldest(item);
+    }
+
+    public synchronized void initStats(String queue, List<IdSeqKey> items) {
+        markOldest(queue, items.get(0));
+
+        Client client = new Client("1", "Initialized", queue, 0, "localhost");
+        Map<QueueStatus, List<IdSeqKey>> statusMap = items.parallelStream().reduce(new HashMap<>(), (acc, msg) -> {
+            acc.putIfAbsent(msg.getStatus(), new LinkedList<>());
+            acc.get(msg.getStatus()).add(msg);
+            return acc;
+        }, (map1, map2) -> map1);
+
+        statusMap.forEach((status, messages) -> {
+            switch (status) {
+                case ERROR:
+                    addClientErrorStats(client, messages);
+                    break;
+                case PENDING:
+                case HELD:
+                case BLOCKED:
+                    addPendingItemStats(new Client("1", "Initialized", queue, 0, "localhost"), queue, messages.size());
+                    break;
+                default:
+                    throw new MBQException("Don't understand status " + status);
+            }
+        });
     }
 }

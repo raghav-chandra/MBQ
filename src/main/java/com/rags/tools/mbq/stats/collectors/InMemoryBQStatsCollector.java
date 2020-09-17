@@ -20,18 +20,7 @@ public class InMemoryBQStatsCollector implements MBQStatsCollector {
         new Timer("StatsBQConsumer-Main").schedule(new TimerTask() {
             @Override
             public void run() {
-                while (true) {
-                    consumeStats(statsQueue.poll());
-                    /*if (statsQueue.size() >= QUEUE_SIZE / 2) {
-                        Thread thread = new Thread(() -> {
-                            while (statsQueue.size() >= QUEUE_SIZE / 2) {
-                                consumeStats(statsQueue.poll());
-                            }
-                        });
-                        thread.setName("StatsBQConsumer-Overloaded");
-                        thread.start();
-                    }*/
-                }
+                while (true) consumeStats(statsQueue.poll());
             }
         }, 1000);
     }
@@ -118,6 +107,13 @@ public class InMemoryBQStatsCollector implements MBQStatsCollector {
     @Override
     public void markOldest(String queueName, IdSeqKey item) {
         this.stats.markOldest(queueName, item);
+    }
+
+    @Override
+    public void collectInit(String queue, List<IdSeqKey> allItems) {
+        if (!allItems.isEmpty()) {
+            stats.initStats(queue, allItems);
+        }
     }
 
     @Override

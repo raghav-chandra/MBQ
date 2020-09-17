@@ -38,7 +38,7 @@ public interface MBQDataStore {
      *
      * @return MBQ pending messages ID and QueueName
      */
-    Map<String, List<IdSeqKey>> getAllPendingIds();
+    Map<String, List<IdSeqKey>> getAllPendingItems();
 
     /**
      * Pushes messages to the queue

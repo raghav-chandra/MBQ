@@ -25,4 +25,6 @@ public interface MBQStatsCollector {
     void markOldest(String queueName, IdSeqKey item);
 
     MBQStats getCollectedStats();
+
+    void collectInit(String queue, List<IdSeqKey> allItems);
 }

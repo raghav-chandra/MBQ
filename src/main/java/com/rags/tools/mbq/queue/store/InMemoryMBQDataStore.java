@@ -34,7 +34,7 @@ public class InMemoryMBQDataStore extends AbstractMBQDataStore {
     }
 
     @Override
-    public Map<String, List<IdSeqKey>> getAllPendingIds() {
+    public Map<String, List<IdSeqKey>> getAllPendingItems() {
         return new HashMap<>();
     }
 

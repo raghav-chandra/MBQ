@@ -19,13 +19,11 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 public class RDBMBQDataStore extends AbstractMBQDataStore {
 
     private static final String GET_BY_IDS = "select * from MBQueueMessage where Id in (:ids)";
-    private static final String GET_BY_QUEUE_SEQ_AND_STATUS = "select * from MBQueueMessage where QueueName=:queue and Sequence=:seq and Status in (:status)";
-    private static final String GET_PENDING_IDS = "select Id, Sequence, QueueName, Status, ScheduledAt from MBQueueMessage where Status!='COMPLETED' order by CreatedTime asc";
+    private static final String GET_NON_COMPLETED_ITEMS = "select Id, Sequence, QueueName, Status, ScheduledAt from MBQueueMessage where Status!='COMPLETED' order by CreatedTime asc";
 
     private static final String INSERT_MBQ_MESSAGE = "insert into MBQueueMessage (Id, QueueName, Sequence, Status, Data, ScheduledAt, CreatedTime, UpdatedTime) values (:id,:queue,:seq,:status,:data,:scheduledAt, :createTS,:updatedTS)";
     private static final String UPDATE_MBQ_MESSAGE = "update MBQueueMessage set Status=:status, UpdatedTime=:updatedTS where Id in (:ids) and QueueName=:queue";
@@ -85,8 +83,8 @@ public class RDBMBQDataStore extends AbstractMBQDataStore {
     }
 
     @Override
-    public Map<String, List<IdSeqKey>> getAllPendingIds() {
-        return jdbcTemplate.query(GET_PENDING_IDS, rs -> {
+    public Map<String, List<IdSeqKey>> getAllPendingItems() {
+        return jdbcTemplate.query(GET_NON_COMPLETED_ITEMS, rs -> {
             Map<String, List<IdSeqKey>> queueMap = new HashMap<>();
             while (rs.next()) {
                 String id = rs.getString("Id");
