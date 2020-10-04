@@ -24,7 +24,7 @@ public abstract class AbstractMBQDataStore implements MBQDataStore {
         AtomicInteger counter = new AtomicInteger(0);
         return messages.stream().map(message -> {
             long currTime = System.currentTimeMillis();
-            String id = currTime+ counter.getAndIncrement() + HashingUtil.hashSHA256(System.nanoTime() + message.getSeqKey() + currTime);
+            String id = currTime + (counter.getAndIncrement() + HashingUtil.hashSHA256(System.nanoTime() + message.getSeqKey() + currTime));
             return new MBQMessage(id, queueName, message.getSeqKey(), message.getMessage());
         }).collect(Collectors.toList());
     }

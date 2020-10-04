@@ -1,6 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { BootstrapTable }  from 'react-bootstrap-table';
+import 'react-bootstrap-table/css/react-bootstrap-table.css';
+
 import { Table } from 'react-bootstrap';
 
 class Result extends React.Component {
@@ -28,26 +31,83 @@ class Result extends React.Component {
         return {items, key: state.key, dir};
     }
 
+    handleSelect(row, isSelected) {
+        console.log(isSelected);
+                console.log(row);
+    }
+
+    handleSelectAll(isSelected, rows) {
+        console.log(isSelected);
+        console.log(rows);
+    }
+
     render () {
         let items = this.state.items
-        console.log(this.state.key);
-        console.log(items);
-        let trs = items.map(item => <tr>
-                                        <td>{item.id}</td>
-                                        <td>{item.queue}</td>
-                                        <td>{item.status}</td>
-                                        <td>{item.seqKey}</td>
-                                        <td>{item.scheduledAt}</td>
-                                        <td>{item.createdTimeStamp}</td>
-                                        <td>{item.updatedTimeStamp === 0 ? '' : item.updatedTimeStamp}</td>
-                                    </tr>);
+        /*let trs = items.map(item => <tr>
+                                        <td style={{width:'30px', tableLayout:'fixed'}}>{item.id}</td>
+                                        <td style={{zIndex:20}}>{item.queue}</td>
+                                        <td style={{zIndex:20}}>{item.status}</td>
+                                        <td style={{zIndex:20}}>{item.seqKey}</td>
+                                        <td style={{zIndex:20}}>{item.scheduledAt}</td>
+                                        <td style={{zIndex:20}}>{item.createdTimeStamp}</td>
+                                        <td style={{zIndex:20}}>{item.updatedTimeStamp === 0 ? '' : item.updatedTimeStamp}</td>
+                                    </tr>);*/
 
-        return <div style = {{width: this.props.width || '100%', height: this.props.height || '100%'}}>
+        let height = parseInt(document.documentElement.clientHeight  - 350);
+
+        /*const columns = [
+            {dataField:'id', text: 'Id', sort: true},
+            {dataField:'queue', text: 'Queue', sort: true},
+            {dataField:'status', text: 'Status', sort: true},
+            {dataField:'seqKey', text: 'Sequence', sort: true},
+            {dataField:'scheduledAt', text: 'Scheduled', sort: true},
+            {dataField:'createdTimeStamp', text: 'Created', sort: true},
+            {dataField:'updatedTimeStamp', text: 'Updated', sort: true}
+        ];*/
+
+        return <div>
                     <h5> Total Items found : {items.length}</h5>
-                    <table className='table table-dark table-sm table-striped table-bordered table-hover'>
+                    <div style={{width: this.props.width || '100%', height: this.props.height || height+'px'}}>
+
+                    {/*<BootstrapTable
+                        keyField='id'
+                        data={ items }
+                        columns={ columns }
+                        height= {height}
+                        scrollTop={ 'Bottom' }
+                        striped
+                        hover
+                        condensed
+                        bootstrap4
+                    />*/}
+                    <BootstrapTable
+                        data={ items }
+                        height= {height}
+                        scrollTop={ 'Bottom' }
+                        selectRow={{ mode: 'checkbox', clickToSelect: true, onSelect:this.handleSelect,onSelectAll:this.handleSelectAll}}
+                        striped
+                        hover
+                        condensed
+//                        search
+//                        exportCSV
+//                        pagination
+                        version="4"
+                        sortIndicator
+                        multiColumnSort={4}
+                        options = {{ sortName:['id', 'status', 'seqKey'], sortOrder:['asc', 'asc', 'asc'],sortIndicator:true }}
+                        >
+                              <TableHeaderColumn dataField='id' isKey>Id</TableHeaderColumn>
+                              <TableHeaderColumn dataField='queue'>Queue</TableHeaderColumn>
+                              <TableHeaderColumn dataField='status'>Status</TableHeaderColumn>
+                              <TableHeaderColumn dataField='seqKey'>Sequence</TableHeaderColumn>
+                              <TableHeaderColumn dataField='scheduledAt'>Scheduled</TableHeaderColumn>
+                              <TableHeaderColumn dataField='createdTimeStamp'>Created</TableHeaderColumn>
+                              <TableHeaderColumn dataField='updatedTimeStamp'>Updated</TableHeaderColumn>
+                          </BootstrapTable>
+                    {/*<table className='table table-dark table-sm table-bordered table-scroll'>
                         <thead>
                             <tr>
-                                <th onClick={e=>this.renderItems('id')}>Id</th>
+                                <th onClick={e=>this.renderItems('id')} style={{width:'30px'}}>Id</th>
                                 <th onClick={e=>this.renderItems('queue')}>Queue Name</th>
                                 <th onClick={e=>this.renderItems('status')}>Status</th>
                                 <th onClick={e=>this.renderItems('seqKey')}>Sequence</th>
@@ -59,7 +119,8 @@ class Result extends React.Component {
                         <tbody>
                             {trs}
                         </tbody>
-                    </table>
+                    </table>*/}
+                    </div>
                </div>;
     }
 }
