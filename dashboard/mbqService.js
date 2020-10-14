@@ -1,4 +1,4 @@
-import { REDUX_ACTIONS, mbqStats, searchItems } from './redux/actions';
+import { REDUX_ACTIONS, mbqStats, searchItems, changedStatus } from './redux/actions';
 
 const HTTP_GET = 'GET', HTTP_POST = 'POST';
 
@@ -39,7 +39,8 @@ const executePostRequest = (dispatch, url, data, successAction) => executeReques
 const executeGetRequest = (dispatch, url, successAction) => executeRequest(dispatch, url, HTTP_GET, successAction);
 
 const CALL_MAPPER = {
-    [REDUX_ACTIONS.SEARCH_ITEMS] : (dispatch, data) => executePostRequest(dispatch, 'mbq/console/search', data, searchItems)
+    [REDUX_ACTIONS.SEARCH_ITEMS] : (dispatch, data) => executePostRequest(dispatch, 'mbq/console/search', data, searchItems),
+    [REDUX_ACTIONS.CHANGE_STATUS] : (dispatch, data) => executePostRequest(dispatch, 'mbq/console/updateStatus', data, (response) => alert ('Update was successful ' + response))
 }
 
 export function execute(action, data = null) {
@@ -54,5 +55,6 @@ export function execute(action, data = null) {
 
 export const MBQService = {
     init: () => {},
-    searchItems : request => execute (REDUX_ACTIONS.SEARCH_ITEMS, request)
+    searchItems : request => execute (REDUX_ACTIONS.SEARCH_ITEMS, request),
+    updateStatus : (ids, status) => execute (REDUX_ACTIONS.CHANGE_STATUS, {ids, status})
 }

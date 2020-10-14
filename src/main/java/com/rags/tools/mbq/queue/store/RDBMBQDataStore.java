@@ -72,14 +72,7 @@ public class RDBMBQDataStore extends AbstractMBQDataStore {
 
     @Override
     public List<MBQMessage> get(String queueName, List<String> ids) {
-        if (ids.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("queue", queueName)
-                .addValue("ids", ids);
-        return jdbcTemplate.query(GET_BY_IDS, param, new MessageRowMapper());
+        return get(ids);
     }
 
     @Override
@@ -222,5 +215,14 @@ public class RDBMBQDataStore extends AbstractMBQDataStore {
         }
 
         return jdbcTemplate.query(sql, param, new MessageRowMapper(false));
+    }
+
+    @Override
+    public List<MBQMessage> get(List<String> ids) {
+        if (ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+        SqlParameterSource param = new MapSqlParameterSource("ids", ids);
+        return jdbcTemplate.query(GET_BY_IDS, param, new MessageRowMapper());
     }
 }

@@ -34,11 +34,11 @@ public interface QueueServer {
      * Commits queue transactions
      *
      * @param client         client information
-     * @param processedIds            item IDs
+     * @param processedIds   item IDs
      * @param messagesToPush all the messages that has to be pushed
      * @return true if commit was successful
      */
-    boolean commit(Client client, Map<QueueStatus,List<String>> processedIds, Map<String, List<QMessage>> messagesToPush);
+    boolean commit(Client client, Map<QueueStatus, List<String>> processedIds, Map<String, List<QMessage>> messagesToPush);
 
     /**
      * Roll back queue transactions
@@ -47,7 +47,7 @@ public interface QueueServer {
      * @param ids    item IDs
      * @return true if rollback was successful
      */
-    boolean rollback(Client client, Map<QueueStatus,List<String>> ids);
+    boolean rollback(Client client, Map<QueueStatus, List<String>> ids);
 
     /**
      * Pushes messages to the queue
@@ -75,4 +75,12 @@ public interface QueueServer {
      */
     String ping(Client client);
 
+    /**
+     * Updates Status of Items in the queue
+     *
+     * @param ids       Item ids
+     * @param newStatus new status
+     * @return success
+     */
+    boolean update(List<String> ids, QueueStatus newStatus);
 }

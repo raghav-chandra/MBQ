@@ -97,7 +97,7 @@ public class QueueServerProxy implements QueueServer {
         }
     }
 
-    public boolean commit(Client client, Map<QueueStatus,List<String>> processedIds, Map<String, List<QMessage>> messagesToBePushed) {
+    public boolean commit(Client client, Map<QueueStatus, List<String>> processedIds, Map<String, List<QMessage>> messagesToBePushed) {
         byte[] resp = this.post("mbq/commit", new CommitRollbackRequest(client, processedIds, messagesToBePushed));
         try {
             RestResponse<Boolean> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<Boolean>>() {
@@ -110,7 +110,7 @@ public class QueueServerProxy implements QueueServer {
     }
 
     @Override
-    public boolean rollback(Client client, Map<QueueStatus,List<String>> ids) {
+    public boolean rollback(Client client, Map<QueueStatus, List<String>> ids) {
         byte[] resp = this.post("mbq/push", new CommitRollbackRequest(client, ids, new HashMap<>()));
         try {
             RestResponse<Boolean> clientResponse = new ObjectMapper().readValue(resp, new TypeReference<RestResponse<Boolean>>() {
@@ -149,5 +149,10 @@ public class QueueServerProxy implements QueueServer {
         } catch (IOException e) {
             throw new MBQException("Failed in parsing response from Server", e);
         }
+    }
+
+    @Override
+    public boolean update(List<String> ids, QueueStatus newStatus) {
+        throw new UnsupportedOperationException("Update is unsupported from Client.");
     }
 }

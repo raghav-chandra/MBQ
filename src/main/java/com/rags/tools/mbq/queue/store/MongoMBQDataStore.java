@@ -54,4 +54,9 @@ public class MongoMBQDataStore extends AbstractMBQDataStore {
     public List<MBQMessage> search(SearchRequest searchRequest) {
         return null;
     }
+
+    @Override
+    public List<MBQMessage> get(List<String> ids) {
+        return null;
+    }
 }

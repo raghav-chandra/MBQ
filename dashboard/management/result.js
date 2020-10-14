@@ -4,14 +4,18 @@ import { connect } from 'react-redux';
 import { BootstrapTable }  from 'react-bootstrap-table';
 import 'react-bootstrap-table/css/react-bootstrap-table.css';
 
-import { Table } from 'react-bootstrap';
+import { Table, DropdownButton, Dropdown } from 'react-bootstrap';
+
+import { MBQService } from '../mbqService';
 
 class Result extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {key: 'id', prevKey: '', dir: 'A'};
+        this.state = {key: 'id', prevKey: '', dir: 'A', selected:[]};
         this.renderItems = this.renderItems.bind(this);
+        this.handleSelectAll = this.handleSelectAll.bind(this);
+        this.handleSelect = this.handleSelect.bind(this);
     }
 
     renderItems(key) {
@@ -32,13 +36,39 @@ class Result extends React.Component {
     }
 
     handleSelect(row, isSelected) {
-        console.log(isSelected);
-                console.log(row);
+        let selected = this.state.selected;
+        if (isSelected) {
+            selected.push(row.id);
+        } else {
+            const index = selected.indexOf(row.id);
+            if (index > -1) {
+                selected.splice(index, 1);
+            }
+        }
+        this.setState({selected});
     }
 
     handleSelectAll(isSelected, rows) {
-        console.log(isSelected);
-        console.log(rows);
+        if (isSelected) {
+            let ids = rows.map(row=> row.id);
+            this.setState({selected: ids});
+        } else {
+            this.setState({selected: []});
+        }
+    }
+
+    updateStatus(status) {
+        return (e) => {
+            let selected = this.state.selected;
+            if (selected.length) {
+                let conf = confirm('Total no of Items to be marked ' + status + ' is ' + selected.length);
+                if(conf) {
+                    this.props.updateStatus(selected, status);
+                }
+            } else {
+                alert('Please select Item to change the status');
+            }
+        }
     }
 
     render () {
@@ -66,7 +96,18 @@ class Result extends React.Component {
         ];*/
 
         return <div>
-                    <h5> Total Items found : {items.length}</h5>
+                    <div style = {{float:'left', width: '100%'}}>
+                        <h5 style = {{float:'left'}}> Total Items found : {items.length}</h5>
+                        <div style = {{float:'right'}}>
+                            <DropdownButton id='dropdown-basic-button' title='Mark Item'>
+                                <Dropdown.Item onClick = { this.updateStatus('COMPLETED') }>COMPLETED</Dropdown.Item>
+                                <Dropdown.Item onClick = { this.updateStatus('PENDING') }>PENDING</Dropdown.Item>
+                                <Dropdown.Item onClick = { this.updateStatus('ERROR') }>ERROR</Dropdown.Item>
+                                <Dropdown.Item onClick = { this.updateStatus('HELD') }>HELD</Dropdown.Item>
+                            </DropdownButton>
+                        </div>
+                    </div>
+
                     <div style={{width: this.props.width || '100%', height: this.props.height || height+'px'}}>
 
                     {/*<BootstrapTable
@@ -91,11 +132,10 @@ class Result extends React.Component {
 //                        search
 //                        exportCSV
 //                        pagination
-                        version="4"
+                        version='4'
                         sortIndicator
                         multiColumnSort={4}
-                        options = {{ sortName:['id', 'status', 'seqKey'], sortOrder:['asc', 'asc', 'asc'],sortIndicator:true }}
-                        >
+                        options = {{ sortName:['id', 'status', 'seqKey'], sortOrder:['asc', 'asc', 'asc'],sortIndicator:true }} >
                               <TableHeaderColumn dataField='id' isKey>Id</TableHeaderColumn>
                               <TableHeaderColumn dataField='queue'>Queue</TableHeaderColumn>
                               <TableHeaderColumn dataField='status'>Status</TableHeaderColumn>
@@ -132,7 +172,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-
+        updateStatus : (ids, status) => dispatch(MBQService.updateStatus(ids, status))
     }
 };
 

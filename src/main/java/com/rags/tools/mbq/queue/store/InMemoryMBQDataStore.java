@@ -111,4 +111,18 @@ public class InMemoryMBQDataStore extends AbstractMBQDataStore {
             return matching;
         }).collect(Collectors.toList());
     }
+
+    @Override
+    public List<MBQMessage> get(List<String> ids) {
+        List<MBQMessage> messages = new LinkedList<>();
+        QUEUE_DS.values().forEach(items -> {
+            ids.forEach(id -> {
+                if (items.containsKey(id)) {
+                    messages.add(items.get(id));
+                }
+            });
+        });
+
+        return messages;
+    }
 }

@@ -4,6 +4,7 @@ import com.rags.tools.mbq.client.Client;
 import com.rags.tools.mbq.connection.rest.RequestType;
 import com.rags.tools.mbq.connection.rest.messagecodec.CommitRollbackRequest;
 import com.rags.tools.mbq.connection.rest.messagecodec.PushRequest;
+import com.rags.tools.mbq.connection.rest.messagecodec.UpdateStatusRequest;
 import com.rags.tools.mbq.message.MBQMessage;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -33,7 +34,12 @@ public class QueueHandler {
     }
 
     public static Handler<RoutingContext> updateStatusHandler() {
-        return null;
+        return new AbstractRequestHandler<UpdateStatusRequest, List<MBQMessage>>(RequestType.UPDATE_STATUS) {
+            @Override
+            protected UpdateStatusRequest getRequestData(HttpServerRequest request, Buffer body) {
+                return body != null ? Json.decodeValue(body, UpdateStatusRequest.class) : new UpdateStatusRequest();
+            }
+        };
     }
 
     public static Handler<RoutingContext> rollbackHandler() {

@@ -135,7 +135,7 @@ public class HazelcastMBQDataStore extends AbstractMBQDataStore {
                     IMap<String, MBQMessage> iMap = this.instance.getMap(qName);
                     List<MBQMessage> messages = new LinkedList<>();
                     if (iMap != null) {
-                        List<Predicate<?,?>> queries = new ArrayList<>();
+                        List<Predicate<?, ?>> queries = new ArrayList<>();
                         if (ids != null && !ids.isEmpty()) {
                             queries.add(Predicates.in("id", ids.toArray(new String[0])));
                         }
@@ -153,5 +153,10 @@ public class HazelcastMBQDataStore extends AbstractMBQDataStore {
 
                     return messages.stream();
                 }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MBQMessage> get(List<String> ids) {
+        throw new UnsupportedOperationException("Get based on Ids are not supported");
     }
 }

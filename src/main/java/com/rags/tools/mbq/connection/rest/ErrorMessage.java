@@ -10,11 +10,13 @@ public enum ErrorMessage {
 
     MESSAGES_NOT_FOUND_FOR_COMMIT(9004, "Message not found for committing"),
     MESSAGES_NOT_FOUND_FOR_ROLLBACK(9005, "Message not found for rollback"),
+    MESSAGES_NOT_FOUND_FOR_UPDATE(9006, "Messages/Status not found for update"),
 
-    MESSAGE_PUBLISHING_FAILED(9006, "Message publishing failed"),
-    MESSAGE_COMMIT_FAILED(9007, "Message commit failed"),
-    MESSAGE_ROLLBACK_FAILED(9008, "Message rollback failed"),
-    MESSAGE_PULL_FAILED(9009, "Message pull failed"),
+    MESSAGE_PUBLISHING_FAILED(10001, "Message publishing failed"),
+    MESSAGE_COMMIT_FAILED(10002, "Message commit failed"),
+    MESSAGE_ROLLBACK_FAILED(10003, "Message rollback failed"),
+    MESSAGE_UPDATE_FAILED(10004, "Message update failed"),
+    MESSAGE_PULL_FAILED(10005, "Message pull failed"),
 
 
     INVALID_SEARCH_REQUEST(12000, " Invalid Search request"),

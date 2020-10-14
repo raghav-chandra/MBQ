@@ -82,4 +82,12 @@ public interface MBQDataStore {
      * @param searchRequest request object
      */
     List<MBQMessage> search(SearchRequest searchRequest);
+
+    /**
+     * Fetches all the Messages based on Ids
+     *
+     * @param ids Item Ids
+     * @return List of MBQMessages
+     */
+    List<MBQMessage> get(List<String> ids);
 }

@@ -125,14 +125,15 @@ public class MBQueueServer implements QueueServer {
 
     @Override
     public Client registerClient(Client client) {
-        String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
+        String id = getClientID(client.getName(), client.getQueueName(), client.getHost());
 
-        if (CLIENTS_HB.containsKey(client)) {
+        Client clientWithId = new Client(id, client.getName(), client.getQueueName(), client.getBatch(), client.getHost());
+
+        if (CLIENTS_HB.containsKey(clientWithId)) {
             LOGGER.error("Client already registered with name {}, queue {} and batch {}", client.getName(), client.getQueueName(), client.getBatch());
             throw new MBQException("Client is already registered");
         }
 
-        Client clientWithId = new Client(id, client.getName(), client.getQueueName(), client.getBatch(), client.getHost());
         long currTime = System.currentTimeMillis();
 
         clientWithId.setHeartBeatId(HashingUtil.hashSHA256(id + currTime));
@@ -141,8 +142,8 @@ public class MBQueueServer implements QueueServer {
         return clientWithId;
     }
 
-    private String getClientID(String workerName, String pollingQueue, int batch) {
-        return HashingUtil.hashSHA256(workerName + pollingQueue + batch);
+    private String getClientID(String workerName, String pollingQueue, String host) {
+        return HashingUtil.hashSHA256(workerName + pollingQueue + host);
     }
 
     private void validateClient(Client client) {
@@ -166,22 +167,22 @@ public class MBQueueServer implements QueueServer {
         validateClient(client);
 
         String queueName = client.getQueueName();
-        PendingQ<IdSeqKey> seqQ = getPendingQueue(queueName);
+        PendingQ<IdSeqKey> pendQ = getPendingQueue(queueName);
 
-        if (seqQ.isEmpty()) {
+        if (pendQ.isEmpty()) {
             return Collections.emptyList();
         }
 
         int batch = client.getBatch(), counter = 0;
         List<IdSeqKey> idSeqKeys = new ArrayList<>();
 
-        int noOfItem = Math.min(seqQ.size(), batch);
+        int noOfItem = Math.min(pendQ.size(), batch);
         long currTime = System.currentTimeMillis();
         Set<String> markedBlockedSeq = new HashSet<>();
         IdSeqKey oldestItem;
-        synchronized (seqQ) {
-            for (int i = 0; i < noOfItem && counter < seqQ.size(); counter++) {
-                IdSeqKey idKey = seqQ.get(counter);
+        synchronized (pendQ) {
+            for (int i = 0; i < noOfItem && counter < pendQ.size(); counter++) {
+                IdSeqKey idKey = pendQ.get(counter);
 
                 if (idKey.getStatus().isBlocking()) {
                     markedBlockedSeq.add(idKey.getSeqKey());
@@ -196,8 +197,8 @@ public class MBQueueServer implements QueueServer {
                 }
             }
             USED_SEQ.get(queueName).addAll(idSeqKeys.stream().map(IdSeqKey::getSeqKey).collect(Collectors.toList()));
-            seqQ.removeAll(idSeqKeys);
-            oldestItem = seqQ.isEmpty() ? null : seqQ.get(0);
+            pendQ.removeAll(idSeqKeys);
+            oldestItem = pendQ.isEmpty() ? null : pendQ.get(0);
         }
 
         if (LOGGER.isDebugEnabled()) {
@@ -288,7 +289,68 @@ public class MBQueueServer implements QueueServer {
         statsService.collectClientCompletedStats(client, clientMessages.stream().map(IdSeqKey::clone).collect(Collectors.toList()));
     }
 
-    private void updateItemStatus(Client client, List<String> ids, QueueStatus status) {
+    @Override
+    public boolean update(List<String> ids, QueueStatus newStatus) {
+        if (ids == null || ids.isEmpty() || newStatus == QueueStatus.PROCESSING) {
+            return false;
+        }
+
+        List<MBQMessage> messages = getQueueDataStore().get(ids);
+
+        if (messages.isEmpty()) {
+            throw new MBQException("Didn't find Ids in Store");
+        }
+
+        messages.forEach(msg -> {
+            IdSeqKey key = new IdSeqKey(msg.getId(), msg.getSeqKey(), msg.getStatus(), msg.getScheduledAt());
+            PendingQ<IdSeqKey> pendQ = getPendingQueue(msg.getQueue());
+            QueueStatus currStatus = msg.getStatus();
+
+            if (currStatus == newStatus) {
+                return;
+            }
+
+            for (ClientInfo info : CLIENTS_HB.values()) {
+                if (info.getMessages().contains(key)) {
+                    currStatus = QueueStatus.PROCESSING;
+                    break;
+                }
+            }
+
+
+            if (currStatus == QueueStatus.PROCESSING) {
+                return;
+            }
+
+            if (currStatus == QueueStatus.PENDING) {
+                if (newStatus == QueueStatus.COMPLETED) {
+                    synchronized (pendQ) {
+                        pendQ.removeAll(List.of(key));
+                    }
+                } else if (newStatus == QueueStatus.ERROR || newStatus == QueueStatus.HELD) {
+                    synchronized (pendQ) {
+                        pendQ.find(List.of(key)).forEach(i -> i.setStatus(newStatus));
+                    }
+                }
+            } else if (currStatus == QueueStatus.COMPLETED) {
+                key.setStatus(newStatus);
+                synchronized (pendQ) {
+                    pendQ.addInOrder(key);
+                }
+            } else if (currStatus == QueueStatus.ERROR || currStatus == QueueStatus.HELD) {
+                if (newStatus == QueueStatus.PENDING || newStatus == QueueStatus.HELD || newStatus == QueueStatus.ERROR) {
+                    pendQ.find(List.of(key)).forEach(i -> i.setStatus(newStatus));
+                } else if (newStatus == QueueStatus.COMPLETED) {
+                    pendQ.removeAll(List.of(key));
+                }
+            }
+            getQueueDataStore().updateStatus(msg.getQueue(), List.of(msg.getId()), newStatus);
+        });
+
+        return true;
+    }
+
+    /*private void updateItemStatus(Client client, List<String> ids, QueueStatus status) {
         if (ids == null || ids.isEmpty()) {
             throw new MBQException("Can't update status for blank message");
         }
@@ -310,7 +372,7 @@ public class MBQueueServer implements QueueServer {
         //If its in DB but in ERROR/HELD state
         //Item exists in PENDQ. Mark it to the changed status.
 
-    }
+    }*/
 
 
 /*    private boolean updateQueueStatus(Client client, List<String> ids, QueueStatus status) {
@@ -414,7 +476,7 @@ public class MBQueueServer implements QueueServer {
     @Override
     public String ping(Client client) {
         validateClient(client);
-        String id = getClientID(client.getName(), client.getQueueName(), client.getBatch());
+        String id = getClientID(client.getName(), client.getQueueName(), client.getHost());
         long currTime = System.currentTimeMillis();
         LOGGER.debug("Received heart beat from client [{}] with Id : {} at {}", client, id, currTime);
 
