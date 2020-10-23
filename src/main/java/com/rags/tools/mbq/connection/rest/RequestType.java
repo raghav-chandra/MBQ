@@ -16,6 +16,7 @@ public enum RequestType {
     UPDATE_STATUS,
 
 
-    LOOKUP_ITEMS
+    LOOKUP_ITEMS,
+    GET_ITEMS
 
 }

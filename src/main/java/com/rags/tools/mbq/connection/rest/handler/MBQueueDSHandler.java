@@ -22,4 +22,13 @@ public class MBQueueDSHandler {
         };
     }
 
+    public static Handler<RoutingContext> getHandler() {
+        return new AbstractRequestHandler<List<String>, List<MBQMessage>>(RequestType.GET_ITEMS) {
+            @Override
+            protected List<String> getRequestData(HttpServerRequest request, Buffer body) {
+                return body != null ? (List<String>) Json.decodeValue(body, List.class) : List.of();
+            }
+        };
+    }
+
 }

@@ -35,5 +35,18 @@ public class DataStoreVerticle extends CommonVerticle {
                 }, resHandler(pullHandler, ErrorMessage.FAILED_SEARCH_REQUEST));
             }
         });
+
+        eventBus.<EventBusRequest<List<String>>>consumer(RequestType.GET_ITEMS.name(), pullHandler -> {
+            List<String> ids = pullHandler.body().getReqObj();
+            if (ids == null || ids.isEmpty()) {
+                pullHandler.fail(ErrorMessage.INVALID_SEARCH_REQUEST.getCode(), ErrorMessage.INVALID_SEARCH_REQUEST.getMessage());
+            } else {
+                workers.executeBlocking(workerHandler -> {
+                    List<MBQMessage> messages = dataStore.get(ids);
+                    workerHandler.complete(new JsonArray(messages.stream().map(JsonObject::mapFrom).collect(Collectors.toList())));
+                }, resHandler(pullHandler, ErrorMessage.FAILED_SEARCH_REQUEST));
+            }
+        });
     }
+
 }
