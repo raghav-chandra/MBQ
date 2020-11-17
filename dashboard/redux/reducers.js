@@ -20,7 +20,17 @@ const searchItems = (state = {items : [], fetching : false}, action) => {
     }
 }
 
+const queueItem = (state = {item : null, fetching : false, open: false}, action) => {
+    switch (action.type) {
+        case REDUX_ACTIONS.QUEUE_ITEM :
+        return Object.assign({}, state, {fetching: action.fetching, item: action.item, open: action.open});;
+    default:
+        return state;
+    }
+}
+
 export default combineReducers({
     mbqStats,
-    searchItems
+    searchItems,
+    queueItem
 });

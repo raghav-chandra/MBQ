@@ -67,6 +67,7 @@ public class MBQueueServer implements QueueServer {
                 });
 
                 allInvalids.forEach(client -> {
+                    //TODO: Fix the Dupe Stats Collection. Remove from Rollback call.
                     rollback(client);
                     CLIENTS_HB.remove(client);
                     statsService.collectDisconnectedClients(client);
@@ -287,10 +288,12 @@ public class MBQueueServer implements QueueServer {
         }
 
         statsService.collectClientCompletedStats(client, clientMessages.stream().map(IdSeqKey::clone).collect(Collectors.toList()));
+        //TODO: Collect Oldest Items. Calculate and Collect
     }
 
     @Override
     public boolean update(List<String> ids, QueueStatus newStatus) {
+        //TODO: Collect Stats here in the block
         if (ids == null || ids.isEmpty() || newStatus == QueueStatus.PROCESSING) {
             return false;
         }

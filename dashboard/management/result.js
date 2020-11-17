@@ -73,27 +73,8 @@ class Result extends React.Component {
 
     render () {
         let items = this.state.items
-        /*let trs = items.map(item => <tr>
-                                        <td style={{width:'30px', tableLayout:'fixed'}}>{item.id}</td>
-                                        <td style={{zIndex:20}}>{item.queue}</td>
-                                        <td style={{zIndex:20}}>{item.status}</td>
-                                        <td style={{zIndex:20}}>{item.seqKey}</td>
-                                        <td style={{zIndex:20}}>{item.scheduledAt}</td>
-                                        <td style={{zIndex:20}}>{item.createdTimeStamp}</td>
-                                        <td style={{zIndex:20}}>{item.updatedTimeStamp === 0 ? '' : item.updatedTimeStamp}</td>
-                                    </tr>);*/
-
         let height = parseInt(document.documentElement.clientHeight  - 350);
-
-        /*const columns = [
-            {dataField:'id', text: 'Id', sort: true},
-            {dataField:'queue', text: 'Queue', sort: true},
-            {dataField:'status', text: 'Status', sort: true},
-            {dataField:'seqKey', text: 'Sequence', sort: true},
-            {dataField:'scheduledAt', text: 'Scheduled', sort: true},
-            {dataField:'createdTimeStamp', text: 'Created', sort: true},
-            {dataField:'updatedTimeStamp', text: 'Updated', sort: true}
-        ];*/
+        let format = (cell, row, rowIndex, formatExtraData) => <a href='#' onClick = {e=>this.props.showData(row.id)}>{ cell }</a>;
 
         return <div>
                     <div style = {{float:'left', width: '100%'}}>
@@ -110,22 +91,12 @@ class Result extends React.Component {
 
                     <div style={{width: this.props.width || '100%', height: this.props.height || height+'px'}}>
 
-                    {/*<BootstrapTable
-                        keyField='id'
-                        data={ items }
-                        columns={ columns }
-                        height= {height}
-                        scrollTop={ 'Bottom' }
-                        striped
-                        hover
-                        condensed
-                        bootstrap4
-                    />*/}
                     <BootstrapTable
                         data={ items }
+                        noDataText = {'No Messages'}
                         height= {height}
-                        scrollTop={ 'Bottom' }
-                        selectRow={{ mode: 'checkbox', clickToSelect: true, onSelect:this.handleSelect,onSelectAll:this.handleSelectAll}}
+//                        scrollTop={ 'Bottom' }
+                        selectRow={{ mode: 'checkbox', /*clickToSelect: true, */onSelect:this.handleSelect, onSelectAll:this.handleSelectAll}}
                         striped
                         hover
                         condensed
@@ -136,30 +107,14 @@ class Result extends React.Component {
                         sortIndicator
                         multiColumnSort={4}
                         options = {{ sortName:['id', 'status', 'seqKey'], sortOrder:['asc', 'asc', 'asc'],sortIndicator:true }} >
-                              <TableHeaderColumn dataField='id' isKey>Id</TableHeaderColumn>
-                              <TableHeaderColumn dataField='queue'>Queue</TableHeaderColumn>
-                              <TableHeaderColumn dataField='status'>Status</TableHeaderColumn>
-                              <TableHeaderColumn dataField='seqKey'>Sequence</TableHeaderColumn>
-                              <TableHeaderColumn dataField='scheduledAt'>Scheduled</TableHeaderColumn>
-                              <TableHeaderColumn dataField='createdTimeStamp'>Created</TableHeaderColumn>
-                              <TableHeaderColumn dataField='updatedTimeStamp'>Updated</TableHeaderColumn>
+                              <TableHeaderColumn sortIndicator={true} dataField='id' dataFormat={format} isKey>Id</TableHeaderColumn>
+                              <TableHeaderColumn sortIndicator={true} dataField='queue'>Queue</TableHeaderColumn>
+                              <TableHeaderColumn sortIndicator={true} dataField='status'>Status</TableHeaderColumn>
+                              <TableHeaderColumn sortIndicator={true} dataField='seqKey'>Sequence</TableHeaderColumn>
+                              <TableHeaderColumn sortIndicator={true} dataField='scheduledAt'>Scheduled</TableHeaderColumn>
+                              <TableHeaderColumn sortIndicator={true} dataField='createdTimeStamp'>Created</TableHeaderColumn>
+                              <TableHeaderColumn sortIndicator={true} dataField='updatedTimeStamp'>Updated</TableHeaderColumn>
                           </BootstrapTable>
-                    {/*<table className='table table-dark table-sm table-bordered table-scroll'>
-                        <thead>
-                            <tr>
-                                <th onClick={e=>this.renderItems('id')} style={{width:'30px'}}>Id</th>
-                                <th onClick={e=>this.renderItems('queue')}>Queue Name</th>
-                                <th onClick={e=>this.renderItems('status')}>Status</th>
-                                <th onClick={e=>this.renderItems('seqKey')}>Sequence</th>
-                                <th onClick={e=>this.renderItems('scheduledAt')}>Scheduled At</th>
-                                <th onClick={e=>this.renderItems('createdTimeStamp')}>Created At</th>
-                                <th onClick={e=>this.renderItems('updatedTimeStamp')}>Updated At</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {trs}
-                        </tbody>
-                    </table>*/}
                     </div>
                </div>;
     }
@@ -172,7 +127,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        updateStatus : (ids, status) => dispatch(MBQService.updateStatus(ids, status))
+        updateStatus : (ids, status) => dispatch(MBQService.updateStatus(ids, status)),
+        showData : id => dispatch(MBQService.getData(id))
     }
 };
 

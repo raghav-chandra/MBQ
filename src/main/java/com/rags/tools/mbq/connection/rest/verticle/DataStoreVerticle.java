@@ -43,7 +43,7 @@ public class DataStoreVerticle extends CommonVerticle {
             } else {
                 workers.executeBlocking(workerHandler -> {
                     List<MBQMessage> messages = dataStore.get(ids);
-                    workerHandler.complete(new JsonArray(messages.stream().map(JsonObject::mapFrom).collect(Collectors.toList())));
+                    workerHandler.complete(new JsonArray(messages.stream().map(d -> JsonObject.mapFrom(d).put("message", new String(d.getMessage()))).collect(Collectors.toList())));
                 }, resHandler(pullHandler, ErrorMessage.FAILED_SEARCH_REQUEST));
             }
         });

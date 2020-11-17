@@ -1,4 +1,4 @@
-import { REDUX_ACTIONS, mbqStats, searchItems, changedStatus } from './redux/actions';
+import { REDUX_ACTIONS, mbqStats, searchItems, changedStatus, queueItem } from './redux/actions';
 
 const HTTP_GET = 'GET', HTTP_POST = 'POST';
 
@@ -40,7 +40,8 @@ const executeGetRequest = (dispatch, url, successAction) => executeRequest(dispa
 
 const CALL_MAPPER = {
     [REDUX_ACTIONS.SEARCH_ITEMS] : (dispatch, data) => executePostRequest(dispatch, 'mbq/console/search', data, searchItems),
-    [REDUX_ACTIONS.CHANGE_STATUS] : (dispatch, data) => executePostRequest(dispatch, 'mbq/console/updateStatus', data, (response) => alert ('Update was successful ' + response))
+    [REDUX_ACTIONS.CHANGE_STATUS] : (dispatch, data) => executePostRequest(dispatch, 'mbq/console/updateStatus', data, (response) => alert ('Update was successful ' + response)),
+    [REDUX_ACTIONS.GET_DATA] : (dispatch, id) => executeGetRequest(dispatch, 'mbq/console/get/'+id, queueItem),
 }
 
 export function execute(action, data = null) {
@@ -56,5 +57,6 @@ export function execute(action, data = null) {
 export const MBQService = {
     init: () => {},
     searchItems : request => execute (REDUX_ACTIONS.SEARCH_ITEMS, request),
-    updateStatus : (ids, status) => execute (REDUX_ACTIONS.CHANGE_STATUS, {ids, status})
+    updateStatus : (ids, status) => execute (REDUX_ACTIONS.CHANGE_STATUS, {ids, status}),
+    getData : id => execute (REDUX_ACTIONS.GET_DATA, id)
 }
