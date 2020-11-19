@@ -36,6 +36,7 @@ public class MBQStats {
 
     public void removeClient(Client client) {
         clientStats.remove(client.getId());
+        //TODO: Revert Clients transactions if there's any.
     }
 
     public synchronized void addPendingItemStats(Client client, String queueName, int noOfItems) {

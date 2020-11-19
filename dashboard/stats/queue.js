@@ -6,6 +6,7 @@ import Carousel from 'react-multi-carousel';
 import { Col, Row, Container } from 'react-bootstrap';
 import 'react-multi-carousel/lib/styles.css';
 
+import { MBQService } from '../mbqService';
 import { RESPONSIVE_SCREEN, screen } from '../constant';
 
 import { Card } from '../util/Card';
@@ -55,7 +56,7 @@ export class QueueStats extends React.Component {
                                     </Row>
                                     <Row>
                                         <Col>Oldest</Col>
-                                        <Col>Item</Col>
+                                        <Col>{queueStats[qName].oldestItem ? <a href='#' onClick = {e=>this.props.showData(queueStats[qName].oldestItem && queueStats[qName].oldestItem.id)}>Detail</a> : 'None'}</Col>
                                     </Row>
                                 </Container>
                              </Card>));
@@ -80,4 +81,10 @@ const mapStateToProps = state => {
     }
 }
 
-export default connect(mapStateToProps, null) (QueueStats);
+const mapDispatchToProps = dispatch => {
+    return {
+        showData : id => dispatch(MBQService.getData(id))
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps) (QueueStats);

@@ -41,7 +41,7 @@ public class MBQueuePublisher implements QueueClient {
         if (QueueType.CENTRALIZED == serverConfig.getQueueType()) {
             this.server = new QueueServerProxy(serverConfig);
         } else {
-            this.server = new MBQueueServer(MBQDataStoreInstance.createOrGet(serverConfig), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(serverConfig.getStatsCollectorClass()));
+            this.server = MBQueueServer.getInstance(serverConfig);
         }
     }
 

@@ -9,10 +9,10 @@ public class CentralizedQueueTester {
 
     public static void main(String[] args) {
         QConfig.Builder configBuilder = new QConfig.Builder()
-                .setBatch(5)
+                .setBatch(10)
                 .setPollingQueue("RAGHAV")
                 .setQueueType(QueueType.CENTRALIZED)
                 .setUrl("http://localhost:65000/");
-        execute(1, 0, configBuilder);
+        execute(50, 5, configBuilder);
     }
 }

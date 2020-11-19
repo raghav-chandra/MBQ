@@ -36,7 +36,7 @@ public class MBQueueServer implements QueueServer {
     private final MBQDataStore queueDataStore;
     private final MBQStatsService statsService;
 
-    public synchronized static MBQueueServer getInstance(MBQDataStore dataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
+    private synchronized static MBQueueServer getInstance(MBQDataStore dataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
         if (INSTANCE == null) {
             INSTANCE = new MBQueueServer(dataStore, pendingQMap, statsService);
         }
@@ -47,8 +47,8 @@ public class MBQueueServer implements QueueServer {
         return getInstance(MBQDataStoreInstance.createOrGet(serverConfig), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(serverConfig.getStatsCollectorClass()));
     }
 
-    public MBQueueServer(MBQDataStore MBQDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
-        this.queueDataStore = MBQDataStore;
+    private MBQueueServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
+        this.queueDataStore = mbqDataStore;
         this.pendingQMap = pendingQMap;
         this.statsService = statsService;
         init();
