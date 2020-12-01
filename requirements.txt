@@ -1,0 +1,56 @@
+MBQ:
+1. From Queue implementation
+2. Improve Algo to reduce the lock further or O(N)Operations.
+3. Low Latency protocol
+
+Dashboard:
+1. Stats
+    Stats should be in Table form + Carousel form. Option to switch between.
+    Refresh time interval.
+    Last Refreshed, Next refresh
+    Refresh now.
+
+    1. Aggregated Stats across all the Queues
+        Total active clients
+        Total Depth of queue
+        Total pending
+        Total In progress
+        Total Completed
+        Total Error
+        Total Held
+    2. Queue Stats - Independent Queue stats
+        QueueName
+        Total Depth of queue
+        Total pending
+        Total In progress
+        Total Completed
+        Total Error
+        Total Held
+        Oldest Item
+    3. Client Stats
+        ClientName
+        Ip
+        Pushed
+        Processed
+        In Progress
+        Errored
+
+2. Console
+    1. Search Form
+        QueueName
+        Sequence
+        CreatedTime
+        Ids
+    2. Search Results
+        Checkbox
+        Id with link to open the detailed message
+        FromQueue
+        QueueName
+        Status
+        CreatedTime
+        UpdatedTime
+        ScheduledAt
+    3. Dropdown to change the status of Item in the queue based on selected items.
+
+
+
