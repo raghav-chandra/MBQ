@@ -2,6 +2,7 @@ package com.rags.tools.mbq.queue.pending;
 
 import com.rags.tools.mbq.queue.IdSeqKey;
 
+import java.util.Iterator;
 import java.util.List;
 
 public interface PendingQ<T> {
@@ -44,15 +45,8 @@ public interface PendingQ<T> {
     void addLast(T item);
 
     /**
-     * Add Items  in the queue at given index
-     *
-     * @param index index
-     * @param item  item to be added
-     */
-    void add(int index, T item);
-
-    /**
      * Adds items in pushed order. places items at its right position
+     *
      * @param item
      */
     void addInOrder(IdSeqKey item);
@@ -99,8 +93,14 @@ public interface PendingQ<T> {
 
     /**
      * Returns all the elements found in the given items
+     *
      * @param items given items
      * @return all found items
      */
     List<T> find(List<T> items);
+
+    /**
+     * Return queue Iterator
+     */
+    Iterator<T> iterator();
 }

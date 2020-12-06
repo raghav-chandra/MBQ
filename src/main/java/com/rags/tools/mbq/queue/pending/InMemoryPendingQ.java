@@ -3,15 +3,12 @@ package com.rags.tools.mbq.queue.pending;
 import com.rags.tools.mbq.queue.IdSeqKey;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 public class InMemoryPendingQ implements PendingQ<IdSeqKey> {
 
-    private final LinkedList<IdSeqKey> queue = new LinkedList<>();
+    private final MBQList<IdSeqKey> queue = new MBQList<>();
 
     @Override
     public boolean isEmpty() {
@@ -38,10 +35,6 @@ public class InMemoryPendingQ implements PendingQ<IdSeqKey> {
         this.queue.addLast(item);
     }
 
-    @Override
-    public void add(int index, IdSeqKey item) {
-        this.queue.add(index, item);
-    }
 
     @Override
     public void addInOrder(IdSeqKey item) {
@@ -98,5 +91,10 @@ public class InMemoryPendingQ implements PendingQ<IdSeqKey> {
     @Override
     public List<IdSeqKey> find(List<IdSeqKey> items) {
         return queue.stream().filter(items::contains).collect(Collectors.toList());
+    }
+
+    @Override
+    public Iterator<IdSeqKey> iterator() {
+        return queue.iterator();
     }
 }
