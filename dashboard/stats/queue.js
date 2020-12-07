@@ -27,39 +27,45 @@ export class QueueStats extends React.Component {
             }
 
             let cardWidth = 270;
-            let qCards = allQueues.map(qName => (
+            let qCards = allQueues.map(qName => {
+                            let stat = queueStats[qName];
+                            let processing = stat.processing.length ? <a href='#' onClick = {e=>this.props.showData(stat.processing)}>{stat.processing.length}</a> : 'None';
+                            let errors = stat.errors.length ? <a href='#' onClick = {e=>this.props.showData(stat.errors)}>{stat.errors.length}</a> : 'None';
+                            let oldest = stat.oldestItem ? <a href='#' onClick = {e=>this.props.showData([stat.oldestItem.id])}>Detail</a> : 'None';
+                            return (
                             <Card height='230px' width={cardWidth+'px'} title={ qName }>
                                 <Container>
                                     <Row>
                                         <Col>Depth</Col>
-                                        <Col>{ queueStats[qName].depth }</Col>
+                                        <Col>{ stat.depth }</Col>
                                     </Row>
                                     <Row>
                                         <Col>Pending</Col>
-                                        <Col>{ queueStats[qName].pending }</Col>
+                                        <Col>{ stat.pending }</Col>
                                     </Row>
                                     <Row>
                                         <Col>InProcess</Col>
-                                        <Col>{ queueStats[qName].processing.length }</Col>
+                                        <Col>{ processing }</Col>
                                     </Row>
                                     <Row>
                                         <Col>Processed</Col>
-                                        <Col>{ queueStats[qName].processed }</Col>
+                                        <Col>{ stat.processed }</Col>
                                     </Row>
                                     <Row>
                                         <Col>Error</Col>
-                                        <Col>{ queueStats[qName].errors.length }</Col>
+                                        <Col>{ errors }</Col>
                                     </Row>
                                     <Row>
                                         <Col>RolledBack</Col>
-                                        <Col>{ queueStats[qName].rolledBack }</Col>
+                                        <Col>{ stat.rolledBack }</Col>
                                     </Row>
                                     <Row>
                                         <Col>Oldest</Col>
-                                        <Col>{queueStats[qName].oldestItem ? <a href='#' onClick = {e=>this.props.showData(queueStats[qName].oldestItem && queueStats[qName].oldestItem.id)}>Detail</a> : 'None'}</Col>
+                                        <Col>{ oldest }</Col>
                                     </Row>
                                 </Container>
-                             </Card>));
+                             </Card>)
+                             });
 
             let count = parseInt(window.innerWidth/(cardWidth+10));
             return <Carousel
@@ -83,7 +89,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        showData : id => dispatch(MBQService.getData(id))
+        showData : ids => dispatch(MBQService.getItems(ids))
     }
 }
 

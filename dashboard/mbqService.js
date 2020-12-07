@@ -42,6 +42,7 @@ const CALL_MAPPER = {
     [REDUX_ACTIONS.SEARCH_ITEMS] : (dispatch, data) => executePostRequest(dispatch, 'mbq/console/search', data, searchItems),
     [REDUX_ACTIONS.CHANGE_STATUS] : (dispatch, data) => executePostRequest(dispatch, 'mbq/console/updateStatus', data, (response) => alert ('Update was successful ' + response)),
     [REDUX_ACTIONS.GET_DATA] : (dispatch, id) => executeGetRequest(dispatch, 'mbq/console/get/'+id, queueItem),
+    [REDUX_ACTIONS.GET_MESSAGES] : (dispatch, ids) => executePostRequest(dispatch, 'mbq/console/get',ids, queueItem)
 }
 
 export function execute(action, data = null) {
@@ -58,5 +59,6 @@ export const MBQService = {
     init: () => {},
     searchItems : request => execute (REDUX_ACTIONS.SEARCH_ITEMS, request),
     updateStatus : (ids, status) => execute (REDUX_ACTIONS.CHANGE_STATUS, {ids, status}),
-    getData : id => execute (REDUX_ACTIONS.GET_DATA, id)
+    getData : id => execute (REDUX_ACTIONS.GET_DATA, id),
+    getItems : ids => execute (REDUX_ACTIONS.GET_MESSAGES, ids)
 }

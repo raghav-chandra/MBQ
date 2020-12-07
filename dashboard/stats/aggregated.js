@@ -1,6 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { MBQService } from '../mbqService';
+
 class Metric extends React.Component {
 
     render() {
@@ -26,20 +28,25 @@ class Aggregated extends React.Component {
 
         let activeClients = Object.keys(stats.clientStats).length;
         let agg = { activeClients, depth: 0, pend: 0, inProgress: 0, processed: 0, error: 0, throughput: 0 };
+        let pending = [], errors = [];
         Object.keys(qStats).forEach(q => {
             agg.depth += qStats[q].depth;
             agg.pend += qStats[q].pending;
             agg.inProgress += qStats[q].processing.length;
             agg.processed += qStats[q].processed;
             agg.error += qStats[q].errors.length;
+            errors = errors.concat(qStats[q].errors);
+            pending = pending.concat(qStats[q].processing);
         });
 
         let metric = [];
+        let inProgress = agg.inProgress == 0 ? 0 : <a href='#' onClick = {e=>this.props.showData(pending)}>{agg.inProgress}</a>;
+        let inErr = agg.error == 0 ? 0 : <a href='#' onClick = {e=>this.props.showData(pending)}>{agg.error}</a>;
         metric.push(<Metric title='Depth' metric= {agg.depth}/>);
         metric.push(<Metric title='Pending' metric= {agg.pend}/>);
-        metric.push(<Metric title='In Progress' metric= {agg.inProgress}/>);
+        metric.push(<Metric title='In Progress' metric= {inProgress}/>);
         metric.push(<Metric title='Processed' metric= {agg.processed}/>);
-        metric.push(<Metric title='Errored' metric= {agg.error}/>);
+        metric.push(<Metric title='Errored' metric= {inErr}/>);
         metric.push(<Metric title='Active Clients' metric= {activeClients}/>);
 
 
@@ -53,4 +60,11 @@ const mapStateToProps = state => {
         stats : state.mbqStats.stats
     }
 }
-export default connect(mapStateToProps, null) (Aggregated);
+
+const mapDispatchToProps = dispatch => {
+    return {
+        showData : ids => dispatch(MBQService.getItems(ids))
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps) (Aggregated);

@@ -11,7 +11,7 @@ const style = {
     margin :'10px',
     marginBottom :'20px',
     borderRadius: '10px',
-    padding: '20px',
+    padding: '10px',
     backgroundColor:'#e8e8e8'
 }
 
@@ -21,12 +21,15 @@ export class Statistics extends React.Component {
         return (<React.Fragment>
             <ItemDetailPopup />
             <div style={style}>
+                <span><h5>Aggregated Stats</h5></span>
                 <AggregatedStats />
             </div>
             <div style={style}>
+                <span><h5>Queue Stats</h5></span>
                 <QueueStats />
             </div>
             <div style={style}>
+                <span><h5>Client Stats</h5></span>
                 <ClientStats />
             </div>
         </React.Fragment>);
