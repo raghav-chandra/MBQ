@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { connect } from 'react-redux';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware } from 'redux';
@@ -10,13 +11,16 @@ import {Navbar, Nav, NavDropdown, NavItem} from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import 'bootstrap/dist/css/bootstrap.css';
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCogs, faCog } from "@fortawesome/free-solid-svg-icons";
+
 import { ManagementConsole } from './management/main';
 import { Statistics } from './stats/main';
 import Alerts from './alerts'
+import Settings from './setting'
 import MBQReducer from './redux/reducers';
 import { MBQService } from './mbqService';
-
-import { mbqStats } from './redux/actions';
+import { mbqStats, loadSetting } from './redux/actions';
 
 const store = createStore(MBQReducer, applyMiddleware(thunkMiddleware, createLogger()));
 
@@ -54,28 +58,40 @@ class MBQApp extends React.Component {
                     </Navbar.Brand>
 
                     <Navbar.Collapse id='responsive-navbar-nav'>
-                        <Nav>
-                            <Nav.Link><LinkContainer to='/stats'><NavItem>Statistics</NavItem></LinkContainer></Nav.Link>
+                        <Nav className="mr-auto">
+                            <Nav.Link><LinkContainer to='/'><NavItem>Statistics</NavItem></LinkContainer></Nav.Link>
                             <Nav.Link><LinkContainer to='/console'><NavItem>Console</NavItem></LinkContainer></Nav.Link>
+                        </Nav>
+                        <Nav>
+                            <Navbar.Text>Last Updated : {new Date().toDateString() }</Navbar.Text>
+                            <Nav.Link onClick = {e => this.props.loadSetting()}><FontAwesomeIcon pulse inverse icon={faCog} /></Nav.Link>
                         </Nav>
                     </Navbar.Collapse>
                 </Navbar>
                 <Alerts />
+                <Settings />
                 <Routes />
         </div>);
     }
 }
 
+const mapDispatchToProps = dispatch => {
+    return {
+        loadSetting  : () => dispatch(loadSetting())
+    }
+}
+
+const App = connect(null, mapDispatchToProps)(MBQApp);
+
 class Routes extends React.Component{
     render() {
         return (<Switch>
                     <Route exact path='/'><Statistics /></Route>
-                    <Route exact path='/stats'><Statistics /></Route>
                     <Route exact path='/console'><ManagementConsole /></Route>
                 </Switch>);
     }
 }
 
 ReactDOM.render(<Provider store={store}>
-                    <BrowserRouter><MBQApp /></BrowserRouter>
+                    <BrowserRouter><App /></BrowserRouter>
                 </Provider>, document.getElementById('app'));

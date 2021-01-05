@@ -5,6 +5,7 @@ export const REDUX_ACTIONS = {
     GET_DATA : 'GET_DATA',
     GET_MESSAGES : 'GET_MESSAGES',
     QUEUE_ITEM : 'QUEUE_ITEM',
+    LOAD_SETTING : 'LOAD_SETTING'
 }
 
 export function mbqStats(stats, fetching = false) {
@@ -29,5 +30,12 @@ export function queueItem(item, fetching = false, open = true) {
         item,
         open,
         fetching
+    }
+}
+
+export function loadSetting(open = true) {
+    return {
+        type: REDUX_ACTIONS.LOAD_SETTING,
+        open
     }
 }

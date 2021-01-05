@@ -47,6 +47,7 @@ public class MBQueueServer implements QueueServer {
         return getInstance(MBQDataStoreInstance.createOrGet(serverConfig), new InMemoryPendingIdSeqKeyQMap(), MBQStatsService.getInstance(serverConfig.getStatsCollectorClass()));
     }
 
+    //TODO: Defer stats collection for few seconds to reduce CPU cycles.
     private MBQueueServer(MBQDataStore mbqDataStore, PendingQMap<IdSeqKey> pendingQMap, MBQStatsService statsService) {
         this.queueDataStore = mbqDataStore;
         this.pendingQMap = pendingQMap;
@@ -174,7 +175,7 @@ public class MBQueueServer implements QueueServer {
             return Collections.emptyList();
         }
 
-        int batch = client.getBatch(), counter = 0;
+        int batch = client.getBatch();
         List<IdSeqKey> idSeqKeys = new ArrayList<>();
 
         int noOfItem = Math.min(pendQ.size(), batch);
@@ -182,11 +183,13 @@ public class MBQueueServer implements QueueServer {
         Set<String> markedBlockedSeq = new HashSet<>();
         IdSeqKey oldestItem;
         synchronized (pendQ) {
-            for (int i = 0; i < noOfItem && counter < pendQ.size(); counter++) {
-                IdSeqKey idKey = pendQ.get(counter);
-
+            Iterator<IdSeqKey> it = pendQ.iterator();
+            int i = 0;
+            while (it.hasNext() && i < noOfItem) {
+                IdSeqKey idKey = it.next();
                 if (idKey.getStatus().isBlocking()) {
                     markedBlockedSeq.add(idKey.getSeqKey());
+                    continue;
                 }
 
                 if (currTime >= idKey.getScheduledAt()
@@ -195,10 +198,12 @@ public class MBQueueServer implements QueueServer {
                         && idKey.getStatus() == QueueStatus.PENDING) {
                     idSeqKeys.add(idKey);
                     i++;
+                    it.remove();
                 }
             }
             USED_SEQ.get(queueName).addAll(idSeqKeys.stream().map(IdSeqKey::getSeqKey).collect(Collectors.toList()));
-            pendQ.removeAll(idSeqKeys);
+//            TODO: Check if remove can be part of lock ?
+//            pendQ.removeAll(idSeqKeys);
             oldestItem = pendQ.isEmpty() ? null : pendQ.get(0);
         }
 
@@ -209,7 +214,7 @@ public class MBQueueServer implements QueueServer {
         List<MBQMessage> items = getQueueDataStore().get(queueName, idSeqKeys.stream().map(IdSeqKey::getId).collect(Collectors.toList()));
         idSeqKeys.forEach(i -> i.setStatus(QueueStatus.PROCESSING));
 
-        items.sort((a, b) -> a.getId().compareTo(b.getId()) >= 0 ? 1 : -1);
+        items.sort((a, b) -> a.getId().compareTo(b.getId()) >= 0 ? 1 : -1); //TODO: Rmeove Zero if not required.
         items.forEach(i -> i.updateStatus(QueueStatus.PROCESSING));
 
         ClientInfo clientInfo = getClientInfo(client);

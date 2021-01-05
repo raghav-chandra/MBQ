@@ -9,6 +9,7 @@ Dashboard:
     Refresh time interval.
     Last Refreshed, Next refresh
     Refresh now.
+    Messages details should be in table format similar to the Managemet Console.
 
     1. Aggregated Stats across all the Queues
         Total active clients
