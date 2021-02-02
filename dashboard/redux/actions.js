@@ -33,9 +33,11 @@ export function queueItem(item, fetching = false, open = true) {
     }
 }
 
-export function loadSetting(open = true) {
+export function setting(open = true, interval, dispType) {
     return {
         type: REDUX_ACTIONS.LOAD_SETTING,
-        open
+        open,
+        interval,
+        dispType
     }
 }

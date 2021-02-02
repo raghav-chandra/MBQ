@@ -35,3 +35,11 @@ export class Statistics extends React.Component {
         </React.Fragment>);
     }
 }
+
+const mapStatsToProps = state => {
+    return {
+//        view : state.setting
+    };
+}
+
+export default connect(mapStatsToProps, null)(Statistics);

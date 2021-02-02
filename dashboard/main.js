@@ -15,12 +15,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCogs, faCog } from "@fortawesome/free-solid-svg-icons";
 
 import { ManagementConsole } from './management/main';
-import { Statistics } from './stats/main';
+import Statistics from './stats/main';
 import Alerts from './alerts'
 import Settings from './setting'
 import MBQReducer from './redux/reducers';
 import { MBQService } from './mbqService';
-import { mbqStats, loadSetting } from './redux/actions';
+import { mbqStats, setting } from './redux/actions';
 
 const store = createStore(MBQReducer, applyMiddleware(thunkMiddleware, createLogger()));
 
@@ -77,7 +77,7 @@ class MBQApp extends React.Component {
 
 const mapDispatchToProps = dispatch => {
     return {
-        loadSetting  : () => dispatch(loadSetting())
+        loadSetting  : () => dispatch(setting())
     }
 }
 

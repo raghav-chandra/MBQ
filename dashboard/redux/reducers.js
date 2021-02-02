@@ -29,7 +29,7 @@ const queueItem = (state = {item : null, fetching : false, open: false}, action)
     }
 }
 
-const loadSetting = (state = {open: false}, action) => {
+const setting = (state = {open: false}, action) => {
     switch (action.type) {
         case REDUX_ACTIONS.LOAD_SETTING :
             return Object.assign({}, state, {open: action.open});;
@@ -42,5 +42,5 @@ export default combineReducers({
     mbqStats,
     searchItems,
     queueItem,
-    loadSetting
+    setting
 });
